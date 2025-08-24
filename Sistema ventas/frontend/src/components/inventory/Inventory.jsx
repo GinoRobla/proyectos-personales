@@ -486,10 +486,10 @@ export const Inventory = () => {
                         {/* Imagen del producto */}
                         <div className="product-image">
                             <img
-                                src={producto.image || 'default-product.svg'}
+                                src={producto.image || '/default.jpg'}
                                 alt={producto.name}
                                 onError={(e) => {
-                                    e.target.src = 'default-product.svg'
+                                    e.target.src = '/default.jpg'
                                 }}
                             />
                         </div>
