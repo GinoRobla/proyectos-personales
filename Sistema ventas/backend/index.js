@@ -2,7 +2,7 @@
 // Este archivo inicia el servidor Express, importa modelos y rutas, y deja todo listo para funcionar en cualquier PC.
 
 // Cargar variables de entorno desde .env
-require('dotenv').config({ path: require('path').join(__dirname, '..', '.env') });
+require('dotenv').config();
 
 const express = require('express');
 const cors = require('cors');
@@ -14,7 +14,15 @@ require('./models/Sale');
 
 // Crear la app de Express
 const app = express();
-app.use(cors());
+
+// Configurar CORS para producción
+const corsOptions = {
+    origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+    credentials: true,
+    optionsSuccessStatus: 200
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 
 // Importar y usar rutas
@@ -25,12 +33,13 @@ app.use('/api/sales', saleRoutes);
 
 // Puerto y host configurables por variable de entorno
 const PORT = process.env.PORT || 3001;
-const HOST = process.env.HOST || '127.0.0.1';
+const HOST = process.env.HOST || '0.0.0.0'; // Cambio para Railway
 
 async function startServer() {
     try {
         await sequelize.sync(); // Sincroniza modelos con la base de datos
-        app.listen(PORT, HOST, () => {
+        // Railway requiere que escuchemos en todos los interfaces
+        app.listen(PORT, () => {
             console.log(`\u2705 Backend escuchando en http://${HOST}:${PORT}`);
         });
     } catch (err) {
