@@ -3,3 +3,10 @@ node_modules/
 
 # Env files
 .env
+
+# Local database (production uses PostgreSQL)
+backend/data/sistema-pos.db
+
+# Development files
+CLAUDE.md
+todo.md
