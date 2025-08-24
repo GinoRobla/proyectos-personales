@@ -2,6 +2,17 @@
 
 Un sistema completo de Punto de Venta desarrollado como aplicación web full-stack, diseñado para manejar inventarios, ventas y estadísticas de manera eficiente con soporte para escaneo de códigos de barras.
 
+## 🌐 Demo Público
+
+**¡Prueba el sistema directamente sin instalar nada!**
+
+**🚀 [ACCEDER AL DEMO EN VIVO](https://proyectos-personales-ten.vercel.app)**
+
+- **Frontend**: Desplegado en Vercel
+- **Backend**: Desplegado en Railway  
+- **Base de datos**: PostgreSQL en Railway
+- **Estado**: Completamente funcional y accesible públicamente
+
 ## 📋 Tabla de Contenidos
 - [Características](#-características)
 - [Tecnologías Utilizadas](#-tecnologías-utilizadas)
@@ -62,8 +73,14 @@ Un sistema completo de Punto de Venta desarrollado como aplicación web full-sta
 - **Node.js** - Entorno de ejecución
 - **Express 5** - Framework web
 - **Sequelize** - ORM para base de datos
-- **SQLite** - Base de datos local
+- **PostgreSQL** - Base de datos en producción
+- **SQLite** - Base de datos local para desarrollo
 - **CORS** - Manejo de políticas de origen cruzado
+
+### Deployment y Hosting
+- **Vercel** - Hosting del frontend en producción
+- **Railway** - Hosting del backend y PostgreSQL
+- **GitHub** - Repositorio y versionado de código
 
 ### Herramientas
 - **dotenv** - Variables de entorno
@@ -284,18 +301,14 @@ Abrir en el navegador: `http://localhost:5173`
 - **Pantalla fija**: Requiere resolución mínima para uso óptimo
 - **No móvil nativo**: No hay app móvil dedicada para el sistema
 
-### 🌐 Conectividad (Limitación Principal)
-- **⚠️ REQUIERE WiFi OBLIGATORIO**: Al ser una aplicación web, necesita conexión de red para comunicar frontend con backend
-- **Dependiente de red local**: Si se cae la WiFi, el sistema no funciona
-- **Solo localhost**: Funciona únicamente en la misma máquina o red local
-- **Sin modo offline**: No puede operar sin conexión de red
+### 🌐 Conectividad
+- **Demo público**: Requiere conexión a internet para acceder al demo online
+- **Instalación local**: Para uso offline, requiere instalación local completa
+- **Sin modo offline**: El demo público no puede operar sin conexión
 
-#### 💡 Solución Propuesta para Conectividad
-**Empaquetado con Electron**: Se podría resolver la dependencia de WiFi empaquetando toda la aplicación (frontend + backend) en una aplicación de escritorio usando Electron. Esto permitiría:
-- ✅ Funcionamiento sin conexión a internet
-- ✅ Instalación como aplicación nativa
-- ✅ Base de datos local integrada
-- ✅ Sin dependencia de navegador web
+#### 💡 Alternativas para uso offline
+**Instalación local**: Siguiendo las instrucciones de instalación puedes tener el sistema funcionando completamente offline con SQLite local.
+**Empaquetado con Electron**: Se podría empaquetar como aplicación de escritorio para distribución más fácil.
 
 ### 🔒 Seguridad
 - **Sin autenticación**: No tiene sistema de usuarios/contraseñas
@@ -366,8 +379,21 @@ npm run preview    # Preview del build
 
 ---
 
-**⚠️ Nota Importante**: Este sistema requiere conexión WiFi para funcionar, ya que la interfaz web necesita comunicarse con el servidor backend. Para uso sin internet, se recomienda empaquetar la aplicación con Electron.
+## 🚀 Deploy en Producción
 
-**Desarrollado con ❤️ para facilitar la gestión de ventas y inventario**
+El sistema está completamente desplegado y funcionando en:
 
-*Sistema POS Web - Versión 1.0.0*
+- **🌐 Demo Público**: [https://proyectos-personales-ten.vercel.app](https://proyectos-personales-ten.vercel.app)
+- **🔗 API Backend**: [https://proyectos-personales-production.up.railway.app](https://proyectos-personales-production.up.railway.app)
+
+### Stack de Producción:
+- **Frontend**: React + Vite → Vercel
+- **Backend**: Node.js + Express → Railway  
+- **Base de Datos**: PostgreSQL → Railway
+- **CORS**: Configurado para comunicación segura entre dominios
+
+---
+
+**Desarrollado con ❤️ para facilitar la gestión de ventas e inventario**
+
+*Sistema POS Web - Versión 1.0.0 - Desplegado públicamente* ✨
