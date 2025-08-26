@@ -1,0 +1,55 @@
+.ticket-venta {
+    width: 280px;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 13px;
+    color: #222;
+    background: #fff;
+    padding: 10px 0;
+}
+
+.ticket-venta .ticket-header {
+    text-align: center;
+    margin-bottom: 8px;
+}
+
+.ticket-venta .ticket-title {
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 2px;
+}
+
+.ticket-venta .ticket-fecha {
+    font-size: 11px;
+    margin-bottom: 6px;
+}
+
+.ticket-venta .ticket-linea {
+    border-top: 1px dashed #888;
+    margin: 8px 0;
+}
+
+.ticket-venta .ticket-producto {
+    margin-bottom: 6px;
+}
+
+.ticket-venta .ticket-producto-nombre {
+    font-weight: bold;
+}
+
+.ticket-venta .ticket-producto-detalle {
+    display: flex;
+    justify-content: space-between;
+}
+
+.ticket-venta .ticket-total {
+    font-size: 14px;
+    font-weight: bold;
+    text-align: right;
+    margin-top: 10px;
+}
+
+.ticket-venta .ticket-footer {
+    text-align: center;
+    font-size: 11px;
+    margin-top: 10px;
+}

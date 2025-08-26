@@ -1,0 +1,146 @@
+html, body {
+    overflow-x: hidden;
+}
+/* ===== LAYOUT GLOBAL ===== */
+/* Reset básico y configuración del scroll */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+    height: 100%;
+    overflow-x: hidden; /* Sin scroll horizontal */
+}
+
+#root {
+    height: 100%;
+}
+
+.layout {
+    height: 100%;
+}
+
+/* Layout principal de la aplicación */
+.app-layout {
+    display: flex;
+    height: 100vh;
+    overflow: hidden; /* Evita scroll en el contenedor principal */
+}
+
+/* Contenido principal - scroll solo cuando sea necesario */
+.main-content {
+    margin-left: 250px;
+    flex: 1;
+    height: 100vh;
+    overflow-y: auto; /* Scroll vertical solo cuando sea necesario */
+    overflow-x: hidden; /* Sin scroll horizontal */
+    background: #f8f9fa;
+    scroll-behavior: smooth; /* Scroll suave */
+}
+
+/* === RESPONSIVE DESIGN === */
+@media (max-width: 768px) {
+    /* Ajustar contenido principal para que no tenga margen izquierdo en móviles */
+    .main-content {
+        margin-left: 0 !important;
+    }
+    
+    /* Sidebar en móviles - mantener pero con overlay */
+    .sidebar {
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+        z-index: 2000;
+    }
+    
+    /* Cuando el sidebar esté activo en móvil */
+    .sidebar.sidebar-mobile-active {
+        transform: translateX(0);
+    }
+    
+    /* Overlay para cerrar sidebar en móvil */
+    .sidebar-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1500;
+        display: none;
+    }
+    
+    .sidebar-overlay.active {
+        display: block;
+    }
+}
+
+/* Configuración específica para cada vista */
+.sales-view {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Para las otras vistas que necesitan scroll */
+.inventory-view,
+.historial-view,
+.stats-view {
+    min-height: 100vh;
+    height: auto;
+}
+
+/* Configuración específica del carrito en Sales */
+.sales-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden; /* Sin scroll en el contenedor */
+}
+
+.cart-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden; /* Sin scroll en la sección */
+    min-height: 0; /* Permite que flexbox funcione correctamente */
+}
+
+.cart-items {
+    flex: 1;
+    overflow-y: auto; /* Scroll solo en la lista de productos del carrito */
+    overflow-x: hidden;
+    padding-right: 5px; /* Espacio para el scrollbar */
+}
+
+/* Scrollbar personalizado global */
+.main-content::-webkit-scrollbar,
+.cart-items::-webkit-scrollbar {
+    width: 8px;
+}
+
+.main-content::-webkit-scrollbar-track,
+.cart-items::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+.main-content::-webkit-scrollbar-thumb,
+.cart-items::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 10px;
+}
+
+.main-content::-webkit-scrollbar-thumb:hover,
+.cart-items::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+/* Ocultar scrollbar en Firefox pero mantener funcionalidad */
+.main-content,
+.cart-items {
+    scrollbar-width: thin;
+    scrollbar-color: #c1c1c1 #f1f1f1;
+}
+

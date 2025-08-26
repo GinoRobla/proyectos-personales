@@ -1,0 +1,570 @@
+/* === MODAL DE DETALLES DE VENTA === */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0,0,0,0.18); /* Fondo neutro, sin celeste */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+.modal-content {
+    background: #fff;
+    border-radius: 14px;
+    padding: 32px 36px;
+    min-width: 340px;
+    max-width: 95vw;
+    box-shadow: 0 4px 18px rgba(52,152,219,0.18);
+    animation: modalFadeHist 0.2s ease;
+    position: relative;
+}
+
+@keyframes modalFadeHist {
+    from { opacity: 0; transform: scale(0.95); }
+    to   { opacity: 1; transform: scale(1); }
+}
+
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 18px;
+}
+.modal-header h2 {
+    font-size: 1.4rem;
+    font-weight: bold;
+    color: #3f3f3f;
+    margin: 0;
+}
+.btn-cerrar {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: #888;
+    cursor: pointer;
+    margin-left: 10px;
+    transition: color 0.2s;
+}
+.btn-cerrar:hover {
+    color: #e74c3c;
+}
+
+.modal-info-general {
+    margin-bottom: 18px;
+    background: #f4f8fb;
+    border-radius: 8px;
+    padding: 14px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    font-size: 1rem;
+}
+.info-item {
+    color: #2c3e50;
+}
+.total-venta {
+    font-weight: bold;
+    color: #27ae60;
+}
+
+.modal-productos {
+    margin-bottom: 18px;
+}
+.modal-productos h3 {
+    font-size: 1.1rem;
+    color: #3f3f3f;
+    margin-bottom: 10px;
+}
+.productos-lista {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.producto-item {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 10px 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.98rem;
+    box-shadow: 0 1px 4px rgba(52,152,219,0.07);
+}
+.producto-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    color: #2c3e50;
+}
+.producto-nombre {
+    font-weight: 500;
+    color: #34495e;
+}
+.producto-codigo {
+    color: #7f8c8d;
+    font-size: 0.95rem;
+}
+.producto-detalles {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    align-items: flex-end;
+}
+.producto-cantidad {
+    color: #2980b9;
+    font-weight: 500;
+}
+.producto-precio {
+    color: #27ae60;
+    font-weight: 500;
+}
+.producto-subtotal {
+    color: #000000;
+    font-weight: 500;
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+.btn-cerrar-modal {
+    background: #3498db;
+    color: white;
+    border: none;
+    padding: 10px 22px;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.btn-cerrar-modal:hover {
+    background: #2980b9;
+}
+/* ===== ESTILOS PARA EL COMPONENTE HISTORIAL ===== */
+
+.historial-container {
+    padding: 2rem;
+    background-color: #f8f9fa;
+    min-height: calc(100vh - 60px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    box-sizing: border-box;
+    overflow-x: hidden;
+}
+
+.historial-header {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.historial-header h1 {
+    color: #333;
+    font-size: 2rem;
+    margin: 0 0 10px 0;
+}
+
+.historial-header p {
+    color: #666;
+    font-size: 1.1rem;
+    margin: 0;
+}
+
+/* LÍNEA SEPARADORA */
+.header-separator {
+    width: 100%;
+    height: 2px;
+    background-color: #ddd;
+    margin: 0 0 30px 0;
+    position: relative;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+/* Filtros por fecha */
+.filtros-container {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    max-width: 1000px;
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    display: flex;
+    gap: 1rem;
+    align-items: end;
+    flex-wrap: wrap;
+    justify-content: space-between;
+}
+
+.filtros-fechas {
+    display: flex;
+    gap: 1rem;
+    align-items: end;
+    justify-content: center;
+    flex: 1;
+}
+
+.filtros-acciones {
+    display: flex;
+    align-items: end;
+}
+
+.filtro-fecha {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.filtro-fecha label {
+    font-weight: 500;
+    color: #2c3e50;
+    font-size: 0.9rem;
+}
+
+.filtro-fecha input[type="date"] {
+    padding: 0.75rem;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    font-size: 1rem;
+    min-width: 150px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.filtro-fecha input[type="date"]:focus {
+    outline: none;
+    border-color: #3498db;
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+.btn-limpiar {
+    padding: 0.90rem 1rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.2s;
+    background-color: #1f8ccc;
+    color: #fff;
+}
+
+.btn-limpiar:hover:not(:disabled) {
+    background-color: #47a7df;
+    transform: translateY(-1px);
+}
+
+.btn-limpiar:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Mensajes */
+
+.cargando {
+    text-align: center;
+    padding: 3rem;
+    color: #7f8c8d;
+    font-size: 1.2rem;
+}
+
+.sin-ventas {
+    text-align: center;
+    padding: 3rem;
+    color: #7f8c8d;
+    font-size: 1.2rem;
+    font-weight: 500;
+}
+
+/* Lista de ventas */
+.ventas-lista {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    overflow: hidden;
+    max-width: 1000px;
+    width: 100%;
+    margin: 0 auto;
+}
+
+.venta-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+    border-bottom: 1px solid #e9ecef;
+    transition: background-color 0.2s;
+}
+
+.venta-card:hover {
+    background-color: #f8f9fa;
+}
+
+.venta-card:last-child {
+    border-bottom: none;
+}
+
+.venta-info {
+    flex: 1;
+}
+
+.venta-fecha {
+    font-weight: 500;
+    color: #2c3e50;
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+}
+
+.venta-datos {
+    display: flex;
+    gap: 2rem;
+    align-items: center;
+}
+
+.venta-productos {
+    color: #7f8c8d;
+    font-size: 0.95rem;
+}
+
+.venta-total {
+    font-weight: 600;
+    color: #2c3e50;
+    font-size: 1.1rem;
+}
+
+.btn-detalles {
+    background-color: #3498db;
+    color: #fff;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: background 0.2s, transform 0.2s;
+}
+
+.btn-detalles:hover:not(:disabled) {
+    background-color: #2980b9;
+    transform: translateY(-1px);
+}
+
+.btn-detalles:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Paginación */
+.paginacion {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 2rem;
+    padding: 1rem;
+}
+
+.btn-pagina {
+    background-color: #3498db;
+    color: #fff;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: background 0.2s, transform 0.2s;
+}
+
+.btn-pagina:hover:not(:disabled) {
+    background-color: #2980b9;
+    transform: translateY(-1px);
+}
+
+.btn-pagina:disabled {
+    background-color: #bdc3c7;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.info-pagina {
+    color: #2c3e50;
+    font-weight: 500;
+    font-size: 1rem;
+    padding: 0 1rem;
+}
+
+/* === RESPONSIVE DESIGN === */
+@media (max-width: 1580px) {
+    /* Eliminar scroll horizontal completamente */
+    body {
+        overflow-x: hidden !important;
+    }
+    
+    /* Achicar todas las cajas y elementos del historial */
+    .historial-container {
+        padding: 15px !important; /* Padding más pequeño */
+        margin-left: 250px !important; /* Asegurar que no se tape con el sidebar */
+        width: calc(100vw - 270px) !important; /* 20px extra de margen de seguridad */
+        max-width: calc(100vw - 270px) !important;
+        box-sizing: border-box !important;
+        overflow-x: hidden !important; /* Sin scroll en el container */
+    }
+    
+    /* Header más pequeño */
+    .historial-header h1 {
+        font-size: 1.6rem !important;
+    }
+    
+    .historial-header p {
+        font-size: 1rem !important;
+    }
+    
+    /* Filtros más compactos */
+    .date-filter {
+        padding: 15px !important;
+    }
+    
+    .date-filter-title {
+        font-size: 1.3rem !important;
+        margin-bottom: 15px !important;
+    }
+    
+    .date-inputs input {
+        padding: 8px !important;
+        font-size: 0.9rem !important;
+    }
+    
+    .search-btn, .clear-btn {
+        padding: 8px 16px !important;
+        font-size: 0.9rem !important;
+    }
+    
+    /* Tabla más compacta sin overflow */
+    .historial-table-container {
+        overflow-x: hidden !important; /* Sin scroll en la tabla */
+        width: 100% !important;
+    }
+    
+    .historial-table {
+        font-size: 0.9rem !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        table-layout: fixed !important; /* Forzar ancho fijo */
+    }
+    
+    .historial-table th,
+    .historial-table td {
+        padding: 8px 6px !important; /* Padding más pequeño */
+        max-width: 120px !important; /* Celdas más pequeñas */
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        white-space: nowrap !important;
+        word-break: break-all !important;
+    }
+    
+    /* Paginación más pequeña */
+    .pagination-container {
+        padding: 15px !important;
+        gap: 8px !important;
+    }
+    
+    .btn-pagina {
+        padding: 6px 12px !important;
+        font-size: 0.85rem !important;
+    }
+    
+    .info-pagina {
+        font-size: 0.9rem !important;
+    }
+    
+    /* Resultados del rango más compactos */
+    .range-results {
+        padding: 15px !important;
+    }
+    
+    .range-card {
+        padding: 15px !important;
+    }
+    
+    .range-card h4 {
+        font-size: 1.1rem !important;
+        margin-bottom: 10px !important;
+    }
+    
+    .range-stat {
+        font-size: 0.9rem !important;
+    }
+}
+
+@media (max-width: 768px) {
+    /* Ajustar container principal */
+    .historial-container {
+        margin-left: 0 !important;
+        padding: 15px !important;
+        width: 100% !important;
+    }
+    
+    /* Ajustar header */
+    .historial-header h1 {
+        font-size: 1.5rem !important;
+    }
+    
+    .historial-header p {
+        font-size: 0.9rem !important;
+    }
+    
+    /* Ajustar tabla */
+    .historial-table {
+        font-size: 0.85rem !important;
+        overflow-x: auto !important;
+    }
+    
+    .historial-table th,
+    .historial-table td {
+        padding: 8px 6px !important;
+        min-width: 100px;
+    }
+    
+    /* Hacer que la tabla sea scrolleable horizontalmente */
+    .historial-table-container {
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    /* Ajustar filtros de fecha */
+    .date-filter-content {
+        flex-direction: column !important;
+        gap: 15px !important;
+    }
+    
+    .date-inputs {
+        flex-direction: column !important;
+        gap: 10px !important;
+    }
+    
+    .date-buttons {
+        justify-content: center !important;
+    }
+    
+    /* Ajustar modales */
+    .modal-content {
+        max-width: 90vw !important;
+        padding: 20px !important;
+    }
+    
+    .detalle-items {
+        font-size: 0.85rem !important;
+    }
+}
+
+
