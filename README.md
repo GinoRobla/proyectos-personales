@@ -47,9 +47,8 @@ Aquí encontrarás proyectos desarrollados con el **stack MERN** (MongoDB, Expre
 |----------|-------------|-------------|---------|
 | **Sistema de Ventas POS** | Sistema completo de punto de venta con escáner, inventario, estadísticas e historial | React + Vite, Node.js, Express, SQLite/PostgreSQL | ✅ Completado |
 
-### 🔨 En Desarrollo (2)
+### 🔨 En Desarrollo (1)
 
-- **Red Social**: Plataforma social con sistema de posts, followers y chat en tiempo real
 - **Tienda Online**: E-commerce completo con carrito, pagos y gestión de productos
 
 ### 📋 Próximamente (1)
