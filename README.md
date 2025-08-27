@@ -71,7 +71,7 @@ Todos los proyectos implementan:
 
 **Progreso Actual:**
 - ✅ **1** proyecto completado
-- 🔨 **2** proyectos en desarrollo  
+- 🔨 **1** proyectos en desarrollo  
 - 📋 **1** proyecto planificado
 
 </div>
