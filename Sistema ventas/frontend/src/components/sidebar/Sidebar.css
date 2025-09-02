@@ -41,6 +41,7 @@
     align-items: center;
     gap: 15px;
     font-size: 1rem;
+    font-weight: 500;
     text-decoration: none;
     margin: 0;
     box-sizing: border-box;
@@ -63,5 +64,84 @@
 
 .nav-text {
     flex: 1;
+}
+
+/* === RESPONSIVE DESIGN === */
+
+/* Tablets (768px - 1024px) */
+@media (max-width: 1024px) and (min-width: 769px) {
+    .sidebar {
+        width: 200px; /* Sidebar más angosto para tablets */
+    }
+    
+    .sidebar-header {
+        padding: 15px;
+    }
+    
+    .sidebar-header h2 {
+        font-size: 1.3rem;
+    }
+    
+    .nav-item {
+        padding: 12px 15px;
+        font-size: 0.95rem;
+    }
+    
+    .nav-icon {
+        font-size: 1.1rem;
+        min-width: 18px;
+    }
+}
+
+/* Tablets pequeñas y móviles (768px o menos) */
+@media (max-width: 768px) {
+    .sidebar {
+        width: 250px; /* Mantener ancho original para overlay */
+        box-shadow: 2px 0 10px rgba(0, 0, 0, 0.3);
+    }
+    
+    .sidebar-header {
+        padding: 20px;
+        border-bottom: 2px solid #495057;
+    }
+    
+    .sidebar-header h2 {
+        font-size: 1.4rem;
+    }
+    
+    .nav-item {
+        padding: 18px 20px;
+        font-size: 1.1rem;
+    }
+    
+    .nav-icon {
+        font-size: 1.3rem;
+        min-width: 22px;
+    }
+}
+
+/* Notebooks y pantallas grandes (1025px+) */
+@media (min-width: 1025px) {
+    .sidebar {
+        width: 250px; /* Ancho completo para pantallas grandes */
+    }
+    
+    .sidebar-header {
+        padding: 25px 20px;
+    }
+    
+    .sidebar-header h2 {
+        font-size: 1.6rem;
+    }
+    
+    .nav-item {
+        padding: 16px 20px;
+        font-size: 1.05rem;
+    }
+    
+    .nav-icon {
+        font-size: 1.25rem;
+        min-width: 22px;
+    }
 }
 

@@ -195,7 +195,10 @@
 .inventory {
     padding: 20px;
     max-width: 1200px;
-    margin: 0 auto;
+    /* Por defecto para desktop - centrar el contenido sin contar el sidebar */
+    margin-left: calc(250px + (100vw - 250px - 1200px) / 2);
+    width: calc(100% - 250px);
+    box-sizing: border-box;
 }
 
 /* TÍTULO DE LA PÁGINA */
@@ -338,12 +341,33 @@
 .product-image {
     height: 80px;
     background: #f8f9fa;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
 }
 
 .product-image img {
     width: 100%;
     height: 100%;
     object-fit: cover;
+}
+
+/* Placeholder simple cuando no hay imagen */
+.product-image-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f5f5f5;
+    position: relative;
+}
+
+.product-image-placeholder svg {
+    width: 32px;
+    height: 32px;
+    opacity: 0.4;
 }
 
 /* CONTENIDO DEL PRODUCTO */
@@ -447,17 +471,256 @@
 }
 
 /* === RESPONSIVE DESIGN === */
-@media (max-width: 1675px) {
-    /* Cambiar a 2 columnas pero mantener tamaño fijo de productos */
+
+/* Pantallas grandes (1675px+) */
+@media (min-width: 1675px) {
     .products-grid {
-        grid-template-columns: repeat(2, minmax(0, 300px)) !important;
-        justify-content: center !important;
+        grid-template-columns: repeat(4, minmax(0, 300px));
+        justify-content: center;
+    }
+}
+
+/* Notebooks (1025px - 1674px) */
+@media (max-width: 1674px) and (min-width: 1025px) {
+    .inventory {
+        padding: 25px 35px;
+        margin-left: 250px;
+        width: calc(100% - 250px);
+        max-width: none;
     }
     
-    /* Fijar ancho máximo para que no se estiren */
+    .products-grid {
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        justify-content: center;
+        gap: 25px;
+        padding: 0 20px;
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+    
     .product-card {
-        max-width: 300px !important;
-        width: 100% !important;
+        max-width: 320px;
+        width: 100%;
+        justify-self: center;
+    }
+    
+    /* Optimizar búsqueda para notebooks */
+    .search-section {
+        margin-bottom: 35px;
+        justify-content: center;
+        padding: 0 40px;
+    }
+    
+    .barcode-input {
+        width: 40%;
+        min-width: 300px;
+        max-width: 500px;
+        padding: 15px 20px;
+        font-size: 1.1rem;
+    }
+}
+
+/* Tablets (768px - 1024px) */
+@media (max-width: 1024px) and (min-width: 769px) {
+    .inventory {
+        padding: 20px 30px;
+        margin-left: 200px;
+        width: calc(100% - 200px);
+        max-width: none;
+    }
+    
+    /* Grid de 2 columnas para tablets */
+    .products-grid {
+        grid-template-columns: repeat(2, minmax(250px, 1fr));
+        gap: 15px;
+        max-width: 100%;
+        margin: 0 auto;
+        padding: 0 10px;
+        justify-content: stretch;
+    }
+    
+    .product-card {
+        max-width: none;
+        width: 100%;
+        justify-self: stretch;
+    }
+    
+    /* Ajustar contenido de producto para tablets */
+    .product-content {
+        padding: 12px;
+    }
+    
+    .product-content h3 {
+        font-size: 0.9rem;
+    }
+    
+    .product-content p {
+        font-size: 0.8rem;
+    }
+    
+    /* Botones más grandes para tablets */
+    .btn-edit,
+    .btn-delete {
+        padding: 6px 10px;
+        font-size: 0.8rem;
+    }
+    
+    /* Sección de búsqueda para tablets */
+    .search-section {
+        flex-direction: row;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 15px;
+        padding: 0 20px;
+    }
+    
+    .barcode-input {
+        width: 60%;
+        min-width: 250px;
+        padding: 12px 18px;
+        font-size: 1rem;
+    }
+    
+    .btn-nuevo {
+        padding: 14px 28px;
+        font-size: 1.1rem;
+        min-width: 150px;
+    }
+}
+
+/* Tablets pequeñas y móviles (768px o menos) */
+@media (max-width: 768px) {
+    .inventory {
+        padding: 15px 20px;
+        margin-left: 0;
+        width: 100%;
+    }
+    
+    /* Header responsive */
+    .inventory-header h2 {
+        font-size: 1.6rem;
+    }
+    
+    .inventory-header p {
+        font-size: 1rem;
+    }
+    
+    /* Grid de 1 columna para móviles */
+    .products-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+        margin-top: 25px;
+    }
+    
+    .product-card {
+        max-width: none;
+    }
+    
+    .product-image {
+        height: 60px;
+    }
+    
+    .product-content {
+        padding: 10px;
+    }
+    
+    .product-content h3 {
+        font-size: 0.9rem;
+    }
+    
+    .product-content p {
+        font-size: 0.8rem;
+        margin: 3px 0;
+    }
+    
+    .product-actions {
+        margin-top: 8px;
+        gap: 6px;
+    }
+    
+    .btn-edit,
+    .btn-delete {
+        padding: 6px 8px;
+        font-size: 0.75rem;
+    }
+    
+    /* Sección de búsqueda para móviles */
+    .search-section {
+        flex-direction: column;
+        gap: 15px;
+        margin-bottom: 25px;
+    }
+    
+    .barcode-input {
+        width: 90%;
+        padding: 12px 16px;
+        font-size: 1rem;
+    }
+    
+    .btn-nuevo {
+        padding: 12px 24px;
+        font-size: 1rem;
+        width: auto;
+    }
+    
+    /* Mensaje sin productos */
+    .no-products {
+        padding: 40px 15px;
+        font-size: 1rem;
+    }
+    
+    /* Paginación responsive */
+    .paginacion {
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 15px;
+        padding: 20px;
+        max-width: 90%;
+        margin: 0 auto;
+    }
+    
+    .btn-pagina {
+        padding: 12px 20px;
+        font-size: 1rem;
+        min-width: 100px;
+    }
+    
+    .info-pagina {
+        font-size: 1rem;
+        text-align: center;
+        width: 100%;
+        order: -1;
+        margin-bottom: 10px;
+    }
+    
+    /* Modales responsive */
+    .modal-content {
+        max-width: 90vw;
+        padding: 20px 25px;
+    }
+    
+    .product-form {
+        gap: 20px;
+    }
+    
+    .form-group input {
+        padding: 12px 16px;
+        font-size: 1rem;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .btn-guardar,
+    .btn-cancelar,
+    .btn-confirmar {
+        padding: 12px 24px;
+        font-size: 1rem;
+        width: 100%;
     }
 }
 

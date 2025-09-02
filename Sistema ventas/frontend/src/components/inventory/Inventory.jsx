@@ -7,9 +7,9 @@
 // - Eliminar productos
 
 import React, { useState, useEffect, useRef } from 'react'
-import { obtenerProductos, actualizarProducto, eliminarProducto, crearProducto } from '../../helpers/apiClient'
-import { formatearDinero, validarCodigoBarras } from '../../helpers/utils'
+import { obtenerProductos, actualizarProducto, eliminarProducto, crearProducto, formatearDinero, validarCodigoBarras } from '../../utils'
 import { useApi } from '../../hooks/useApi'
+import { useGlobalScanner } from '../../hooks/scanner'
 import './Inventory.css'
 
 export const Inventory = () => {
@@ -69,23 +69,26 @@ export const Inventory = () => {
         cargarProductos()
     }, [ejecutarPeticion])
 
-    // AUTO-FOCUS EN EL CAMPO DE BÚSQUEDA
-    // Mantiene el campo de búsqueda siempre enfocado para el scanner
-    useEffect(() => {
-        const enfocarCampo = () => {
-            if (campoBusquedaRef.current && !mostrarFormulario && !mostrarConfirmacion) {
-                // Evita que el scroll se reinicie al enfocar
-                campoBusquedaRef.current.focus({ preventScroll: true });
-            }
-        }
+    // Ya no necesitamos auto-focus, usamos el scanner global
 
-        enfocarCampo();
-        const timer = setInterval(enfocarCampo, 100);
-        return () => clearInterval(timer);
-    }, [mostrarFormulario, mostrarConfirmacion]);
+    // SCANNER GLOBAL PARA DETECCIÓN AUTOMÁTICA
+    const manejarCodigoEscaneado = (codigo) => {
+        console.log('Código escaneado en inventario:', codigo)
+        // Aplicar filtro inmediatamente cuando se escanea
+        setFiltroActivo(codigo)
+        // Limpiar el campo de búsqueda manual
+        setTextoBusqueda('')
+    }
+    
+    const { isScanning } = useGlobalScanner(manejarCodigoEscaneado, {
+        minLength: 8,
+        timeout: 100,
+        enabled: !mostrarFormulario && !mostrarConfirmacion, // Solo activo cuando no hay modales
+        preventOnModal: true
+    })
 
-    // AUTO-CLEAR PARA CÓDIGOS DE BARRAS
-    // Detecta códigos escaneados, aplica el filtro, y luego borra el campo
+    // AUTO-CLEAR PARA CÓDIGOS DE BARRAS DEL CAMPO MANUAL
+    // Detecta códigos escaneados en el campo manual
     useEffect(() => {
         // Si es un código de barras (8+ dígitos numéricos), aplicar filtro y programar auto-borrado
         if (textoBusqueda.length >= 8 && /^[0-9]+$/.test(textoBusqueda)) {
@@ -96,9 +99,6 @@ export const Inventory = () => {
             const timer = setTimeout(() => {
                 esBorradoAutomatico.current = true // Marcar que es borrado automático
                 setTextoBusqueda('')
-                if (campoBusquedaRef.current) {
-                    campoBusquedaRef.current.focus()
-                }
                 // Resetear la bandera después de un momento
                 setTimeout(() => {
                     esBorradoAutomatico.current = false
@@ -366,7 +366,6 @@ export const Inventory = () => {
                     onChange={manejarCambioBusqueda}
                     onKeyDown={manejarTeclaPresionada}
                     className="barcode-input"
-                    autoFocus
                 />
 
                 <button
@@ -376,12 +375,41 @@ export const Inventory = () => {
                 >
                     {cargando ? 'Cargando...' : 'Nuevo Producto'}
                 </button>
+                
+                {/* Botón para limpiar filtros */}
+                {filtroActivo && (
+                    <button
+                        className="btn-clear-filter"
+                        onClick={() => {
+                            setFiltroActivo('')
+                            setTextoBusqueda('')
+                        }}
+                        style={{
+                            padding: '12px 20px',
+                            background: '#6c757d',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '8px',
+                            cursor: 'pointer',
+                            fontSize: '1rem'
+                        }}
+                    >
+                        Limpiar Filtro
+                    </button>
+                )}
             </div>
 
             {/* INDICADORES DE ESTADO */}
             {cargando && (
                 <div className="loading-indicator">
                     <p>Cargando productos...</p>
+                </div>
+            )}
+
+            {/* INDICADOR DE ESCANEADO */}
+            {isScanning && (
+                <div className="notification info" style={{textAlign: 'center', padding: '10px', background: '#e3f2fd', color: '#1976d2', borderRadius: '8px', margin: '10px 0'}}>
+                    Escaneando código...
                 </div>
             )}
 
@@ -485,13 +513,23 @@ export const Inventory = () => {
                     <div key={producto.id} className="product-card">
                         {/* Imagen del producto */}
                         <div className="product-image">
-                            <img
-                                src={producto.image || '/default.jpg'}
-                                alt={producto.name}
-                                onError={(e) => {
-                                    e.target.src = '/default.jpg'
-                                }}
-                            />
+                            {producto.image ? (
+                                <img
+                                    src={producto.image}
+                                    alt={producto.name}
+                                    onError={(e) => {
+                                        e.target.style.display = 'none'
+                                        e.target.nextSibling.style.display = 'flex'
+                                    }}
+                                />
+                            ) : null}
+                            <div className="product-image-placeholder" style={{display: producto.image ? 'none' : 'flex'}}>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                                    <circle cx="8.5" cy="8.5" r="1.5"/>
+                                    <path d="m21 15-5-5L5 21"/>
+                                </svg>
+                            </div>
                         </div>
 
                         {/* Información del producto */}

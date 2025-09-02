@@ -197,20 +197,34 @@
     align-items: center;
     gap: 20px;
     flex-wrap: wrap;
+    position: relative;
 }
 
 .date-inputs-center {
     display: flex;
     gap: 15px;
     align-items: end;
-    flex: 1;
     justify-content: center;
+    flex: 1;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+/* Estilos específicos para DateFilter en Stats */
+.stats-date-filter {
+    gap: 15px;
+}
+
+.stats-date-filter .date-inputs {
+    gap: 15px;
 }
 
 .date-buttons {
     display: flex;
     gap: 10px;
-    align-items: center;
+    align-items: end;
+    justify-content: center;
 }
 
 .input-group {
@@ -331,9 +345,305 @@
     width: 100%;
 }
 
+/* === RESPONSIVE DESIGN === */
+
+/* Notebooks y pantallas grandes (1025px+) */
+@media (min-width: 1025px) {
+    .stats-container {
+        margin-left: 250px;
+        padding: 30px 40px;
+        max-width: 1600px;
+    }
+    
+    /* Optimizar grid para pantallas grandes */
+    .stats-grid {
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: 25px;
+    }
+    
+    /* Mejor organización de filtros para pantallas grandes - igual que tablets */
+    .date-filter-content {
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
+        position: static;
+    }
+    
+    .date-inputs-center {
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 20px;
+        position: static;
+        transform: none;
+        left: auto;
+    }
+    
+    .date-buttons {
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+    
+    .input-group input {
+        min-width: 160px;
+    }
+}
+
+/* Tablets (768px - 1024px) */
+@media (max-width: 1024px) and (min-width: 769px) {
+    .stats-container {
+        margin-left: 200px;
+        padding: 20px 30px;
+    }
+    
+    /* Ajustar header para tablets */
+    .header h1 {
+        font-size: 2rem;
+    }
+    
+    /* Grid de estadísticas en tablets */
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+    }
+    
+    .stat-card {
+        padding: 20px;
+    }
+    
+    .stat-value {
+        font-size: 1.8rem;
+    }
+    
+    /* Reorganizar filtro de fechas para tablets */
+    .date-filter-content {
+        flex-direction: column;
+        align-items: center;
+        gap: 15px;
+        position: static;
+    }
+    
+    .date-inputs-center {
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 15px;
+        position: static;
+        transform: none;
+        left: auto;
+    }
+    
+    .date-buttons {
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+    
+    /* Ajustar columnas de contenido */
+    .content-columns {
+        gap: 25px;
+    }
+    
+    .section-card {
+        padding: 20px;
+    }
+    
+    /* Productos top en tablets */
+    .product-item {
+        padding: 12px;
+    }
+    
+    .product-rank {
+        width: 30px;
+        height: 30px;
+        font-size: 0.9rem;
+    }
+    
+    .product-info h4 {
+        font-size: 1rem;
+    }
+    
+    .product-stats {
+        font-size: 0.85rem;
+    }
+    
+    /* Stock items en tablets */
+    .stock-item {
+        padding: 12px;
+    }
+    
+    .stock-info h4 {
+        font-size: 0.95rem;
+    }
+}
+
+/* Tablets pequeñas y móviles (768px o menos) */
 @media (max-width: 768px) {
+    .stats-container {
+        margin-left: 0;
+        padding: 15px 20px;
+    }
+    
+    /* Header responsive */
+    .header h1 {
+        font-size: 1.8rem;
+    }
+    
+    .header p {
+        font-size: 1rem;
+    }
+    
+    /* Grid de estadísticas en una columna */
+    .stats-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+    
+    .stat-card {
+        padding: 20px;
+        text-align: center;
+    }
+    
+    .stat-value {
+        font-size: 1.6rem;
+    }
+    
+    /* Filtro de fechas en móvil */
+    .date-filter {
+        padding: 20px;
+    }
+    
+    .date-filter-title {
+        font-size: 1.3rem;
+        margin-bottom: 15px;
+    }
+    
+    .date-filter-content {
+        flex-direction: column;
+        gap: 20px;
+        align-items: stretch;
+    }
+    
+    .date-inputs-center {
+        flex-direction: column;
+        gap: 15px;
+        align-items: stretch;
+    }
+    
+    .input-group {
+        width: 100%;
+    }
+    
+    .input-group input {
+        min-width: auto;
+        width: 100%;
+        padding: 12px 16px;
+        font-size: 1rem;
+    }
+    
+    .date-buttons {
+        justify-content: center;
+        gap: 10px;
+    }
+    
+    .search-btn,
+    .clear-btn {
+        padding: 12px 20px;
+        font-size: 1rem;
+        flex: 1;
+        max-width: 120px;
+    }
+    
+    /* Rango de resultados */
+    .range-stats {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+    
+    .range-stat {
+        padding: 12px;
+    }
+    
+    .range-stat .value {
+        font-size: 1.1rem;
+    }
+    
+    /* Columnas de contenido en una sola columna */
     .content-columns {
         grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .section-card {
+        padding: 20px;
+    }
+    
+    .section-card h2 {
+        font-size: 1.3rem;
+        text-align: center;
+    }
+    
+    /* Productos top en móvil */
+    .products-list {
+        gap: 12px;
+    }
+    
+    .product-item {
+        padding: 12px;
+        gap: 12px;
+    }
+    
+    .product-rank {
+        width: 30px;
+        height: 30px;
+        font-size: 0.9rem;
+    }
+    
+    .product-info h4 {
+        font-size: 1rem;
+        margin-bottom: 6px;
+    }
+    
+    .product-stats {
+        flex-direction: column;
+        gap: 5px;
+        font-size: 0.85rem;
+    }
+    
+    /* Stock items en móvil */
+    .low-stock-list {
+        gap: 8px;
+    }
+    
+    .stock-item {
+        padding: 12px;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+    
+    .stock-info h4 {
+        font-size: 0.95rem;
+        margin-bottom: 4px;
+    }
+    
+    .stock-level {
+        align-self: flex-end;
+        flex-direction: column;
+        gap: 4px;
+        align-items: flex-end;
+    }
+    
+    .stock-price {
+        font-size: 0.95rem;
+    }
+    
+    /* Estados responsive */
+    .loading {
+        height: 300px;
+        font-size: 1.1rem;
+    }
+    
+    .no-data {
+        padding: 30px 15px;
+        font-size: 1rem;
     }
 }
 

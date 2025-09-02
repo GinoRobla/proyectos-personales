@@ -4,16 +4,16 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import './Historial.css'
 import { useApi } from '../../hooks/useApi'
-import { obtenerVentas, obtenerProductos } from '../../helpers/apiClient'
-import { formatearDinero, formatearFechaHora, contarProductos } from '../../helpers/utils'
+import { useDateFilter } from '../../hooks/useDateFilter'
+import { obtenerVentas, obtenerProductos, formatearDinero, formatearFechaHora, contarProductos } from '../../utils'
+import DateFilter from '../common/DateFilter'
+import '../common/DateFilter.css'
 
 export const Historial = () => {
     // 1. ESTADOS PRINCIPALES
     const [productos, setProductos] = useState([])   // Lista de productos para mostrar en el modal
     const [ventas, setVentas] = useState([])           // Lista de todas las ventas
     const [ventasFiltradas, setVentasFiltradas] = useState([]) // Ventas después de filtrar
-    const [fechaDesde, setFechaDesde] = useState('')   // Fecha inicio del filtro
-    const [fechaHasta, setFechaHasta] = useState('')   // Fecha fin del filtro
 
     // 2. ESTADOS PARA PAGINACIÓN
     const [paginaActual, setPaginaActual] = useState(1) // Página actual
@@ -23,7 +23,10 @@ export const Historial = () => {
     const [mostrarModal, setMostrarModal] = useState(false)    // Si se muestra el modal
     const [ventaSeleccionada, setVentaSeleccionada] = useState(null) // Venta del modal
 
-    // 3. HOOK PARA MANEJAR LLAMADAS AL BACKEND
+    // 4. HOOK PARA FILTRADO POR FECHAS
+    const dateFilter = useDateFilter()
+
+    // 5. HOOK PARA MANEJAR LLAMADAS AL BACKEND
     const { cargando, error, ejecutarPeticion, limpiarError } = useApi()
 
     // 4. FUNCIÓN PARA CARGAR TODAS LAS VENTAS DESDE EL BACKEND
@@ -46,8 +49,7 @@ export const Historial = () => {
 
     // 5. FUNCIÓN PARA LIMPIAR FILTROS
     const limpiarFiltros = () => {
-        setFechaDesde('')
-        setFechaHasta('')
+        dateFilter.limpiarFiltros()
         setVentasFiltradas(ventas) // Mostrar todas las ventas
     }
 
@@ -77,47 +79,12 @@ export const Historial = () => {
 
     // 8. FUNCIÓN PARA FILTRAR LAS VENTAS POR FECHAS
     const filtrarPorFecha = useCallback(() => {
-        if (!fechaDesde && !fechaHasta) {
-            setVentasFiltradas(ventas)
-        } else {
-            // LOG: Mostrar fechaHasta y fechas de ventas
-            let hasta = null;
-            if (fechaHasta) {
-                // Crear fecha hasta usando componentes año, mes, día
-                const partes = fechaHasta.split('-');
-                // año, mes (0-index), día
-                hasta = new Date(Number(partes[0]), Number(partes[1]) - 1, Number(partes[2]), 23, 59, 59, 999);
-                console.log('Filtro hasta (local):', hasta.toLocaleString());
-                console.log('Filtro hasta (UTC):', hasta.toISOString());
-            }
-            ventas.forEach(venta => {
-                const fechaVenta = new Date(venta.createdAt);
-                console.log('Venta:', venta.id, 'createdAt:', venta.createdAt, '| Local:', fechaVenta.toLocaleString(), '| UTC:', fechaVenta.toISOString());
-            });
-
-            const ventasFiltradas = ventas.filter(venta => {
-                const fechaVenta = new Date(venta.createdAt);
-                let desde = null;
-                if (fechaDesde) {
-                    const partes = fechaDesde.split('-');
-                    desde = new Date(Number(partes[0]), Number(partes[1]) - 1, Number(partes[2]), 0, 0, 0, 0);
-                }
-                if (desde && hasta) {
-                    return fechaVenta >= desde && fechaVenta <= hasta;
-                } else if (desde) {
-                    return fechaVenta >= desde;
-                } else if (hasta) {
-                    return fechaVenta <= hasta;
-                }
-                return true;
-            });
-
-            setVentasFiltradas(ventasFiltradas)
-        }
+        const ventasFiltradas = dateFilter.filtrarPorFecha(ventas)
+        setVentasFiltradas(ventasFiltradas)
 
         // Resetear a la primera página cuando se aplican filtros
         setPaginaActual(1)
-    }, [fechaDesde, fechaHasta, ventas])
+    }, [dateFilter.fechaDesde, dateFilter.fechaHasta, ventas, dateFilter.filtrarPorFecha])
 
     // 9. CALCULAR VENTAS PARA LA PÁGINA ACTUAL
     const calcularVentasPaginadas = () => {
@@ -144,7 +111,7 @@ export const Historial = () => {
     // 10. FILTRAR CUANDO CAMBIEN LAS FECHAS
     useEffect(() => {
         filtrarPorFecha()
-    }, [fechaDesde, fechaHasta, ventas, filtrarPorFecha])
+    }, [dateFilter.fechaDesde, dateFilter.fechaHasta, ventas, filtrarPorFecha])
 
     return (
         <div className="historial-container">
@@ -158,33 +125,23 @@ export const Historial = () => {
             {/* 15. FILTROS POR FECHA */}
             <div className="filtros-container">
                 <div className="filtros-fechas">
-                    <div className="filtro-fecha">
-                        <label>Desde:</label>
-                        <input
-                            type="date"
-                            value={fechaDesde}
-                            min="2020-01-01"
-                            max="2030-12-31"
-                            onChange={(e) => setFechaDesde(e.target.value)}
-                        />
-                    </div>
-
-                    <div className="filtro-fecha">
-                        <label>Hasta:</label>
-                        <input
-                            type="date"
-                            value={fechaHasta}
-                            min="2020-01-01"
-                            max="2030-12-31"
-                            onChange={(e) => setFechaHasta(e.target.value)}
-                        />
-                    </div>
+                    <DateFilter
+                        fechaDesde={dateFilter.fechaDesde}
+                        fechaHasta={dateFilter.fechaHasta}
+                        onFechaDesdeChange={dateFilter.setFechaDesde}
+                        onFechaHastaChange={dateFilter.setFechaHasta}
+                        onLimpiar={null}
+                        showButtons={false}
+                        className="historial-date-filter"
+                        layout="horizontal"
+                    />
                 </div>
-
+                
                 <div className="filtros-acciones">
                     <button
                         className="btn-limpiar"
                         onClick={limpiarFiltros}
+                        disabled={!dateFilter.hayFiltrosActivos}
                     >
                         Limpiar Filtros
                     </button>

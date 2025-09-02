@@ -1,0 +1,113 @@
+/* Estilos base para el componente DateFilter */
+.date-filter-component {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    align-items: end;
+}
+
+.date-inputs {
+    display: flex;
+    gap: 15px;
+    align-items: end;
+}
+
+.date-inputs.vertical {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 15px;
+}
+
+.input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.input-group label {
+    font-weight: 500;
+    color: #2c3e50;
+    font-size: 0.9rem;
+}
+
+.input-group input[type="date"] {
+    padding: 0.75rem;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    font-size: 1rem;
+    min-width: 150px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.input-group input[type="date"]:focus {
+    outline: none;
+    border-color: #3498db;
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+.date-buttons {
+    display: flex;
+    gap: 10px;
+    align-items: end;
+}
+
+.search-btn, .clear-btn {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    min-width: 100px;
+}
+
+.search-btn {
+    background-color: #3498db;
+    color: white;
+}
+
+.search-btn:hover:not(:disabled) {
+    background-color: #2980b9;
+    transform: translateY(-1px);
+}
+
+.search-btn:disabled {
+    background-color: #bdc3c7;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.clear-btn {
+    background-color: #95a5a6;
+    color: white;
+}
+
+.clear-btn:hover {
+    background-color: #7f8c8d;
+    transform: translateY(-1px);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .date-filter-component {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 15px;
+    }
+    
+    .date-inputs {
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+    
+    .date-buttons {
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+    
+    .search-btn, .clear-btn {
+        flex: 1;
+        min-width: 120px;
+    }
+}

@@ -1,11 +1,10 @@
 // ===== COMPONENTE PUNTO DE VENTA OPTIMIZADO =====
 import React, { useState, useEffect, useRef } from 'react'
 import TicketVenta from './TicketVenta'
-import { buscarProductoPorCodigo, crearVenta } from '../../helpers/apiClient'
-import { formatearDinero, validarCodigoBarras } from '../../helpers/utils'
+import { buscarProductoPorCodigo, crearVenta, formatearDinero, validarCodigoBarras } from '../../utils'
 import { useApi } from '../../hooks/useApi'
 import { useCart } from '../../hooks/useCart'
-import { useScanner } from '../../hooks/useScanner'
+import { useGlobalScanner } from '../../hooks/scanner'
 import './Sales.css'
 
 export const Sales = () => {
@@ -75,27 +74,34 @@ export const Sales = () => {
                 agregarProducto(producto)
                 // Producto agregado exitosamente - no necesitamos notificación ya que se ve en el carrito
             })
-        } catch {
-            // Los errores específicos se manejan en el hook useCart
-            // Solo manejamos errores generales aquí
+        } catch (error) {
+            // Manejar error de producto no encontrado
+            if (error.message && error.message.includes('404')) {
+                mostrarModalPersonalizado(
+                    'Producto no encontrado',
+                    `No se encontró un producto con el código escaneado: ${codigo}`,
+                    'error'
+                )
+            } else {
+                // Los errores de stock se manejan en el hook useCart
+                // Otros errores generales
+                mostrarModalPersonalizado(
+                    'Error',
+                    'Ocurrió un error al buscar el producto. Intenta nuevamente.',
+                    'error'
+                )
+            }
         }
     }
     
-    const { escaneando } = useScanner(manejarCodigoEscaneado)
+    const { isScanning } = useGlobalScanner(manejarCodigoEscaneado, {
+        minLength: 8,
+        timeout: 100,
+        enabled: true,
+        preventOnModal: true
+    })
     
-    // AUTO-FOCUS
-    useEffect(() => {
-        const enfocarCampo = () => {
-            if (campoCodigoRef.current) {
-                campoCodigoRef.current.focus()
-            }
-        }
-        
-        enfocarCampo()
-        const timer = setInterval(enfocarCampo, 100)
-        
-        return () => clearInterval(timer)
-    }, [])
+    // Ya no necesitamos auto-focus, el scanner global se encarga
     
     // FUNCIONES
     const buscarProductoManual = async (codigo) => {
@@ -114,8 +120,23 @@ export const Sales = () => {
                 agregarProducto(producto)
                 // Producto agregado exitosamente - no necesitamos notificación ya que se ve en el carrito
             })
-        } catch {
-            // Los errores específicos se manejan en el hook useCart o en el modal
+        } catch (error) {
+            // Manejar error de producto no encontrado
+            if (error.message && error.message.includes('404')) {
+                mostrarModalPersonalizado(
+                    'Producto no encontrado',
+                    `No se encontró un producto con el código ingresado: ${codigo}`,
+                    'error'
+                )
+            } else {
+                // Los errores de stock se manejan en el hook useCart
+                // Otros errores generales
+                mostrarModalPersonalizado(
+                    'Error',
+                    'Ocurrió un error al buscar el producto. Intenta nuevamente.',
+                    'error'
+                )
+            }
         }
     }
     
@@ -218,13 +239,11 @@ export const Sales = () => {
                     <input
                         ref={campoCodigoRef}
                         type="text"
-                        placeholder="escanear código..."
+                        placeholder="Buscar código manualmente o escanear automáticamente..."
                         value={codigoEscaneado}
                         onChange={manejarCambioCodigo}
-                        onFocus={manejarFocus}
                         onKeyDown={manejarEnter}
                         className="barcode-input"
-                        autoFocus
                     />
                 </div>
                 
@@ -236,7 +255,7 @@ export const Sales = () => {
                 )}
                 
                 {/* INDICADOR DE ESCANEADO */}
-                {escaneando && (
+                {isScanning && (
                     <div className="notification info">
                         Escaneando código...
                     </div>

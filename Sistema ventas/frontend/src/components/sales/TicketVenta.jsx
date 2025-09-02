@@ -1,5 +1,5 @@
 import React, { forwardRef } from 'react';
-import { formatearDinero, formatearFechaHora } from '../../helpers/utils';
+import { formatearDinero, formatearFechaHora } from '../../utils';
 import './TicketVenta.css';
 
 // Componente para mostrar el ticket de venta (simple y profesional)

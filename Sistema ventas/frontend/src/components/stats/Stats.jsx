@@ -1,14 +1,14 @@
 // ===== COMPONENTE ESTADÍSTICAS =====
 import { useState, useEffect, useCallback } from 'react'
 import { useApi } from '../../hooks/useApi'
-import { obtenerEstadisticas, obtenerTopProductos, obtenerEstadisticasPorFecha, obtenerProductosPocoStock } from '../../helpers/apiClient'
-import { formatearDinero } from '../../helpers/utils'
+import { useDateFilter } from '../../hooks/useDateFilter'
+import { obtenerEstadisticas, obtenerTopProductos, obtenerEstadisticasPorFecha, obtenerProductosPocoStock, formatearDinero } from '../../utils'
+import DateFilter from '../common/DateFilter'
+import '../common/DateFilter.css'
 import './Stats.css'
 
 export const Stats = () => {
     // ESTADOS
-    const [fechaDesde, setFechaDesde] = useState('')
-    const [fechaHasta, setFechaHasta] = useState('')
     const [estadisticasRango, setEstadisticasRango] = useState(null)
     const [cargandoAnalisis, setCargandoAnalisis] = useState(false)
 
@@ -18,6 +18,14 @@ export const Stats = () => {
         title: '',
         message: '',
         type: 'info'
+    })
+
+    // HOOK PARA FILTRADO POR FECHAS
+    const dateFilter = useDateFilter({
+        onValidationError: (error) => {
+            mostrarModal(error.titulo, error.mensaje, error.tipo)
+        },
+        allowFutureDates: false
     })
 
     // HOOKS
@@ -102,66 +110,28 @@ export const Stats = () => {
     const analizarPeriodo = async () => {
         setCargandoAnalisis(true)
         try {
-            // Si no hay fechas, limpiar resultados
-            if (!fechaDesde && !fechaHasta) {
+            const fechasAPI = dateFilter.prepararFechasParaAPI()
+            
+            if (!fechasAPI) {
+                setCargandoAnalisis(false)
+                return
+            }
+
+            if (!dateFilter.hayFiltrosActivos) {
                 setEstadisticasRango(null)
                 setCargandoAnalisis(false)
                 return
             }
 
-            // Validar que la fecha desde no sea mayor que fecha hasta
-            if (fechaDesde && fechaHasta && fechaDesde > fechaHasta) {
-                mostrarModal(
-                    'Error de validación',
-                    'La fecha "Desde" no puede ser posterior a la fecha "Hasta".',
-                    'error'
-                )
-                setCargandoAnalisis(false)
-                return
-            }
-
-            // Validar fechas futuras
-            const hoy = new Date().toISOString().split('T')[0]
-            if (fechaDesde && fechaDesde > hoy) {
-                mostrarModal(
-                    'Advertencia',
-                    'La fecha "Desde" es una fecha futura. Los resultados pueden estar incompletos.',
-                    'warning'
-                )
-            }
-            if (fechaHasta && fechaHasta > hoy) {
-                mostrarModal(
-                    'Advertencia',
-                    'La fecha "Hasta" es una fecha futura. Los resultados pueden estar incompletos.',
-                    'warning'
-                )
-            }
-
-            // Obtener estadísticas para el rango seleccionado
-            let fechaDesdeFinal = fechaDesde && fechaDesde !== '' ? fechaDesde : undefined;
-            let fechaHastaFinal = fechaHasta && fechaHasta !== '' ? fechaHasta : undefined;
-            if (fechaHastaFinal) {
-                // Ajustar fechaHasta al final del día local
-                const partes = fechaHastaFinal.split('-');
-                if (partes.length === 3) {
-                    const hasta = new Date(Number(partes[0]), Number(partes[1]) - 1, Number(partes[2]), 23, 59, 59, 999);
-                    fechaHastaFinal = hasta.toISOString();
-                }
-            }
-            if (fechaDesdeFinal && fechaDesdeFinal.length === 10) {
-                // Si la fecha desde es válida, la enviamos
-                const datos = await obtenerEstadisticasPorFecha(fechaDesdeFinal, fechaHastaFinal);
-                setEstadisticasRango(datos);
-            } else if (!fechaDesdeFinal && fechaHastaFinal) {
-                // Solo fecha hasta
-                const datos = await obtenerEstadisticasPorFecha(undefined, fechaHastaFinal);
-                setEstadisticasRango(datos);
+            if (fechasAPI.valido) {
+                const datos = await obtenerEstadisticasPorFecha(fechasAPI.fechaDesde, fechasAPI.fechaHasta)
+                setEstadisticasRango(datos)
+            } else if (fechasAPI.fechaHasta) {
+                const datos = await obtenerEstadisticasPorFecha(undefined, fechasAPI.fechaHasta)
+                setEstadisticasRango(datos)
             } else {
-                // No enviar fechas inválidas
-                setEstadisticasRango(null);
+                setEstadisticasRango(null)
             }
-
-            // Ya no mostramos modal de éxito - los resultados se ven directamente en la interfaz
         } catch {
             mostrarModal(
                 'Error al analizar período',
@@ -176,8 +146,7 @@ export const Stats = () => {
 
     // FUNCIÓN PARA LIMPIAR FILTROS
     const limpiarFiltros = () => {
-        setFechaDesde('')
-        setFechaHasta('')
+        dateFilter.limpiarFiltros()
         setEstadisticasRango(null)
 
         // Ya no mostramos modal - el cambio se ve directamente en la interfaz
@@ -243,26 +212,16 @@ export const Stats = () => {
                 <h2 className="date-filter-title">Análisis por Período</h2>
                 <div className="date-filter-content">
                     <div className="date-inputs-center">
-                        <div className="input-group">
-                            <label>Desde:</label>
-                            <input
-                                type="date"
-                                value={fechaDesde}
-                                min="2020-01-01"
-                                max="2030-12-31"
-                                onChange={(e) => setFechaDesde(e.target.value)}
-                            />
-                        </div>
-                        <div className="input-group">
-                            <label>Hasta:</label>
-                            <input
-                                type="date"
-                                value={fechaHasta}
-                                min="2020-01-01"
-                                max="2030-12-31"
-                                onChange={(e) => setFechaHasta(e.target.value)}
-                            />
-                        </div>
+                        <DateFilter
+                            fechaDesde={dateFilter.fechaDesde}
+                            fechaHasta={dateFilter.fechaHasta}
+                            onFechaDesdeChange={dateFilter.setFechaDesde}
+                            onFechaHastaChange={dateFilter.setFechaHasta}
+                            onBuscar={analizarPeriodo}
+                            onLimpiar={limpiarFiltros}
+                            showButtons={false}
+                            className="stats-date-filter"
+                        />
                     </div>
                     <div className="date-buttons">
                         <button
@@ -286,11 +245,7 @@ export const Stats = () => {
                     <div className="range-results">
                         <div className="range-card">
                             <h4>
-                                Resultados
-                                {fechaDesde && fechaHasta ? ` del ${fechaDesde} al ${fechaHasta}` :
-                                    fechaDesde ? ` desde ${fechaDesde}` :
-                                        fechaHasta ? ` hasta ${fechaHasta}` :
-                                            ' del período seleccionado'}
+                                Resultados{dateFilter.textoRango ? ` ${dateFilter.textoRango}` : ' del período seleccionado'}
                             </h4>
                             <div className="range-stats">
                                 <div className="range-stat">
