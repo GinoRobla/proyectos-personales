@@ -2,8 +2,8 @@
 
 > **Sistema completo de punto de venta con escaneo de códigos de barras, gestión de inventario y estadísticas en tiempo real**
 
-![Sistema POS Dashboard](./screenshots/estadisticas2.png)
-*Dashboard principal mostrando estadísticas en tiempo real y métricas de ventas*
+![Sistema POS - Escaneo de Códigos](./screenshots/ventas.gif)
+*Demostración en vivo: escaneando códigos de barras y agregando productos al carrito automáticamente*
 
 ## ✨ Características Principales
 
@@ -73,7 +73,7 @@ Conecta cualquier lector USB/Bluetooth y funciona automáticamente.
 ## 🖥️ Interfaz y Navegación
 
 ### 🏠 **Ventas**
-![Sistema de Ventas - Carrito](./screenshots/ventas.mp4)
+![Sistema de Ventas - Carrito](./screenshots/ventas.gif)
 *Demostración del carrito de compras interactivo en funcionamiento*
 - Búsqueda y selección de productos
 - Carrito de compras interactivo
@@ -86,7 +86,7 @@ Conecta cualquier lector USB/Bluetooth y funciona automáticamente.
 - Imágenes de productos
 
 ### 📊 **Estadísticas**
-![Dashboard de Estadísticas](./screenshots/estadisticas.png)
+![Dashboard de Estadísticas](./screenshots/estadisticas2.png)
 - Ganancias de hoy/semana/mes
 - Top productos más vendidos
 - Análisis por rangos de fecha
