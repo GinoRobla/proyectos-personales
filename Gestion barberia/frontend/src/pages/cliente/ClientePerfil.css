@@ -1,0 +1,218 @@
+/* Perfil Page */
+.perfil-page {
+  padding: var(--spacing-lg) 0;
+  min-height: calc(100vh - 60px);
+  background: var(--bg-light);
+}
+
+.perfil-page h1 {
+  font-size: 1.75rem;
+  margin-bottom: var(--spacing-lg);
+  color: var(--text-primary);
+}
+
+.perfil-card {
+  background: white;
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-lg);
+  margin-bottom: var(--spacing-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.perfil-card h3 {
+  font-size: 1.25rem;
+  margin-bottom: var(--spacing-md);
+  color: var(--text-primary);
+}
+
+/* Perfil Header */
+.perfil-header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding-bottom: var(--spacing-lg);
+  border-bottom: 1px solid #e5e5e5;
+  margin-bottom: var(--spacing-lg);
+}
+
+.perfil-avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.75rem;
+  font-weight: bold;
+  flex-shrink: 0;
+}
+
+.perfil-info h2 {
+  font-size: 1.5rem;
+  margin: 0 0 var(--spacing-xs) 0;
+  color: var(--text-primary);
+}
+
+.perfil-rol {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  text-transform: capitalize;
+  margin: 0;
+}
+
+/* Perfil Detalles */
+.perfil-detalles {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.detalle-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-sm) 0;
+}
+
+.detalle-item .label {
+  font-weight: 600;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.detalle-item .valor {
+  color: var(--text-primary);
+  font-size: 1rem;
+}
+
+/* Perfil Form */
+.perfil-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.perfil-form h3 {
+  margin-top: var(--spacing-md);
+  margin-bottom: var(--spacing-sm);
+  font-size: 1rem;
+  color: var(--text-primary);
+}
+
+.perfil-form .section-title {
+  margin-top: var(--spacing-lg);
+  padding-top: var(--spacing-lg);
+  border-top: 1px solid #e5e5e5;
+}
+
+.input-hint {
+  display: block;
+  margin-top: var(--spacing-xs);
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+/* Checkbox para cambiar contraseña */
+.cambiar-password-toggle {
+  margin: var(--spacing-md) 0;
+  padding: var(--spacing-md);
+  background: #f5f5f5;
+  border-radius: var(--radius-md);
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  cursor: pointer;
+  user-select: none;
+}
+
+.checkbox-label input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+}
+
+.checkbox-label span {
+  font-size: 0.95rem;
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+/* Perfil Acciones */
+.perfil-acciones {
+  display: flex;
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-md);
+}
+
+.perfil-acciones .btn {
+  flex: 1;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .perfil-page {
+    padding: var(--spacing-md) 0;
+  }
+
+  .perfil-page h1 {
+    font-size: 1.5rem;
+    margin-bottom: var(--spacing-md);
+  }
+
+  .perfil-card {
+    padding: var(--spacing-md);
+  }
+
+  .perfil-header {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .perfil-avatar {
+    width: 70px;
+    height: 70px;
+    font-size: 1.5rem;
+  }
+
+  .perfil-info h2 {
+    font-size: 1.25rem;
+  }
+
+  .detalle-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-xs);
+  }
+
+  .perfil-acciones {
+    flex-direction: column;
+  }
+
+  .perfil-acciones .btn {
+    width: 100%;
+  }
+}
+
+/* Laptop y Desktop desde 1280px */
+@media (min-width: 1280px) {
+  .perfil-page .container {
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  .perfil-card {
+    padding: 2rem;
+  }
+}
+
+/* PC de Escritorio grande */
+@media (min-width: 1920px) {
+  .perfil-page .container {
+    max-width: 650px;
+  }
+}

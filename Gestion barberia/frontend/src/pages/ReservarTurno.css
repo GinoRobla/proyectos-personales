@@ -1,0 +1,545 @@
+/* Página de Reserva de Turnos - Mobile-First */
+
+.reservar-page {
+  min-height: calc(100vh - 60px);
+  padding: var(--spacing-lg) 0;
+  background: linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%);
+}
+
+.reservar-card {
+  background: white;
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-lg);
+  box-shadow: var(--shadow-lg);
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+/* Header */
+.reservar-header {
+  text-align: center;
+  margin-bottom: var(--spacing-xl);
+}
+
+.reservar-header h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-dark);
+  margin-bottom: var(--spacing-lg);
+}
+
+/* Indicador de Pasos */
+.pasos-indicador {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-xs);
+  margin-top: var(--spacing-lg);
+}
+
+.paso {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: #e0e0e0;
+  color: var(--text-gray);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 0.875rem;
+  transition: all 0.3s ease;
+}
+
+.paso.activo {
+  background-color: var(--primary);
+  color: white;
+}
+
+.pasos-indicador .linea {
+  width: 24px;
+  height: 2px;
+  background-color: #e0e0e0;
+}
+
+/* Contenido de cada paso */
+.paso-contenido {
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.paso-contenido h2 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-dark);
+  margin-bottom: var(--spacing-md);
+}
+
+.paso-descripcion {
+  color: var(--text-gray);
+  margin-bottom: var(--spacing-lg);
+  font-size: 0.875rem;
+}
+
+/* Botón Volver */
+.btn-volver {
+  background: none;
+  border: none;
+  color: var(--primary);
+  font-weight: 600;
+  padding: var(--spacing-sm) 0;
+  margin-bottom: var(--spacing-lg);
+  cursor: pointer;
+  font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.btn-volver:hover {
+  text-decoration: underline;
+}
+
+/* Grid de Servicios */
+.servicios-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--spacing-md);
+}
+
+.servicio-card {
+  background: white;
+  border: 2px solid #e0e0e0;
+  border-radius: var(--radius-md);
+  padding: var(--spacing-lg);
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.servicio-card:hover {
+  border-color: var(--primary);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.servicio-card h3 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--text-dark);
+  margin-bottom: var(--spacing-sm);
+}
+
+.servicio-card .descripcion {
+  color: var(--text-gray);
+  font-size: 0.875rem;
+  margin-bottom: var(--spacing-md);
+  line-height: 1.4;
+}
+
+.servicio-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: var(--spacing-sm);
+  border-top: 1px solid #f0f0f0;
+}
+
+.servicio-info .precio {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.servicio-info .duracion {
+  font-size: 0.875rem;
+  color: var(--text-gray);
+}
+
+/* Grid de Barberos */
+.barberos-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--spacing-md);
+}
+
+.barbero-card {
+  background: white;
+  border: 2px solid #e0e0e0;
+  border-radius: var(--radius-md);
+  padding: var(--spacing-lg);
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.barbero-card:hover {
+  border-color: var(--primary);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.barbero-card.indistinto {
+  border-color: var(--secondary);
+}
+
+.barbero-card.indistinto:hover {
+  border-color: var(--primary);
+}
+
+.barbero-avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0 auto var(--spacing-md);
+}
+
+.barbero-card h3 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--text-dark);
+  margin-bottom: var(--spacing-xs);
+}
+
+.barbero-card p {
+  color: var(--text-gray);
+  font-size: 0.875rem;
+}
+
+.especialidades {
+  color: var(--secondary) !important;
+  font-weight: 500;
+}
+
+/* Resumen de Selección */
+.resumen-seleccion {
+  background: #f8f9fa;
+  border-radius: var(--radius-md);
+  padding: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+}
+
+.resumen-seleccion p {
+  margin-bottom: var(--spacing-xs);
+  font-size: 0.875rem;
+  color: var(--text-gray);
+}
+
+.resumen-seleccion strong {
+  color: var(--text-dark);
+}
+
+/* Fecha y Hora */
+.fecha-hora-contenedor {
+  margin-top: var(--spacing-lg);
+}
+
+.fechas-grupo {
+  margin-bottom: var(--spacing-xl);
+}
+
+.fechas-grupo h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-dark);
+  margin-bottom: var(--spacing-md);
+}
+
+.dias-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--spacing-sm);
+}
+
+.dia-btn {
+  background: white;
+  border: 2px solid #e0e0e0;
+  border-radius: var(--radius-md);
+  padding: var(--spacing-md) var(--spacing-xs);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-height: 70px;
+}
+
+.dia-btn:hover {
+  border-color: var(--primary);
+  background-color: #f8f9fa;
+}
+
+.dia-btn.seleccionado {
+  background-color: var(--primary);
+  border-color: var(--primary);
+  color: white;
+}
+
+.dia-numero {
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.dia-semana {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  opacity: 0.8;
+}
+
+.dia-label {
+  font-size: 0.65rem;
+  font-weight: 600;
+  padding: 2px 6px;
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+  margin-top: 2px;
+}
+
+.dia-btn.seleccionado .dia-label {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.horarios-contenedor {
+  margin-top: var(--spacing-xl);
+}
+
+.horarios-contenedor h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-dark);
+  margin-bottom: var(--spacing-md);
+}
+
+.horarios-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--spacing-sm);
+}
+
+.horario-btn {
+  background: white;
+  border: 2px solid #e0e0e0;
+  border-radius: var(--radius-md);
+  padding: var(--spacing-md);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-dark);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-height: 48px;
+}
+
+.horario-btn:hover {
+  border-color: var(--primary);
+  background-color: #f8f9fa;
+}
+
+.horario-btn.seleccionado {
+  background-color: var(--primary);
+  border-color: var(--primary);
+  color: white;
+}
+
+.no-horarios {
+  text-align: center;
+  color: var(--text-gray);
+  padding: var(--spacing-xl);
+  font-size: 0.875rem;
+}
+
+/* Resumen de Reserva */
+.resumen-reserva {
+  background: #f8f9fa;
+  border-radius: var(--radius-md);
+  padding: var(--spacing-lg);
+  margin-bottom: var(--spacing-xl);
+}
+
+.resumen-reserva h3 {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--text-dark);
+  margin-bottom: var(--spacing-lg);
+  text-align: center;
+}
+
+.resumen-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-sm) 0;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.resumen-item:last-child {
+  border-bottom: none;
+}
+
+.resumen-item .label {
+  color: var(--text-gray);
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.resumen-item .valor {
+  color: var(--text-dark);
+  font-weight: 600;
+  font-size: 0.875rem;
+  text-align: right;
+}
+
+.resumen-item.total {
+  margin-top: var(--spacing-md);
+  padding-top: var(--spacing-lg);
+  border-top: 2px solid var(--primary);
+}
+
+.resumen-item.total .label,
+.resumen-item.total .valor {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+/* Formulario de Datos Cliente */
+.datos-cliente-form {
+  margin-top: var(--spacing-xl);
+}
+
+.datos-cliente-form h3 {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--text-dark);
+  margin-bottom: var(--spacing-lg);
+}
+
+/* Loading */
+.loading {
+  text-align: center;
+  padding: var(--spacing-xl);
+  color: var(--text-gray);
+  font-size: 0.875rem;
+}
+
+/* Tablets y Desktop */
+@media (min-width: 768px) {
+  .reservar-card {
+    padding: var(--spacing-xl) 3rem;
+  }
+
+  .reservar-header h1 {
+    font-size: 2rem;
+  }
+
+  .paso {
+    width: 40px;
+    height: 40px;
+    font-size: 1rem;
+  }
+
+  .pasos-indicador .linea {
+    width: 48px;
+  }
+
+  .paso-contenido h2 {
+    font-size: 1.5rem;
+  }
+
+  .servicios-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .barberos-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .horarios-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .horarios-grid {
+    grid-template-columns: repeat(6, 1fr);
+  }
+}
+
+/* Laptop */
+@media (min-width: 1440px) {
+  .reservar-turno .container {
+    max-width: 1400px;
+    padding: 2rem 3rem;
+  }
+
+  .reservar-header h1 {
+    font-size: 2rem;
+  }
+
+  .paso-card {
+    padding: 2rem;
+  }
+
+  .servicios-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+  }
+
+  .barberos-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+  }
+
+  .horarios-grid {
+    grid-template-columns: repeat(8, 1fr);
+    gap: 1rem;
+  }
+}
+
+/* PC de Escritorio */
+@media (min-width: 1920px) {
+  .reservar-turno .container {
+    max-width: 1600px;
+    padding: 2.5rem 4rem;
+  }
+
+  .reservar-header h1 {
+    font-size: 2.5rem;
+  }
+
+  .paso-card {
+    padding: 2.5rem;
+  }
+
+  .servicios-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 2rem;
+  }
+
+  .barberos-grid {
+    grid-template-columns: repeat(5, 1fr);
+    gap: 2rem;
+  }
+
+  .horarios-grid {
+    grid-template-columns: repeat(10, 1fr);
+    gap: 1.25rem;
+  }
+}

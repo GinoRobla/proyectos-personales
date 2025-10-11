@@ -1,0 +1,395 @@
+/* Admin Barberos - Modern Design */
+.admin-barberos {
+  min-height: calc(100vh - 60px);
+  background: #f5f7fa;
+  padding: var(--spacing-lg) 0;
+}
+
+.header-con-boton {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-xl);
+  gap: var(--spacing-md);
+  flex-wrap: wrap;
+}
+
+.header-con-boton h1 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #1f2937;
+  margin: 0;
+  text-align: center;
+  width: 100%;
+}
+
+.header-con-boton .btn-primary {
+  background: #3b82f6;
+  border: none;
+  color: white;
+  font-weight: 600;
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--radius-lg);
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(59, 130, 246, 0.2);
+}
+
+.header-con-boton .btn-primary:hover {
+  background: #2563eb;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.3);
+}
+
+.form-crear {
+  margin-bottom: var(--spacing-lg);
+  background: white;
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-lg);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  border-left: 4px solid #3b82f6;
+}
+
+.form-crear h3 {
+  margin: 0 0 var(--spacing-lg) 0;
+  color: #1f2937;
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.barberos-lista {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--spacing-lg);
+}
+
+.barbero-card {
+  background: white;
+  border-radius: var(--radius-md);
+  padding: var(--spacing-md);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+  border: 1px solid #e5e7eb;
+}
+
+.barbero-card.inactivo {
+  opacity: 0.5;
+  background: #f9fafb;
+}
+
+.barbero-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+  border-color: #3b82f6;
+}
+
+.barbero-card.inactivo:hover {
+  opacity: 0.7;
+}
+
+.barbero-info {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.barbero-header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.barbero-avatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.125rem;
+  font-weight: bold;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.25);
+  transition: all 0.3s ease;
+}
+
+.barbero-card:hover .barbero-avatar {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.35);
+}
+
+.barbero-datos {
+  flex: 1;
+  min-width: 0;
+}
+
+.barbero-datos h3 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #1f2937;
+  margin: 0 0 0.5rem 0;
+}
+
+.barbero-contacto {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+
+.barbero-contacto span {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.barbero-contacto .activo {
+  color: #10b981;
+  font-weight: 600;
+  background: rgba(16, 185, 129, 0.1);
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  margin-top: 0.25rem;
+  width: fit-content;
+}
+
+.barbero-contacto .inactivo {
+  color: #ef4444;
+  font-weight: 600;
+  background: rgba(239, 68, 68, 0.1);
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  margin-top: 0.25rem;
+  width: fit-content;
+}
+
+/* Formulario de edición */
+.barbero-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.input-row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--spacing-md);
+}
+
+.barbero-acciones {
+  display: flex;
+  gap: 0.375rem;
+  margin-top: var(--spacing-xs);
+  flex-wrap: wrap;
+}
+
+.barbero-acciones .btn {
+  flex: 1;
+  min-width: 70px;
+  font-weight: 600;
+  font-size: 0.8125rem;
+  padding: 0.375rem 0.625rem;
+  border-radius: var(--radius-md);
+  transition: all 0.3s ease;
+}
+
+.barbero-acciones .btn-primary {
+  background: #3b82f6;
+  border: none;
+  color: white;
+}
+
+.barbero-acciones .btn-primary:hover {
+  background: #2563eb;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+}
+
+.barbero-acciones .btn-outline {
+  background: white;
+  border: 2px solid #e0e0e0;
+  color: #6b7280;
+}
+
+.barbero-acciones .btn-outline:hover {
+  border-color: #3b82f6;
+  color: #3b82f6;
+  background: #eff6ff;
+}
+
+.barbero-acciones .btn-danger {
+  background: #ef4444;
+  border: none;
+  color: white;
+}
+
+.barbero-acciones .btn-danger:hover {
+  background: #dc2626;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+}
+
+.barbero-acciones .btn-warning {
+  background: #f59e0b;
+  border: none;
+  color: white;
+}
+
+.barbero-acciones .btn-warning:hover {
+  background: #d97706;
+}
+
+/* Loading */
+.loading {
+  background: white;
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-xl) var(--spacing-lg);
+  text-align: center;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+}
+
+.loading p {
+  color: var(--text-secondary);
+  margin-top: var(--spacing-md);
+  font-size: 0.875rem;
+}
+
+/* Responsive */
+@media (min-width: 768px) {
+  .admin-barberos h1 {
+    font-size: 2.25rem;
+  }
+
+  .input-row {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .barberos-lista {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .barbero-card {
+    padding: var(--spacing-lg);
+  }
+
+  .barbero-avatar {
+    width: 60px;
+    height: 60px;
+    font-size: 1.375rem;
+  }
+
+  .barbero-datos h3 {
+    font-size: 1.125rem;
+  }
+
+  .barbero-contacto {
+    font-size: 0.8125rem;
+    flex-direction: row;
+    gap: 1rem;
+  }
+
+  .barbero-detalles {
+    font-size: 0.8125rem;
+    gap: var(--spacing-md);
+  }
+
+  .barbero-info {
+    gap: var(--spacing-md);
+  }
+
+  .barbero-header {
+    gap: var(--spacing-md);
+  }
+
+  .barbero-acciones {
+    gap: var(--spacing-sm);
+    margin-top: var(--spacing-sm);
+  }
+
+  .barbero-acciones .btn {
+    flex: initial;
+    min-width: 100px;
+    font-size: 0.875rem;
+    padding: 0.5rem 0.875rem;
+  }
+}
+
+/* Modal de Eliminación */
+.modal-content-eliminar {
+  background: white;
+  border-radius: var(--radius-lg);
+  width: 100%;
+  max-width: 400px;
+  box-shadow: var(--shadow-lg);
+}
+
+.modal-texto-principal {
+  font-size: 1rem;
+  color: var(--text-dark);
+  text-align: center;
+  margin-bottom: var(--spacing-sm);
+}
+
+.modal-texto-advertencia {
+  font-size: 0.875rem;
+  color: var(--text-gray);
+  text-align: center;
+}
+
+@media (min-width: 1024px) {
+  .barberos-lista {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Laptop */
+@media (min-width: 1440px) {
+  .admin-barberos .container {
+    max-width: 1400px;
+    padding: 2rem 3rem;
+  }
+
+  .header h1 {
+    font-size: 2rem;
+  }
+
+  .barberos-lista {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+  }
+
+  .barbero-card {
+    padding: 1.75rem;
+  }
+
+  .modal-content {
+    max-width: 650px;
+  }
+}
+
+/* PC de Escritorio */
+@media (min-width: 1920px) {
+  .admin-barberos .container {
+    max-width: 1600px;
+    padding: 2.5rem 4rem;
+  }
+
+  .header h1 {
+    font-size: 2.5rem;
+  }
+
+  .barberos-lista {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 2.5rem;
+  }
+
+  .barbero-card {
+    padding: 2rem;
+  }
+
+  .modal-content {
+    max-width: 800px;
+  }
+}
