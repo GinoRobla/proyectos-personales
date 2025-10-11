@@ -49,7 +49,7 @@ Aquí encontrarás proyectos desarrollados con el **stack MERN** (MongoDB, Expre
 
 ### 🔨 En Desarrollo (1)
 
-- **Tienda Online**: E-commerce completo con carrito, pagos y gestión de productos
+- **Gestion Barberia**: lataforma integral para barberías que digitaliza la gestión de turnos, clientes y barberos. Incluye recordatorios automáticos, métricas de rendimiento, roles (cliente/barbero/admin) y un panel inteligente que permite olvidarse del papel y los mensajes. Todo en una interfaz moderna, responsive y enfocada en la productividad.
 
 ### 📋 Próximamente (1)
 
@@ -63,7 +63,7 @@ Todos los proyectos implementan:
 
 - **🎯 Patrón MVC** - Separación clara de responsabilidades
 - **🚀 APIs RESTful** - Comunicación eficiente
-- **💾 Base de datos híbrida** - SQLite (desarrollo) / PostgreSQL (producción)
+- **💾 Base de datos híbrida** - SQLite PostgreSQL MongoDB
 
 ---
 
