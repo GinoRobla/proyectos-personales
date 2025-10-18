@@ -13,7 +13,7 @@ import barberoService from '../../services/barberoService';
  *
  * QUÉ MUESTRA:
  * - Ingresos generados (semana/mes)
- * - Turnos completados
+ * - Cantidad de clientes atendidos
  * - Evolución de ingresos semanales o por día
  * - Objetivo mensual cumplido (%)
  *
@@ -294,7 +294,7 @@ const BarberoEstadisticas = () => {
               </div>
             </div>
 
-            {/* TURNOS COMPLETADOS */}
+            {/* CANTIDAD DE CLIENTES */}
             <div
               style={{
                 background: 'white',
@@ -312,7 +312,7 @@ const BarberoEstadisticas = () => {
                   marginBottom: '0.5rem',
                 }}
               >
-                Turnos Completados
+                Cantidad de Clientes
               </div>
               <div
                 style={{

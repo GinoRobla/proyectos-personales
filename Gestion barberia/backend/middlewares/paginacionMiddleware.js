@@ -16,10 +16,10 @@ export const paginacion = (req, res, next) => {
     });
   }
 
-  if (limite < 1 || limite > 100) {
+  if (limite < 1 || limite > 1000) {
     return res.status(400).json({
       success: false,
-      message: 'El límite debe estar entre 1 y 100',
+      message: 'El límite debe estar entre 1 y 1000',
     });
   }
 

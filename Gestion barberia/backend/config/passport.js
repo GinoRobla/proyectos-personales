@@ -76,8 +76,8 @@ passport.use(
      * Esta función se ejecuta cuando Google devuelve la información del usuario.
      *
      * PARÁMETROS:
-     * @param {string} tokenDeAcceso - Token para acceder a APIs de Google (no lo usamos aquí)
-     * @param {string} tokenDeRefresco - Token para renovar el acceso (no lo usamos aquí)
+     * @param {string} _tokenDeAcceso - Token para acceder a APIs de Google (no lo usamos aquí)
+     * @param {string} _tokenDeRefresco - Token para renovar el acceso (no lo usamos aquí)
      * @param {object} perfilDeGoogle - Información del usuario de Google (nombre, email, foto, etc.)
      * @param {function} funcionDeCompletado - Callback que debemos llamar cuando terminemos
      *
@@ -86,7 +86,7 @@ passport.use(
      * 2. Si existe → lo devuelve para iniciar sesión
      * 3. Si no existe → crea un nuevo usuario y lo devuelve
      */
-    async (tokenDeAcceso, tokenDeRefresco, perfilDeGoogle, funcionDeCompletado) => {
+    async (_tokenDeAcceso, _tokenDeRefresco, perfilDeGoogle, funcionDeCompletado) => {
       try {
         // Paso 1: Extraer el email del perfil de Google
         // Google puede tener múltiples emails, tomamos el primero
@@ -173,67 +173,44 @@ passport.use(
  * SERIALIZACIÓN DE USUARIOS (GESTIÓN DE SESIONES)
  * ============================================================================
  *
- * Cuando un usuario inicia sesión, necesitamos guardar su información en la sesión.
- * Pero no queremos guardar TODO el objeto del usuario (sería mucho espacio).
- * Solo guardamos su ID, y cuando lo necesitamos, lo buscamos en la BD.
+ * NOTA IMPORTANTE:
+ * Estas funciones son requeridas por Passport, pero NO las usamos porque
+ * estamos usando JWT en lugar de sesiones. Las dejamos vacías para evitar
+ * conflictos.
+ *
+ * POR QUÉ NO USAMOS SESIONES:
+ * - Las sesiones expiran y causan errores intermitentes
+ * - JWT es más escalable y no requiere memoria en el servidor
+ * - JWT funciona mejor para aplicaciones SPA (Single Page Application)
+ * - No hay problemas de sincronización entre múltiples servidores
  */
 
 /**
  * SERIALIZAR USUARIO
  *
- * Cuando el usuario inicia sesión exitosamente, esta función se llama
- * para decidir QUÉ guardar en la sesión.
- *
- * QUÉ HACE:
- * Extrae solo el ID del usuario y lo guarda en la sesión.
- *
- * POR QUÉ SOLO EL ID:
- * - Es más eficiente (ocupa menos memoria)
- * - Siempre tenemos datos actualizados (los buscamos en BD cuando se necesitan)
- * - Es más seguro (no exponemos todos los datos del usuario en la sesión)
+ * Passport requiere esta función, pero como usamos JWT en lugar de sesiones,
+ * simplemente devolvemos el usuario completo sin guardarlo en ninguna sesión.
  *
  * @param {object} usuario - El usuario completo que acaba de iniciar sesión
- * @param {function} funcionDeCompletado - Callback que recibe el ID a guardar
+ * @param {function} funcionDeCompletado - Callback que recibe el dato a guardar
  */
 passport.serializeUser((usuario, funcionDeCompletado) => {
-  // Guardar solo el ID del usuario en la sesión
-  funcionDeCompletado(null, usuario._id);
+  // No guardar nada en la sesión, solo pasar el usuario completo
+  funcionDeCompletado(null, usuario);
 });
 
 /**
  * DESERIALIZAR USUARIO
  *
- * En cada petición HTTP, Passport busca el ID en la sesión y llama a esta
- * función para obtener los datos completos del usuario.
+ * Passport requiere esta función, pero como usamos JWT en lugar de sesiones,
+ * simplemente devolvemos lo que recibimos sin hacer consultas a la BD.
  *
- * QUÉ HACE:
- * Recibe el ID del usuario y busca todos sus datos en la base de datos.
- *
- * CUÁNDO SE EJECUTA:
- * En CADA petición HTTP de un usuario autenticado. Por eso es importante
- * que sea eficiente.
- *
- * @param {string} idDelUsuario - El ID que guardamos en serializeUser
- * @param {function} funcionDeCompletado - Callback que recibe el usuario completo
+ * @param {object} usuario - El usuario que Passport intenta recuperar
+ * @param {function} funcionDeCompletado - Callback que recibe el usuario
  */
-passport.deserializeUser(async (idDelUsuario, funcionDeCompletado) => {
-  try {
-    // Buscar el usuario en la base de datos por su ID
-    const usuarioCompleto = await Usuario.findById(idDelUsuario);
-
-    if (!usuarioCompleto) {
-      // Si no encontramos el usuario (fue eliminado, por ejemplo)
-      console.error(`⚠️  Usuario con ID ${idDelUsuario} no encontrado en la BD`);
-      return funcionDeCompletado(new Error('Usuario no encontrado'), null);
-    }
-
-    // Devolver el usuario completo
-    funcionDeCompletado(null, usuarioCompleto);
-  } catch (error) {
-    // Si hay un error al buscar en la BD
-    console.error('❌ Error al deserializar usuario:', error);
-    funcionDeCompletado(error, null);
-  }
+passport.deserializeUser((usuario, funcionDeCompletado) => {
+  // No buscar en la BD, solo devolver lo que recibimos
+  funcionDeCompletado(null, usuario);
 });
 
 /**

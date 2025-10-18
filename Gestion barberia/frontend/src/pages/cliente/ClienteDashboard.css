@@ -530,16 +530,33 @@
   }
 
   .bienvenida-card {
-    padding: 2rem;
-    padding-right: 300px;
+    padding: 1.5rem;
+    text-align: center;
+    background: white;
+    color: var(--text-dark);
   }
 
   .bienvenida-card h1 {
-    font-size: 2rem;
+    font-size: 1.75rem;
+  }
+
+  /* Botón de reservar en el empty state más chico */
+  .empty-state .btn {
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    width: auto;
+    max-width: 200px;
   }
 
   /* Próximos turnos - contenedor más angosto y centrado */
   .seccion {
+    max-width: 900px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  /* Información de la barbería - mismo ancho que próximos turnos */
+  .info-barberia {
     max-width: 900px;
     margin-left: auto;
     margin-right: auto;
@@ -564,15 +581,33 @@
   }
 
   .bienvenida-card {
-    padding: 2.5rem;
+    padding: 1.75rem;
+    text-align: center;
+    background: white;
+    color: var(--text-dark);
   }
 
   .bienvenida-card h1 {
-    font-size: 2.5rem;
+    font-size: 2rem;
+  }
+
+  /* Botón de reservar en el empty state más chico */
+  .empty-state .btn {
+    padding: 0.6rem 1.2rem;
+    font-size: 0.9rem;
+    width: auto;
+    max-width: 220px;
   }
 
   .seccion {
     max-width: 1000px;
+  }
+
+  /* Información de la barbería - mismo ancho que próximos turnos */
+  .info-barberia {
+    max-width: 1000px;
+    margin-left: auto;
+    margin-right: auto;
   }
 
   .turnos-lista {

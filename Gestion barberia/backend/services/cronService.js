@@ -1,12 +1,6 @@
 import cron from 'node-cron';
 import Turno from '../models/Turno.js';
-import Cliente from '../models/Cliente.js';
-import Barbero from '../models/Barbero.js';
-import Servicio from '../models/Servicio.js';
-import {
-  enviarRecordatorioCliente,
-  enviarRecordatorioBarbero,
-} from './emailService.js';
+import { enviarRecordatorioClienteWhatsApp } from './whatsappService.js';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -28,14 +22,15 @@ const verificarTurnosProximos = async () => {
     const anticipacionMinutos = parseInt(process.env.ANTICIPACION_RECORDATORIO_MINUTOS) || 30;
 
     // Calcular la ventana de tiempo para los recordatorios
-    // Buscamos turnos que estén entre 30 y 35 minutos en el futuro
+    // Buscamos turnos que estén entre ahora y los próximos 5 minutos + anticipación
+    // Por ejemplo: Si son las 11:05 y anticipación es 30 min, buscamos turnos entre 11:35 y 11:40
     const tiempoMinimo = new Date(ahora.getTime() + anticipacionMinutos * 60000);
     const tiempoMaximo = new Date(ahora.getTime() + (anticipacionMinutos + 5) * 60000);
 
-    // Buscar turnos pendientes o confirmados que necesitan recordatorio
+    // Buscar turnos reservados que necesitan recordatorio
     const turnos = await Turno.find({
       recordatorioEnviado: false,
-      estado: { $in: ['pendiente', 'confirmado'] },
+      estado: 'reservado',
       fecha: {
         $gte: new Date(ahora.setHours(0, 0, 0, 0)), // Desde hoy
         $lte: new Date(ahora.setHours(23, 59, 59, 999)), // Hasta hoy
@@ -59,14 +54,16 @@ const verificarTurnosProximos = async () => {
       // Verificar si el turno está en la ventana de tiempo
       if (fechaTurno >= tiempoMinimo && fechaTurno <= tiempoMaximo) {
         console.log(
-          `📧 Enviando recordatorios para turno de ${turno.cliente.nombre} ${turno.cliente.apellido} - ${turno.hora}`
+          `📱 Enviando recordatorio por WhatsApp para turno de ${turno.cliente.nombre} ${turno.cliente.apellido} - ${turno.hora}`
         );
 
-        // Enviar recordatorios (no bloquear si falla uno)
-        const [clienteEnviado, barberoEnviado] = await Promise.allSettled([
-          enviarRecordatorioCliente(turno, turno.cliente, turno.barbero, turno.servicio),
-          enviarRecordatorioBarbero(turno, turno.cliente, turno.barbero, turno.servicio),
-        ]);
+        // Enviar SOLO recordatorio al CLIENTE por WHATSAPP
+        try {
+          await enviarRecordatorioClienteWhatsApp(turno, turno.cliente, turno.barbero, turno.servicio);
+          console.log(`✅ Recordatorio WhatsApp enviado al cliente`);
+        } catch (error) {
+          console.error(`❌ Error al enviar recordatorio WhatsApp:`, error.message);
+        }
 
         // Marcar el turno como recordatorio enviado
         turno.recordatorioEnviado = true;
@@ -90,9 +87,9 @@ const completarTurnosFinalizados = async () => {
 
     const ahora = new Date();
 
-    // Buscar turnos confirmados cuya fecha + hora + duración ya pasó
+    // Buscar turnos reservados cuya fecha + hora + duración ya pasó
     const turnos = await Turno.find({
-      estado: 'confirmado',
+      estado: 'reservado',
       fecha: {
         $lte: ahora, // Fecha menor o igual a hoy
       },
@@ -107,25 +104,29 @@ const completarTurnosFinalizados = async () => {
 
     for (const turno of turnos) {
       // Obtener la duración del servicio (en minutos)
-      const duracionServicio = turno.servicio?.duracion || 30;
+      const duracionServicio = turno.servicio?.duracion || 45;
 
-      // Construir la fecha y hora de finalización del turno
+      // Construir la fecha y hora de inicio del turno en hora local
       const [horas, minutos] = turno.hora.split(':');
-      const fechaHoraInicio = new Date(turno.fecha);
-      fechaHoraInicio.setHours(parseInt(horas), parseInt(minutos), 0, 0);
 
-      // Calcular la hora de finalización (inicio + duración)
+      // Obtener la fecha en formato local (YYYY-MM-DD)
+      const fechaString = turno.fecha.toISOString().split('T')[0];
+      const [anio, mes, dia] = fechaString.split('-').map(Number);
+
+      // Crear fecha y hora en hora local de Argentina (UTC-3)
+      const fechaHoraInicio = new Date(anio, mes - 1, dia, parseInt(horas), parseInt(minutos), 0, 0);
+
+      // Calcular la hora de finalización (inicio + duración del servicio)
       const fechaHoraFin = new Date(fechaHoraInicio.getTime() + duracionServicio * 60000);
 
-      // Si ya pasó la hora de finalización, marcar como completado y pagado
+      // Si ya pasó la hora de finalización, marcar como completado
       if (ahora >= fechaHoraFin) {
         turno.estado = 'completado';
-        turno.pagado = true; // Marcar automáticamente como pagado
         await turno.save();
         turnosCompletados++;
 
         console.log(
-          `✅ Turno completado y pagado automáticamente: ${turno._id} - Cliente: ${turno.cliente} - Fecha: ${turno.fecha.toISOString().split('T')[0]} ${turno.hora}`
+          `✅ Turno completado automáticamente: ${turno._id} - ${fechaString} ${turno.hora} (fin: ${fechaHoraFin.toLocaleTimeString('es-AR')})`
         );
       }
     }

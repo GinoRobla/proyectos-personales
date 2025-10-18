@@ -40,11 +40,11 @@ const ClienteTurnos = () => {
 
       const response = await turnoService.obtenerMisTurnos(params);
 
-      // Ordenar turnos: confirmados primero (por fecha), luego completados, luego cancelados
+      // Ordenar turnos: reservados primero (por fecha), luego completados, luego cancelados
       const turnosOrdenados = (response.datos || response.turnos || []).sort((a, b) => {
         // Prioridad de estados
         const prioridadEstado = {
-          'confirmado': 1,
+          'reservado': 1,
           'completado': 2,
           'cancelado': 3,
           'pendiente': 0
@@ -62,9 +62,9 @@ const ClienteTurnos = () => {
         const fechaHoraA = new Date(`${a.fecha.split('T')[0]}T${a.hora}`);
         const fechaHoraB = new Date(`${b.fecha.split('T')[0]}T${b.hora}`);
 
-        // Para confirmados: más próximo primero (ascendente)
+        // Para reservados: más próximo primero (ascendente)
         // Para completados y cancelados: más reciente primero (descendente)
-        if (a.estado === 'confirmado') {
+        if (a.estado === 'reservado') {
           return fechaHoraA - fechaHoraB;
         } else {
           return fechaHoraB - fechaHoraA;
@@ -203,10 +203,9 @@ const ClienteTurnos = () => {
                   </div>
                   <div className="td estado-col">
                     <span className={`estado-badge estado-${turno.estado}`}>
-                      {turno.estado === 'confirmado' && 'Reservado'}
+                      {turno.estado === 'reservado' && 'Reservado'}
                       {turno.estado === 'completado' && 'Completado'}
                       {turno.estado === 'cancelado' && 'Cancelado'}
-                      {turno.estado === 'pendiente' && 'Pendiente'}
                     </span>
                   </div>
                   <div className="td acciones-col">
@@ -292,8 +291,7 @@ const ClienteTurnos = () => {
               <div className="detalle-grupo">
                 <label>Estado</label>
                 <span className={`estado-badge estado-${turnoSeleccionado.estado}`}>
-                  {turnoSeleccionado.estado === 'pendiente' && 'Pendiente'}
-                  {turnoSeleccionado.estado === 'confirmado' && 'Reservado'}
+                  {turnoSeleccionado.estado === 'reservado' && 'Reservado'}
                   {turnoSeleccionado.estado === 'completado' && 'Completado'}
                   {turnoSeleccionado.estado === 'cancelado' && 'Cancelado'}
                 </span>
@@ -301,7 +299,7 @@ const ClienteTurnos = () => {
             </div>
 
             <div className="modal-footer">
-              {turnoSeleccionado.estado === 'confirmado' && (
+              {turnoSeleccionado.estado === 'reservado' && (
                 <>
                   <button
                     onClick={() => {

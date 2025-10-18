@@ -592,18 +592,3 @@ export const callbackAutenticacionGoogle = async (req, res) => {
   }
 };
 
-// ============================================================================
-// EXPORTACIÓN POR DEFECTO
-// ============================================================================
-
-// Exportar todas las funciones del controlador como objeto por defecto
-// Esto permite importar el controlador completo si es necesario
-export default {
-  registrarUsuario,
-  iniciarSesion,
-  obtenerPerfilUsuario,
-  actualizarPerfilUsuario,
-  cambiarContrasena,
-  verificarTokenJWT,
-  callbackAutenticacionGoogle,
-};

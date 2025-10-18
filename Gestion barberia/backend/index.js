@@ -25,7 +25,7 @@ import session from 'express-session';
 import dotenv from 'dotenv';
 import conectarBaseDeDatos from './config/conexion.js';
 import { iniciarCronJobs } from './services/cronService.js';
-import { verificarConfiguracion as verificarEmail } from './services/emailService.js';
+import { verificarConfiguracion as verificarWhatsApp } from './services/whatsappService.js';
 import passportConfig from './config/passport.js';
 
 /**
@@ -102,10 +102,19 @@ const PUERTO_DEL_SERVIDOR = process.env.PORT || 3000;
  * Por seguridad, los navegadores bloquean peticiones entre diferentes orígenes.
  * CORS le dice al navegador que está bien hacer estas peticiones.
  *
+ * CONFIGURACIÓN:
+ * - origin: Solo permite peticiones desde el frontend configurado
+ * - credentials: Permite enviar cookies y headers de autorización (necesario para OAuth)
+ *
  * EJEMPLO:
  * Frontend en http://localhost:5173 puede hacer peticiones a http://localhost:3000
  */
-aplicacion.use(cors());
+aplicacion.use(
+  cors({
+    origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+    credentials: true, // Permitir cookies y headers de autorización
+  })
+);
 
 /**
  * PARSER DE JSON
@@ -357,9 +366,9 @@ const iniciarServidor = async () => {
     console.log('🔄 Conectando a la base de datos...');
     await conectarBaseDeDatos();
 
-    // ===== PASO 2: VERIFICAR CONFIGURACIÓN DE EMAIL =====
-    console.log('🔄 Verificando configuración de email...');
-    await verificarEmail();
+    // ===== PASO 2: VERIFICAR CONFIGURACIÓN DE WHATSAPP =====
+    console.log('🔄 Verificando configuración de WhatsApp...');
+    await verificarWhatsApp();
 
     // ===== PASO 3: INICIAR TAREAS AUTOMÁTICAS (CRON JOBS) =====
     console.log('🔄 Iniciando tareas automáticas (recordatorios)...');

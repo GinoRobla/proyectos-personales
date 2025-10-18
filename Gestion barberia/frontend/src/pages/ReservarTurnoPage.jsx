@@ -18,7 +18,7 @@ const ReservarTurnoPage = () => {
   const turnoEditarId = searchParams.get('editar');
 
   // Estados del formulario
-  const [paso, setPaso] = useState(1); // 1: Servicio, 2: Fecha/Hora, 3: Barbero, 4: Confirmación
+  const [paso, setPaso] = useState(1); // 1: Servicio, 2: Barbero, 3: Fecha/Hora, 4: Confirmación
   const [servicioSeleccionado, setServicioSeleccionado] = useState(null);
   const [barberoSeleccionado, setBarberoSeleccionado] = useState(null);
   const [fechaSeleccionada, setFechaSeleccionada] = useState('');
@@ -36,11 +36,17 @@ const ReservarTurnoPage = () => {
   // Datos del sistema
   const [servicios, setServicios] = useState([]);
   const [barberos, setBarberos] = useState([]);
-  const [barberosOcupados, setBarberosOcupados] = useState([]);
   const [horariosDisponibles, setHorariosDisponibles] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+
+  // Horarios base de la barbería (todos los horarios posibles)
+  const horariosBase = [
+    '09:00', '09:45', '10:30', '11:00', '11:45', '12:30',
+    '13:15', '14:00', '14:45', '15:30', '16:15', '17:00',
+    '17:45', '18:30'
+  ];
 
   // Cargar servicios al iniciar
   useEffect(() => {
@@ -50,20 +56,19 @@ const ReservarTurnoPage = () => {
     }
   }, [turnoEditarId]);
 
-  // Cargar barberos cuando estamos en el paso 3 (selección de barbero)
+  // Cargar barberos cuando estamos en el paso 2 (selección de barbero)
   useEffect(() => {
-    if (paso === 3 && fechaSeleccionada && horaSeleccionada) {
+    if (paso === 2) {
       cargarBarberos();
-      identificarBarberosOcupados();
     }
-  }, [paso, fechaSeleccionada, horaSeleccionada]);
+  }, [paso]);
 
-  // Cargar horarios disponibles cuando se selecciona fecha
+  // Cargar horarios disponibles cuando se selecciona fecha (en el paso 3)
   useEffect(() => {
-    if (fechaSeleccionada && servicioSeleccionado) {
+    if (fechaSeleccionada && servicioSeleccionado && barberoSeleccionado) {
       cargarHorariosDisponibles();
     }
-  }, [fechaSeleccionada, servicioSeleccionado]);
+  }, [fechaSeleccionada, servicioSeleccionado, barberoSeleccionado]);
 
   const cargarTurnoParaEditar = async (turnoId) => {
     try {
@@ -116,6 +121,11 @@ const ReservarTurnoPage = () => {
         servicioId: servicioSeleccionado._id,
       };
 
+      // Si se seleccionó un barbero específico, incluir su ID en la consulta
+      if (barberoSeleccionado && barberoSeleccionado !== 'indistinto') {
+        params.barberoId = barberoSeleccionado._id;
+      }
+
       const response = await turnoService.obtenerHorariosDisponibles(params);
       setHorariosDisponibles(response.data.horariosDisponibles || []);
     } catch (err) {
@@ -126,28 +136,6 @@ const ReservarTurnoPage = () => {
     }
   };
 
-  const identificarBarberosOcupados = async () => {
-    try {
-      // Obtener todos los barberos
-      const todosLosBarberos = await barberoService.obtenerBarberos();
-      const barberosActivos = todosLosBarberos.data.filter(b => b.activo);
-
-      // Obtener barberos disponibles para la fecha y hora seleccionada
-      const response = await barberoService.obtenerBarberosDisponibles(fechaSeleccionada, horaSeleccionada);
-      const barberosDisponibles = response.data;
-
-      // Obtener los IDs de barberos ocupados (los que no están disponibles)
-      const idsDisponibles = barberosDisponibles.map(b => b._id);
-      const idsOcupados = barberosActivos
-        .filter(b => !idsDisponibles.includes(b._id))
-        .map(b => b._id);
-
-      setBarberosOcupados(idsOcupados);
-    } catch (err) {
-      console.error('Error al identificar barberos ocupados:', err);
-      setBarberosOcupados([]);
-    }
-  };
 
   const handleSeleccionarServicio = (servicio) => {
     setServicioSeleccionado(servicio);
@@ -157,7 +145,7 @@ const ReservarTurnoPage = () => {
 
   const handleSeleccionarBarbero = (barbero) => {
     setBarberoSeleccionado(barbero);
-    setPaso(4);
+    setPaso(3);
     setError('');
   };
 
@@ -169,7 +157,7 @@ const ReservarTurnoPage = () => {
 
   const handleSeleccionarHora = (hora) => {
     setHoraSeleccionada(hora);
-    setPaso(3);
+    setPaso(4);
     setError('');
   };
 
@@ -192,6 +180,10 @@ const ReservarTurnoPage = () => {
     return false;
   };
 
+  const esHorarioDisponible = (hora) => {
+    return horariosDisponibles.includes(hora);
+  };
+
   const handleChangeDatosCliente = (e) => {
     setDatosCliente({
       ...datosCliente,
@@ -206,6 +198,13 @@ const ReservarTurnoPage = () => {
     setError('');
 
     try {
+      // Validar que el usuario tenga un teléfono válido si está autenticado
+      if (estaAutenticado && usuario && (usuario.telefono === '0000000000' || !usuario.telefono)) {
+        setError('Debes completar tu número de teléfono en tu perfil antes de reservar un turno. Ve a "Mi Perfil" para actualizarlo.');
+        setLoading(false);
+        return;
+      }
+
       // Si estamos editando
       if (turnoEditarId) {
         const datosActualizacion = {
@@ -354,8 +353,57 @@ const ReservarTurnoPage = () => {
             </div>
           )}
 
-          {/* Paso 2: Seleccionar Fecha y Hora */}
+          {/* Paso 2: Seleccionar Barbero */}
           {paso === 2 && (
+            <div className="paso-contenido">
+              <button onClick={handleVolver} className="btn-volver">
+                ← Volver
+              </button>
+              <h2>Selecciona tu barbero</h2>
+              <div className="resumen-seleccion">
+                <p>Servicio: <strong>{servicioSeleccionado?.nombre}</strong></p>
+              </div>
+              {loading ? (
+                <div className="loading">Cargando barberos...</div>
+              ) : (
+                <div className="barberos-grid">
+                  {/* Opción: Indistinto */}
+                  <button
+                    className="barbero-card indistinto"
+                    onClick={() => handleSeleccionarBarbero('indistinto')}
+                  >
+                    <div className="barbero-avatar">
+                      <span>👤</span>
+                    </div>
+                    <h3>Indistinto</h3>
+                    <p>Cualquier barbero disponible</p>
+                  </button>
+
+                  {/* Barberos específicos */}
+                  {barberos.map((barbero) => (
+                    <button
+                      key={barbero._id}
+                      className="barbero-card"
+                      onClick={() => handleSeleccionarBarbero(barbero)}
+                    >
+                      <div className="barbero-avatar">
+                        <span>{barbero.nombre[0]}{barbero.apellido[0]}</span>
+                      </div>
+                      <h3>{barbero.nombre} {barbero.apellido}</h3>
+                      {barbero.especialidades?.length > 0 && (
+                        <p className="especialidades">
+                          {barbero.especialidades.join(', ')}
+                        </p>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Paso 3: Seleccionar Fecha y Hora */}
+          {paso === 3 && (
             <div className="paso-contenido">
               <button onClick={handleVolver} className="btn-volver">
                 ← Volver
@@ -363,6 +411,11 @@ const ReservarTurnoPage = () => {
               <h2>Fecha y hora</h2>
               <div className="resumen-seleccion">
                 <p>Servicio: <strong>{servicioSeleccionado?.nombre}</strong></p>
+                <p>Barbero: <strong>
+                  {barberoSeleccionado === 'indistinto'
+                    ? 'Cualquiera disponible'
+                    : `${barberoSeleccionado?.nombre} ${barberoSeleccionado?.apellido}`}
+                </strong></p>
               </div>
 
               <div className="fecha-hora-contenedor">
@@ -391,97 +444,48 @@ const ReservarTurnoPage = () => {
                 {/* Selector de Hora */}
                 {fechaSeleccionada && (
                   <div className="horarios-contenedor">
-                    <h3>Horarios disponibles</h3>
+                    <h3>Horarios</h3>
                     {loading ? (
                       <div className="loading">Cargando horarios...</div>
-                    ) : horariosDisponibles.length > 0 ? (
+                    ) : (
                       <div className="horarios-grid">
-                        {horariosDisponibles.map((hora) => {
+                        {horariosBase.map((hora) => {
                           const horaPasada = esHoraPasada(hora);
+                          const disponible = esHorarioDisponible(hora);
+                          const deshabilitado = horaPasada || !disponible;
+
                           return (
                             <button
                               key={hora}
                               className={`horario-btn ${
                                 horaSeleccionada === hora ? 'seleccionado' : ''
-                              } ${horaPasada ? 'deshabilitado' : ''}`}
-                              onClick={() => !horaPasada && handleSeleccionarHora(hora)}
-                              disabled={horaPasada}
+                              } ${deshabilitado ? 'deshabilitado' : ''}`}
+                              onClick={() => !deshabilitado && handleSeleccionarHora(hora)}
+                              disabled={deshabilitado}
                               style={{
-                                opacity: horaPasada ? 0.5 : 1,
-                                cursor: horaPasada ? 'not-allowed' : 'pointer'
+                                opacity: deshabilitado ? 0.4 : 1,
+                                cursor: deshabilitado ? 'not-allowed' : 'pointer',
+                                pointerEvents: deshabilitado ? 'none' : 'auto'
                               }}
+                              title={
+                                horaPasada
+                                  ? 'Horario pasado'
+                                  : !disponible
+                                    ? 'No disponible'
+                                    : 'Disponible'
+                              }
                             >
                               {hora}
+                              {horaPasada && <span style={{ fontSize: '10px', display: 'block' }}>Pasado</span>}
+                              {!horaPasada && !disponible && <span style={{ fontSize: '10px', display: 'block' }}>Ocupado</span>}
                             </button>
                           );
                         })}
                       </div>
-                    ) : (
-                      <p className="no-horarios">
-                        No hay horarios disponibles para esta fecha
-                      </p>
                     )}
                   </div>
                 )}
               </div>
-            </div>
-          )}
-
-          {/* Paso 3: Seleccionar Barbero */}
-          {paso === 3 && (
-            <div className="paso-contenido">
-              <button onClick={handleVolver} className="btn-volver">
-                ← Volver
-              </button>
-              <h2>Selecciona tu barbero</h2>
-              <div className="resumen-seleccion">
-                <p>Servicio: <strong>{servicioSeleccionado?.nombre}</strong></p>
-                <p>Fecha y hora: <strong>{new Date(fechaSeleccionada + 'T00:00:00').toLocaleDateString('es-AR')} - {horaSeleccionada}</strong></p>
-              </div>
-              {loading ? (
-                <div className="loading">Cargando barberos...</div>
-              ) : (
-                <div className="barberos-grid">
-                  {/* Opción: Indistinto */}
-                  <button
-                    className="barbero-card indistinto"
-                    onClick={() => handleSeleccionarBarbero('indistinto')}
-                  >
-                    <div className="barbero-avatar">
-                      <span>👤</span>
-                    </div>
-                    <h3>Indistinto</h3>
-                    <p>Cualquier barbero disponible</p>
-                  </button>
-
-                  {/* Barberos específicos */}
-                  {barberos.map((barbero) => (
-                    <button
-                      key={barbero._id}
-                      className="barbero-card"
-                      onClick={() => handleSeleccionarBarbero(barbero)}
-                      disabled={barberosOcupados.includes(barbero._id)}
-                      style={{
-                        opacity: barberosOcupados.includes(barbero._id) ? 0.5 : 1,
-                        cursor: barberosOcupados.includes(barbero._id) ? 'not-allowed' : 'pointer'
-                      }}
-                    >
-                      <div className="barbero-avatar">
-                        <span>{barbero.nombre[0]}{barbero.apellido[0]}</span>
-                      </div>
-                      <h3>{barbero.nombre} {barbero.apellido}</h3>
-                      {barberosOcupados.includes(barbero._id) && (
-                        <p className="ocupado" style={{ color: 'red', fontSize: '12px' }}>Ocupado</p>
-                      )}
-                      {barbero.especialidades?.length > 0 && !barberosOcupados.includes(barbero._id) && (
-                        <p className="especialidades">
-                          {barbero.especialidades.join(', ')}
-                        </p>
-                      )}
-                    </button>
-                  ))}
-                </div>
-              )}
             </div>
           )}
 

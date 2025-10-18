@@ -9,6 +9,8 @@ const AdminServicios = () => {
   const [loading, setLoading] = useState(true);
   const [editando, setEditando] = useState(null);
   const [creando, setCreando] = useState(false);
+  const [mostrarModalEliminar, setMostrarModalEliminar] = useState(false);
+  const [servicioAEliminar, setServicioAEliminar] = useState(null);
   const [formData, setFormData] = useState({
     nombre: '',
     descripcion: '',
@@ -93,12 +95,21 @@ const AdminServicios = () => {
     }
   };
 
-  const eliminarServicio = async (servicioId) => {
-    if (!window.confirm('¿Estás seguro de eliminar este servicio?')) return;
+  const abrirModalEliminar = (servicio) => {
+    setServicioAEliminar(servicio);
+    setMostrarModalEliminar(true);
+  };
 
+  const cerrarModalEliminar = () => {
+    setMostrarModalEliminar(false);
+    setServicioAEliminar(null);
+  };
+
+  const confirmarEliminar = async () => {
     try {
-      await servicioService.eliminarServicio(servicioId);
+      await servicioService.eliminarServicio(servicioAEliminar._id);
       toast.success('Servicio eliminado correctamente');
+      cerrarModalEliminar();
       cargarServicios();
     } catch (err) {
       toast.error('Error al eliminar servicio');
@@ -117,8 +128,14 @@ const AdminServicios = () => {
 
         {/* Formulario de creación */}
         {creando && (
-          <div className="servicio-card form-crear">
-            <h3>Crear Nuevo Servicio</h3>
+          <>
+            <div className="modal-overlay-form" onClick={() => setCreando(false)}>
+              <div className="modal-content-form" onClick={(e) => e.stopPropagation()}>
+                <div className="modal-header-form">
+                  <h3>Crear Nuevo Servicio</h3>
+                  <button className="modal-close" onClick={() => setCreando(false)}>✕</button>
+                </div>
+                <div className="modal-body-form">
             <div className="servicio-form">
               <div className="input-group">
                 <label className="input-label">Nombre</label>
@@ -175,7 +192,10 @@ const AdminServicios = () => {
                 </button>
               </div>
             </div>
-          </div>
+                </div>
+              </div>
+            </div>
+          </>
         )}
 
         {loading ? (
@@ -268,7 +288,7 @@ const AdminServicios = () => {
                         Editar
                       </button>
                       <button
-                        onClick={() => eliminarServicio(servicio._id)}
+                        onClick={() => abrirModalEliminar(servicio)}
                         className="btn btn-danger btn-sm"
                       >
                         Eliminar
@@ -278,6 +298,36 @@ const AdminServicios = () => {
                 )}
               </div>
             ))}
+          </div>
+        )}
+
+        {/* Modal de Confirmación de Eliminación */}
+        {mostrarModalEliminar && servicioAEliminar && (
+          <div className="modal-overlay" onClick={cerrarModalEliminar}>
+            <div className="modal-content-eliminar" onClick={(e) => e.stopPropagation()}>
+              <div className="modal-header">
+                <h2>Confirmar Eliminación</h2>
+                <button className="modal-close" onClick={cerrarModalEliminar}>✕</button>
+              </div>
+
+              <div className="modal-body">
+                <p className="modal-texto-principal">
+                  ¿Eliminar el servicio <strong>{servicioAEliminar.nombre}</strong>?
+                </p>
+                <p className="modal-texto-advertencia">
+                  Esta acción no se puede deshacer.
+                </p>
+              </div>
+
+              <div className="modal-footer">
+                <button onClick={cerrarModalEliminar} className="btn btn-outline">
+                  Cancelar
+                </button>
+                <button onClick={confirmarEliminar} className="btn btn-danger">
+                  Eliminar Servicio
+                </button>
+              </div>
+            </div>
           </div>
         )}
       </div>

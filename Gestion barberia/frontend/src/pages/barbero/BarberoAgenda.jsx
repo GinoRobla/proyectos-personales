@@ -230,17 +230,16 @@ const BarberoAgenda = () => {
                     whiteSpace: 'nowrap',
                     background:
                       turno.estado === 'completado' ? '#d4edda' :
-                      turno.estado === 'confirmado' ? '#d1ecf1' :
+                      turno.estado === 'reservado' ? '#d1ecf1' :
                       turno.estado === 'cancelado' ? '#f8d7da' : '#e2e3e5',
                     color:
                       turno.estado === 'completado' ? '#155724' :
-                      turno.estado === 'confirmado' ? '#0c5460' :
+                      turno.estado === 'reservado' ? '#0c5460' :
                       turno.estado === 'cancelado' ? '#721c24' : '#383d41',
                   }}>
-                    {turno.estado === 'confirmado' ? 'Reservado' :
+                    {turno.estado === 'reservado' ? 'Reservado' :
                      turno.estado === 'completado' ? 'Completado' :
-                     turno.estado === 'cancelado' ? 'Cancelado' :
-                     turno.estado === 'pendiente' ? 'Pendiente' : turno.estado}
+                     turno.estado === 'cancelado' ? 'Cancelado' : turno.estado}
                   </div>
                 </div>
               ))}

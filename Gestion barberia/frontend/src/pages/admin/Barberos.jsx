@@ -17,7 +17,6 @@ const AdminBarberos = () => {
     email: '',
     telefono: '',
     password: '',
-    especialidad: '',
   });
 
   useEffect(() => {
@@ -44,7 +43,6 @@ const AdminBarberos = () => {
       email: '',
       telefono: '',
       password: '',
-      especialidad: '',
     });
   };
 
@@ -56,7 +54,6 @@ const AdminBarberos = () => {
       email: barbero.email,
       telefono: barbero.telefono,
       password: '',
-      especialidad: barbero.especialidad || '',
     });
   };
 
@@ -69,7 +66,6 @@ const AdminBarberos = () => {
       email: '',
       telefono: '',
       password: '',
-      especialidad: '',
     });
   };
 
@@ -85,7 +81,7 @@ const AdminBarberos = () => {
       await barberoService.crearBarbero(formData);
       toast.success('Barbero creado correctamente');
       setCreando(false);
-      setFormData({ nombre: '', apellido: '', email: '', telefono: '', password: '', especialidad: '' });
+      setFormData({ nombre: '', apellido: '', email: '', telefono: '', password: '' });
       cargarBarberos();
     } catch (err) {
       toast.error(err.response?.data?.message || 'Error al crear barbero');
@@ -149,8 +145,14 @@ const AdminBarberos = () => {
 
         {/* Formulario de creación */}
         {creando && (
-          <div className="barbero-card form-crear">
-            <h3>Crear Nuevo Barbero</h3>
+          <>
+            <div className="modal-overlay-form" onClick={() => setCreando(false)}>
+              <div className="modal-content-form" onClick={(e) => e.stopPropagation()}>
+                <div className="modal-header-form">
+                  <h3>Crear Nuevo Barbero</h3>
+                  <button className="modal-close" onClick={() => setCreando(false)}>✕</button>
+                </div>
+                <div className="modal-body-form">
             <div className="barbero-form">
               <div className="input-row">
                 <div className="input-group">
@@ -200,28 +202,15 @@ const AdminBarberos = () => {
                 </div>
               </div>
 
-              <div className="input-row">
-                <div className="input-group">
-                  <label className="input-label">Contraseña</label>
-                  <input
-                    type="password"
-                    name="password"
-                    className="input"
-                    value={formData.password}
-                    onChange={handleChange}
-                  />
-                </div>
-
-                <div className="input-group">
-                  <label className="input-label">Especialidad</label>
-                  <input
-                    type="text"
-                    name="especialidad"
-                    className="input"
-                    value={formData.especialidad}
-                    onChange={handleChange}
-                  />
-                </div>
+              <div className="input-group">
+                <label className="input-label">Contraseña</label>
+                <input
+                  type="password"
+                  name="password"
+                  className="input"
+                  value={formData.password}
+                  onChange={handleChange}
+                />
               </div>
 
               <div className="barbero-acciones">
@@ -233,7 +222,10 @@ const AdminBarberos = () => {
                 </button>
               </div>
             </div>
-          </div>
+                </div>
+              </div>
+            </div>
+          </>
         )}
 
         {loading ? (
@@ -271,28 +263,15 @@ const AdminBarberos = () => {
                       </div>
                     </div>
 
-                    <div className="input-row">
-                      <div className="input-group">
-                        <label className="input-label">Teléfono</label>
-                        <input
-                          type="tel"
-                          name="telefono"
-                          className="input"
-                          value={formData.telefono}
-                          onChange={handleChange}
-                        />
-                      </div>
-
-                      <div className="input-group">
-                        <label className="input-label">Especialidad</label>
-                        <input
-                          type="text"
-                          name="especialidad"
-                          className="input"
-                          value={formData.especialidad}
-                          onChange={handleChange}
-                        />
-                      </div>
+                    <div className="input-group">
+                      <label className="input-label">Teléfono</label>
+                      <input
+                        type="tel"
+                        name="telefono"
+                        className="input"
+                        value={formData.telefono}
+                        onChange={handleChange}
+                      />
                     </div>
 
                     <div className="barbero-acciones">

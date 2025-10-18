@@ -79,6 +79,11 @@
   display: none;
 }
 
+/* Logout desktop - Oculto en móvil */
+.navbar-logout {
+  display: none;
+}
+
 /* Botón Hamburguesa */
 .hamburger {
   width: 32px;
@@ -294,53 +299,83 @@
 
   /* Mostrar opciones en el navbar directamente */
   .navbar-content {
-    max-width: 1400px;
+    max-width: 100%;
     margin: 0 auto;
-    padding: 0 2rem;
+    padding: 0 3rem;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
   }
 
   .navbar-logo {
-    flex: 0;
-    margin-right: auto;
+    flex: 0 0 auto !important;
+    margin-right: 0 !important;
   }
 
   /* Menú horizontal para usuarios autenticados */
   .navbar-menu-horizontal {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-md);
-    margin-left: auto;
+    display: flex !important;
+    align-items: center !important;
+    position: absolute !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+  }
+
+  .navbar-menu-horizontal .menu-items-group {
+    display: flex !important;
+    align-items: center !important;
+    gap: var(--spacing-md) !important;
   }
 
   .navbar-menu-horizontal .menu-item {
-    padding: var(--spacing-sm) var(--spacing-md);
-    border-radius: var(--radius-md);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    color: white;
-    background: transparent;
-    transition: all 0.2s ease;
-    font-size: 0.875rem;
-    white-space: nowrap;
+    padding: var(--spacing-sm) var(--spacing-md) !important;
+    border-radius: 0 !important;
+    border: none !important;
+    border-bottom: 2px solid transparent !important;
+    color: white !important;
+    background: transparent !important;
+    transition: all 0.2s ease !important;
+    font-size: 0.875rem !important;
+    white-space: nowrap !important;
   }
 
   .navbar-menu-horizontal .menu-item:hover {
-    background: rgba(255, 255, 255, 0.1);
-    border-color: var(--secondary);
+    background: transparent !important;
+    border-bottom-color: var(--secondary) !important;
   }
 
   .navbar-menu-horizontal .menu-item.active {
-    background: rgba(255, 255, 255, 0.15);
-    border-color: var(--secondary);
+    background: transparent !important;
+    border-bottom-color: var(--secondary) !important;
   }
 
-  .navbar-menu-horizontal .menu-item.logout {
-    color: #ff6b6b;
-    border-color: rgba(255, 107, 107, 0.3);
+  /* Logout a la derecha - SOLO para pantallas grandes (NO para admin) */
+  .navbar-logout {
+    display: flex !important;
+    margin-left: auto !important;
   }
 
-  .navbar-menu-horizontal .menu-item.logout:hover {
-    background: rgba(255, 107, 107, 0.1);
-    border-color: #ff6b6b;
+  /* Ocultar menú horizontal y logout para admin en desktop */
+  body:has(.admin-sidebar) .navbar-menu-horizontal,
+  body:has(.admin-sidebar) .navbar-logout {
+    display: none !important;
+  }
+
+  .navbar-logout .menu-item.logout {
+    color: #ff6b6b !important;
+    padding: var(--spacing-sm) var(--spacing-md) !important;
+    border-radius: 0 !important;
+    border: none !important;
+    border-bottom: 2px solid transparent !important;
+    background: transparent !important;
+    transition: all 0.2s ease !important;
+    font-size: 0.875rem !important;
+    white-space: nowrap !important;
+  }
+
+  .navbar-logout .menu-item.logout:hover {
+    background: transparent !important;
+    border-bottom-color: #ff6b6b !important;
   }
 
   /* Usuario info en navbar */
@@ -371,8 +406,8 @@
 /* PC de Escritorio */
 @media (min-width: 1920px) {
   .navbar-content {
-    max-width: 1600px;
-    padding: 0 3rem;
+    max-width: 100%;
+    padding: 0 4rem;
   }
 
   .navbar-menu-horizontal {

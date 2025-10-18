@@ -38,13 +38,13 @@ export const obtenerEstadisticasGenerales = async (filtros = {}) => {
       },
     ]);
 
-    // Ingresos totales (solo completados y pagados)
+    // Ingresos totales (solo completados)
     const ingresosTotales = await Turno.aggregate([
       {
         $match: {
           ...query,
           estado: 'completado',
-          pagado: true,
+
         },
       },
       {
@@ -61,7 +61,7 @@ export const obtenerEstadisticasGenerales = async (filtros = {}) => {
         $match: {
           ...query,
           estado: 'completado',
-          pagado: false,
+
         },
       },
       {
@@ -157,7 +157,7 @@ export const obtenerEstadisticasPorBarbero = async (barberoId, filtros = {}) => 
         $match: {
           ...query,
           estado: 'completado',
-          pagado: true,
+
         },
       },
       {
@@ -209,8 +209,7 @@ export const obtenerEstadisticasPorBarbero = async (barberoId, filtros = {}) => 
     return {
       barbero: {
         id: barbero._id,
-        nombre: barbero.nombreCompleto,
-        especialidad: barbero.especialidad,
+        nombre: `${barbero.nombre} ${barbero.apellido}`,
       },
       totalTurnos,
       turnosPorEstado,
@@ -251,7 +250,7 @@ export const obtenerComparativaBarberos = async (filtros = {}) => {
           ingresos: {
             $sum: {
               $cond: [
-                { $and: [{ $eq: ['$estado', 'completado'] }, { $eq: ['$pagado', true] }] },
+                { $eq: ['$estado', 'completado'] },
                 '$precio',
                 0,
               ],
@@ -328,7 +327,7 @@ export const obtenerTurnosPorPeriodo = async (filtros = {}) => {
           ingresos: {
             $sum: {
               $cond: [
-                { $and: [{ $eq: ['$estado', 'completado'] }, { $eq: ['$pagado', true] }] },
+                { $eq: ['$estado', 'completado'] },
                 '$precio',
                 0,
               ],
@@ -368,13 +367,13 @@ export const obtenerEstadisticasAdmin = async (filtros = {}) => {
       },
     };
 
-    // 💵 Ingresos totales del mes (solo completados y pagados)
+    // 💵 Ingresos totales del mes (solo completados)
     const ingresosTotales = await Turno.aggregate([
       {
         $match: {
           ...query,
           estado: 'completado',
-          pagado: true,
+
         },
       },
       {
@@ -386,12 +385,10 @@ export const obtenerEstadisticasAdmin = async (filtros = {}) => {
     ]);
 
     // ✂️ Turnos totales del mes (completados + cancelados)
-    console.log('🔍 Query para turnos totales:', JSON.stringify(query));
     const turnosTotales = await Turno.countDocuments({
       ...query,
       estado: { $in: ['completado', 'cancelado'] },
     });
-    console.log('🔍 Turnos totales encontrados:', turnosTotales);
 
     // 🧍‍♂️ Clientes atendidos únicos del mes
     const clientesAtendidos = await Turno.aggregate([
@@ -484,7 +481,7 @@ export const obtenerEstadisticasAdmin = async (filtros = {}) => {
         $match: {
           ...query,
           estado: 'completado',
-          pagado: true,
+
           barbero: { $ne: null },
         },
       },
@@ -523,15 +520,7 @@ export const obtenerEstadisticasAdmin = async (filtros = {}) => {
         $group: {
           _id: '$servicio',
           totalTurnos: { $sum: 1 },
-          ingresos: {
-            $sum: {
-              $cond: [
-                { $eq: ['$pagado', true] },
-                '$precio',
-                0,
-              ],
-            },
-          },
+          ingresos: { $sum: '$precio' },
         },
       },
       {
@@ -604,7 +593,7 @@ export const obtenerEstadisticasAdmin = async (filtros = {}) => {
         $match: {
           ...queryMesAnterior,
           estado: 'completado',
-          pagado: true,
+
         },
       },
       {
@@ -762,13 +751,13 @@ export const obtenerEstadisticasBarbero = async (barberoId, filtros = {}) => {
       },
     };
 
-    // 💵 INGRESOS GENERADOS DEL MES (solo completados y pagados)
+    // 💵 INGRESOS GENERADOS DEL MES (solo completados)
     const ingresosMes = await Turno.aggregate([
       {
         $match: {
           ...queryMes,
           estado: 'completado',
-          pagado: true,
+
         },
       },
       {
@@ -811,7 +800,7 @@ export const obtenerEstadisticasBarbero = async (barberoId, filtros = {}) => {
         $match: {
           ...querySemana,
           estado: 'completado',
-          pagado: true,
+
         },
       },
       {
@@ -830,7 +819,7 @@ export const obtenerEstadisticasBarbero = async (barberoId, filtros = {}) => {
         $match: {
           ...queryMes,
           estado: 'completado',
-          pagado: true,
+
         },
       },
       {
@@ -875,7 +864,7 @@ export const obtenerEstadisticasBarbero = async (barberoId, filtros = {}) => {
         $match: {
           ...queryUltimas4Semanas,
           estado: 'completado',
-          pagado: true,
+
         },
       },
       {
@@ -918,15 +907,7 @@ export const obtenerEstadisticasBarbero = async (barberoId, filtros = {}) => {
         $group: {
           _id: '$servicio',
           cantidad: { $sum: 1 },
-          ingresos: {
-            $sum: {
-              $cond: [
-                { $eq: ['$pagado', true] },
-                '$precio',
-                0,
-              ],
-            },
-          },
+          ingresos: { $sum: '$precio' },
         },
       },
       {
@@ -952,7 +933,6 @@ export const obtenerEstadisticasBarbero = async (barberoId, filtros = {}) => {
       barbero: {
         id: barbero._id,
         nombre: `${barbero.nombre} ${barbero.apellido}`,
-        especialidad: barbero.especialidad,
         objetivoMensual,
       },
       periodo: {

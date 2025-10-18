@@ -24,7 +24,7 @@
  * 1. Cliente solicita un turno (o admin lo crea)
  * 2. Se verifica disponibilidad del horario y barbero
  * 3. Se crea o encuentra el cliente en la base de datos
- * 4. Se crea el turno con estado 'confirmado'
+ * 4. Se crea el turno con estado 'reservado'
  * 5. Se envían emails de confirmación (cliente, barbero, admin)
  * 6. El día del turno se envían recordatorios
  * 7. Después del servicio, el estado cambia a 'completado'
@@ -35,11 +35,6 @@ import Turno from '../models/Turno.js';
 import Cliente from '../models/Cliente.js';
 import Barbero from '../models/Barbero.js';
 import Servicio from '../models/Servicio.js';
-import {
-  enviarConfirmacionCliente,
-  enviarNotificacionBarbero,
-  enviarNotificacionAdmin,
-} from './emailService.js';
 
 // ===== FUNCIONES PRINCIPALES DEL SERVICIO =====
 
@@ -53,7 +48,7 @@ import {
  * y devuelve los resultados paginados.
  *
  * FILTROS SOPORTADOS:
- * - estado: Estado del turno (pendiente, confirmado, completado, cancelado)
+ * - estado: Estado del turno (reservado, completado, cancelado)
  * - barberoId: ID del barbero asignado
  * - clienteId: ID del cliente
  * - fecha: Fecha específica (formato: YYYY-MM-DD)
@@ -79,7 +74,7 @@ export const obtenerTodos = async (filtros = {}, paginacion = {}) => {
     // Filtro por estado (puede ser múltiple separado por comas)
     if (estado) {
       if (estado.includes(',')) {
-        // Múltiples estados: "pendiente,confirmado"
+        // Múltiples estados: "reservado,completado"
         const listaDeEstados = estado.split(',');
         consultaDeBusqueda.estado = { $in: listaDeEstados };
       } else {
@@ -189,7 +184,7 @@ export const obtenerPorId = async (identificadorDeTurno) => {
  * 3. Verificar que el barbero exista (si se especificó)
  * 4. Verificar disponibilidad del barbero en ese horario
  * 5. Buscar o crear el cliente
- * 6. Crear el turno con estado 'confirmado'
+ * 6. Crear el turno con estado 'reservado'
  * 7. Enviar emails de confirmación (no bloqueante)
  * 8. Devolver el turno creado
  *
@@ -228,7 +223,7 @@ export const crear = async (datosDeTurno) => {
         barbero: barberoId,
         fecha: new Date(fecha),
         hora,
-        estado: { $in: ['pendiente', 'confirmado'] }, // Solo turnos activos
+        estado: 'reservado', // Solo turnos activos
       });
 
       if (turnoYaExiste) {
@@ -256,7 +251,7 @@ export const crear = async (datosDeTurno) => {
       await clienteDelTurno.save();
     }
 
-    // Paso 7: Crear el turno (confirmado automáticamente)
+    // Paso 7: Crear el turno (reservado automáticamente)
     const nuevoTurno = new Turno({
       cliente: clienteDelTurno._id,
       barbero: barberoId || null, // null si no se especificó barbero
@@ -266,7 +261,7 @@ export const crear = async (datosDeTurno) => {
       precio,
       metodoPago: metodoPago || 'pendiente',
       notasCliente: notasCliente || '',
-      estado: 'confirmado', // Los turnos se confirman automáticamente
+      estado: 'reservado', // Los turnos se reservan automáticamente
     });
 
     await nuevoTurno.save();
@@ -276,13 +271,8 @@ export const crear = async (datosDeTurno) => {
     await nuevoTurno.populate('barbero');
     await nuevoTurno.populate('servicio');
 
-    // Paso 9: Enviar emails de confirmación (de forma asíncrona, no bloqueante)
-    // Promise.allSettled permite que si falla un email, los otros se envíen igual
-    Promise.allSettled([
-      enviarConfirmacionCliente(nuevoTurno, clienteDelTurno, barberoAsignado, servicioEncontrado),
-      enviarNotificacionBarbero(nuevoTurno, clienteDelTurno, barberoAsignado, servicioEncontrado),
-      enviarNotificacionAdmin(nuevoTurno, clienteDelTurno, barberoAsignado, servicioEncontrado),
-    ]).catch((error) => console.error('Error enviando emails:', error));
+    // Paso 9: NO enviar emails de confirmación
+    // Los recordatorios se enviarán SOLO por WhatsApp mediante el cron job
 
     return nuevoTurno;
   } catch (error) {
@@ -297,7 +287,7 @@ export const crear = async (datosDeTurno) => {
  *
  * QUÉ PUEDE ACTUALIZARSE:
  * - Barbero asignado (puede cambiarse o removerse)
- * - Estado (pendiente, confirmado, completado, cancelado)
+ * - Estado (reservado, completado, cancelado)
  * - Método de pago (efectivo, tarjeta, etc.)
  * - Estado de pago (pagado: true/false)
  * - Notas del barbero
@@ -474,26 +464,60 @@ export const obtenerHorariosDisponibles = async (fecha, barberoId = null) => {
         $gte: fechaAConsultar,
         $lte: new Date(fechaAConsultar.getTime() + 24 * 60 * 60 * 1000),
       },
-      estado: { $in: ['pendiente', 'confirmado'] }, // Solo turnos activos
+      estado: 'reservado', // Solo turnos activos
     };
 
     // Si se especificó un barbero, filtrar por ese barbero
     if (barberoId) {
       consultaDeTurnosOcupados.barbero = barberoId;
+
+      // CASO 1: Barbero específico - mostrar horarios libres de ese barbero
+      const turnosOcupados = await Turno.find(consultaDeTurnosOcupados);
+      const horasYaOcupadas = turnosOcupados.map((turno) => turno.hora);
+
+      // Filtrar horarios disponibles
+      const horariosDisponibles = horariosBaseDeLaBarberia.filter(
+        (horario) => !horasYaOcupadas.includes(horario)
+      );
+
+      return horariosDisponibles;
+    } else {
+      // CASO 2: Barbero "indistinto" - mostrar horarios donde AL MENOS UN barbero esté disponible
+
+      // Obtener todos los barberos activos
+      const barberosActivos = await Barbero.find({ activo: true });
+      const totalBarberos = barberosActivos.length;
+
+      if (totalBarberos === 0) {
+        // Si no hay barberos activos, no hay horarios disponibles
+        return [];
+      }
+
+      // Buscar TODOS los turnos reservados de la fecha (sin filtrar por barbero)
+      const turnosOcupados = await Turno.find(consultaDeTurnosOcupados).populate('barbero');
+
+      // Agrupar turnos por hora para contar cuántos barberos están ocupados por horario
+      const barberosPorHorario = {};
+
+      turnosOcupados.forEach((turno) => {
+        if (!barberosPorHorario[turno.hora]) {
+          barberosPorHorario[turno.hora] = 0;
+        }
+        // Solo contar si tiene barbero asignado
+        if (turno.barbero) {
+          barberosPorHorario[turno.hora]++;
+        }
+      });
+
+      // Filtrar horarios donde AL MENOS UN barbero esté disponible
+      // Un horario está disponible si: (barberos ocupados) < (total de barberos)
+      const horariosDisponibles = horariosBaseDeLaBarberia.filter((horario) => {
+        const barberosOcupados = barberosPorHorario[horario] || 0;
+        return barberosOcupados < totalBarberos; // Hay al menos un barbero disponible
+      });
+
+      return horariosDisponibles;
     }
-
-    // Buscar turnos ocupados
-    const turnosOcupados = await Turno.find(consultaDeTurnosOcupados);
-
-    // Extraer las horas ocupadas
-    const horasYaOcupadas = turnosOcupados.map((turno) => turno.hora);
-
-    // Filtrar horarios disponibles (los que NO están ocupados)
-    const horariosDisponibles = horariosBaseDeLaBarberia.filter(
-      (horario) => !horasYaOcupadas.includes(horario)
-    );
-
-    return horariosDisponibles;
   } catch (error) {
     throw new Error(`Error al obtener horarios disponibles: ${error.message}`);
   }
@@ -518,7 +542,7 @@ export const validarDisponibilidad = async (fecha, hora, barberoId = null) => {
     const consultaDeVerificacion = {
       fecha: new Date(fecha),
       hora,
-      estado: { $in: ['pendiente', 'confirmado'] },
+      estado: 'reservado',
     };
 
     // Si se especificó barbero, incluirlo en la búsqueda

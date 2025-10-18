@@ -112,10 +112,10 @@ export const obtenerPorId = async (identificadorDeBarbero) => {
 export const crear = async (datosDelBarbero) => {
   try {
     // Extraer datos
-    const { nombre, apellido, email, telefono, foto, especialidad, horarioLaboral, password } = datosDelBarbero;
+    const { nombre, apellido, email, telefono, foto, horarioLaboral, password } = datosDelBarbero;
 
     // Validar campos obligatorios
-    const faltanCampos = !nombre || !apellido || !email || !telefono || !especialidad;
+    const faltanCampos = !nombre || !apellido || !email || !telefono;
     if (faltanCampos) {
       throw new Error('Faltan campos obligatorios');
     }
@@ -140,7 +140,6 @@ export const crear = async (datosDelBarbero) => {
       email,
       telefono,
       foto,
-      especialidad,
       horarioLaboral: horarioLaboral || undefined,
     });
 
@@ -186,7 +185,7 @@ export const crear = async (datosDelBarbero) => {
 export const actualizar = async (identificadorDeBarbero, datosNuevos) => {
   try {
     // Extraer datos a actualizar
-    const { nombre, apellido, email, telefono, foto, especialidad, horarioLaboral, activo, objetivoMensual } =
+    const { nombre, apellido, email, telefono, foto, horarioLaboral, activo, objetivoMensual } =
       datosNuevos;
 
     // Buscar el barbero
@@ -210,9 +209,17 @@ export const actualizar = async (identificadorDeBarbero, datosNuevos) => {
     if (email) barberoAActualizar.email = email;
     if (telefono) barberoAActualizar.telefono = telefono;
     if (foto) barberoAActualizar.foto = foto;
-    if (especialidad) barberoAActualizar.especialidad = especialidad;
     if (horarioLaboral) barberoAActualizar.horarioLaboral = horarioLaboral;
-    if (activo !== undefined) barberoAActualizar.activo = activo;
+    if (activo !== undefined) {
+      barberoAActualizar.activo = activo;
+
+      // También actualizar el estado de la cuenta de usuario asociada
+      const Usuario = (await import('../models/Usuario.js')).default;
+      await Usuario.updateOne(
+        { email: barberoAActualizar.email, rol: 'barbero' },
+        { activo: activo }
+      );
+    }
     if (objetivoMensual !== undefined) barberoAActualizar.objetivoMensual = objetivoMensual;
 
     // Guardar cambios
@@ -346,7 +353,7 @@ export const obtenerDisponibles = async (fecha, hora) => {
         $lte: new Date(fechaAConsultar.getTime() + 24 * 60 * 60 * 1000),
       },
       hora,
-      estado: { $in: ['pendiente', 'confirmado'] },
+      estado: 'reservado',
       barbero: { $ne: null }, // Solo turnos con barbero asignado
     });
 

@@ -204,6 +204,7 @@
 
 .modal-header {
   padding: var(--spacing-lg);
+  padding-right: 50px; /* Reservar espacio para el botón de cerrar */
   border-bottom: 1px solid #e0e0e0;
   position: relative;
 }
@@ -212,6 +213,7 @@
   font-size: 1.25rem;
   color: var(--text-primary);
   margin: 0 0 var(--spacing-xs) 0;
+  padding-right: 10px; /* Asegurar que no se superponga con el botón */
 }
 
 .modal-fecha {
@@ -354,31 +356,29 @@
   font-style: italic;
 }
 
-/* Grid de horarios ocupados - Compacto */
-.horarios-ocupados-grid {
+/* Grid de horarios - Estilo consistente con ReservarTurno */
+.horarios-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
-  gap: 0.5rem;
-  max-height: 150px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--spacing-sm);
+  max-height: 300px;
   overflow-y: auto;
 }
 
-.horario-ocupado-badge {
-  background: #dc3545;
-  color: white;
-  padding: 0.5rem;
+.horario-btn {
+  background: white;
+  border: 2px solid #e0e0e0;
   border-radius: var(--radius-md);
-  font-size: 0.8125rem;
+  padding: var(--spacing-sm);
+  font-size: 0.875rem;
   font-weight: 600;
-  text-align: center;
-  white-space: nowrap;
-  box-shadow: 0 2px 4px rgba(220, 53, 69, 0.2);
+  color: var(--text-dark, #1a1a1a);
+  cursor: default;
   transition: all 0.2s ease;
-}
-
-.horario-ocupado-badge:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .modal-footer {
@@ -642,15 +642,40 @@
   .barberos-list {
     flex-direction: row;
   }
+
+  .horarios-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
 }
 
 @media (min-width: 1024px) {
   .gestion-grid {
     grid-template-columns: repeat(4, 1fr);
   }
+
+  .horarios-grid {
+    grid-template-columns: repeat(6, 1fr);
+  }
 }
 
-/* Laptop */
+/* Laptop - Desde 1280px */
+@media (min-width: 1280px) {
+  .estadisticas-card {
+    max-width: 600px !important;
+  }
+
+  .gestion-grid {
+    grid-template-columns: repeat(auto-fit, minmax(250px, 300px)) !important;
+    gap: 1.5rem !important;
+    justify-content: start !important;
+  }
+
+  .gestion-card {
+    padding: 1.25rem !important;
+    max-width: 300px !important;
+  }
+}
+
 @media (min-width: 1440px) {
   .admin-dashboard .container {
     max-width: 1400px;

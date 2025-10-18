@@ -25,14 +25,39 @@ const TurnosSinAsignar = () => {
     try {
       setLoading(true);
 
-      // Cargar todos los turnos confirmados
+      // Cargar todos los turnos reservados (activos) sin límite de paginación
       const turnosResponse = await turnoService.obtenerTodos({
-        estado: 'confirmado'
+        estado: 'reservado',
+        limite: 1000 // Aumentar límite para obtener todos los turnos
       });
 
-      // Filtrar turnos sin barbero asignado
+      // Filtrar turnos sin barbero asignado y fechas futuras (desde hoy)
       const turnosData = turnosResponse.datos || turnosResponse.turnos || [];
-      const sinBarbero = turnosData.filter(turno => !turno.barbero);
+
+      console.log('🔍 DEBUG - Total turnos recibidos:', turnosData.length);
+
+      // Obtener fecha de hoy en formato YYYY-MM-DD para comparación confiable
+      const hoy = new Date();
+      const hoyString = hoy.toISOString().split('T')[0]; // Ejemplo: "2025-10-17"
+
+      console.log('📅 DEBUG - Hoy es:', hoyString);
+      console.log('📋 DEBUG - Turnos sin barbero (antes de filtrar fecha):');
+      turnosData.forEach(t => {
+        if (!t.barbero) {
+          const fechaStr = t.fecha.split('T')[0];
+          console.log(`  - ${fechaStr} ${t.hora} | Futuro: ${fechaStr >= hoyString}`);
+        }
+      });
+
+      const sinBarbero = turnosData.filter(turno => {
+        // Extraer solo la fecha (sin hora) del turno
+        const fechaTurnoString = turno.fecha.split('T')[0]; // Ejemplo: "2025-10-18"
+
+        // Comparar strings de fechas (más confiable que comparar Date objects)
+        return !turno.barbero && fechaTurnoString >= hoyString; // Sin barbero Y fecha futura o hoy
+      });
+
+      console.log('✅ DEBUG - Turnos sin barbero (después de filtrar):', sinBarbero.length);
       setTurnosSinBarbero(sinBarbero);
 
       // Cargar barberos
@@ -84,9 +109,9 @@ const TurnosSinAsignar = () => {
       });
 
       const turnosData = turnosResponse.datos || turnosResponse.turnos || [];
-      // Filtrar solo turnos confirmados o pendientes para la agenda
+      // Filtrar solo turnos reservados (activos) para la agenda
       const turnosAgenda = turnosData.filter(t =>
-        t.estado === 'confirmado' || t.estado === 'pendiente'
+        t.estado === 'reservado'
       );
       setTurnosBarbero(turnosAgenda);
 
@@ -117,14 +142,6 @@ const TurnosSinAsignar = () => {
       day: 'numeric',
       month: 'short'
     });
-  };
-
-  const calcularHoraFin = (horaInicio, duracionMinutos) => {
-    const [horas, minutos] = horaInicio.split(':').map(Number);
-    const totalMinutos = horas * 60 + minutos + duracionMinutos;
-    const nuevasHoras = Math.floor(totalMinutos / 60);
-    const nuevosMinutos = totalMinutos % 60;
-    return `${nuevasHoras.toString().padStart(2, '0')}:${nuevosMinutos.toString().padStart(2, '0')}`;
   };
 
   const verificarConflicto = (turnoNuevo, turnosExistentes) => {
@@ -239,16 +256,15 @@ const TurnosSinAsignar = () => {
                 </div>
 
                 <div className="agenda-barbero">
-                  <h3>Horarios ocupados:</h3>
+                  <h3>Turnos ocupados:</h3>
                   {turnosBarbero.length > 0 ? (
-                    <div className="horarios-ocupados-grid">
+                    <div className="horarios-grid">
                       {turnosBarbero
                         .sort((a, b) => a.hora.localeCompare(b.hora))
                         .map((turno) => {
-                          const horaFin = calcularHoraFin(turno.hora, turno.servicio?.duracion || 45);
                           return (
-                            <div key={turno._id} className="horario-ocupado-badge">
-                              {turno.hora} - {horaFin}
+                            <div key={turno._id} className="horario-btn">
+                              {turno.hora}
                             </div>
                           );
                         })}

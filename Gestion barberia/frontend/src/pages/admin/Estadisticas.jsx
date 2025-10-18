@@ -237,7 +237,7 @@ const AdminEstadisticas = () => {
               </div>
             </div>
 
-            {/* Turnos COMPLETADOS */}
+            {/* CANTIDAD DE CLIENTES */}
             <div style={{
               background: 'white',
               padding: '1.5rem',
@@ -253,7 +253,7 @@ const AdminEstadisticas = () => {
                 letterSpacing: '0.5px',
                 marginBottom: '0.5rem'
               }}>
-                Turnos COMPLETADOS
+                CANTIDAD DE CLIENTES
               </div>
               <div style={{
                 fontSize: '2rem',
@@ -519,7 +519,8 @@ const AdminEstadisticas = () => {
           <div style={{
             display: 'grid',
             gap: '1.5rem',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 350px), 1fr))'
+            gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 350px), 1fr))',
+            maxWidth: estadisticasAdicionales.ingresosPorBarbero?.length === 1 ? '450px' : 'none'
           }}>
             {/* Ingresos por Barbero */}
             <div style={{
@@ -575,7 +576,7 @@ const AdminEstadisticas = () => {
                           color: '#6c757d',
                           marginTop: '0.375rem'
                         }}>
-                          {item.turnos} turnos completados
+                          {item.turnos} clientes atendidos
                         </div>
                       </div>
                     );

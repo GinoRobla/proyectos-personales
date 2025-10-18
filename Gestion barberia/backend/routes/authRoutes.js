@@ -67,6 +67,7 @@ enrutador.get(
   '/google',
   passport.authenticate('google', {
     scope: ['profile', 'email'],
+    session: false, // No usar sesiones, solo JWT
   })
 );
 

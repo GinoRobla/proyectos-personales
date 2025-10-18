@@ -258,7 +258,184 @@
   }
 }
 
-/* Laptop */
+/* Laptop - Desde 1280px */
+@media (min-width: 1280px) {
+  .servicios-lista {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.25rem;
+  }
+
+  .servicio-card {
+    padding: 1rem;
+  }
+
+  .servicio-header h3 {
+    font-size: 1rem;
+  }
+
+  .servicio-precio {
+    font-size: 1.25rem;
+  }
+
+  .servicio-descripcion {
+    font-size: 0.875rem;
+  }
+
+  .servicio-detalles {
+    font-size: 0.8rem;
+    gap: var(--spacing-md);
+  }
+
+  /* Modal para formulario de crear servicio */
+  .modal-content-form {
+    max-width: 420px !important;
+  }
+}
+
+/* Ajuste del header en mobile para alinear cruz */
+@media (max-width: 1279px) {
+  .modal-header-form {
+    padding: 1rem !important;
+  }
+
+  .modal-header-form h3 {
+    font-size: 1rem !important;
+    flex: 1 !important;
+    margin: 0 !important;
+  }
+
+  .modal-close {
+    width: 24px !important;
+    height: 24px !important;
+    font-size: 1.2rem !important;
+    flex-shrink: 0 !important;
+    margin-left: 0.5rem !important;
+    margin-right: 0 !important;
+    padding: 0 !important;
+    position: relative !important;
+    right: auto !important;
+    top: auto !important;
+  }
+
+  .modal-body-form {
+    padding: 0.75rem 1rem 1rem 1rem !important;
+  }
+
+  .modal-content-form {
+    padding: 0 !important;
+  }
+
+  /* Ajustar formulario */
+  .servicio-form .input-group {
+    margin-bottom: 0.75rem !important;
+  }
+
+  .servicio-form .input-label {
+    font-size: 0.875rem !important;
+    margin-bottom: 0.25rem !important;
+  }
+
+  .servicio-form .input,
+  .servicio-form textarea {
+    padding: 0.5rem !important;
+    font-size: 0.875rem !important;
+  }
+
+  .servicio-form textarea {
+    min-height: 60px !important;
+  }
+
+  .servicio-form .input-row {
+    gap: 0.75rem !important;
+  }
+
+  .servicio-acciones {
+    margin-top: 0.75rem !important;
+    gap: 0.5rem !important;
+  }
+
+  .servicio-acciones .btn {
+    padding: 0.5rem 1rem !important;
+    font-size: 0.875rem !important;
+  }
+
+  /* Ocultar flechitas de inputs number en mobile */
+  .servicio-form input[type="number"]::-webkit-inner-spin-button,
+  .servicio-form input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  .servicio-form input[type="number"] {
+    -moz-appearance: textfield;
+  }
+}
+
+/* Modal para todas las pantallas */
+.modal-overlay-form {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: var(--spacing-md);
+}
+
+.modal-content-form {
+  background: white;
+  border-radius: var(--radius-lg);
+  width: 100%;
+  max-width: 90%;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modal-header-form {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-lg);
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.modal-header-form h3 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-dark);
+  margin: 0;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: var(--text-gray);
+  cursor: pointer;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-md);
+  transition: all 0.2s ease;
+}
+
+.modal-close:hover {
+  background: #f0f0f0;
+  color: var(--text-dark);
+}
+
+.modal-body-form {
+  padding: var(--spacing-lg);
+}
+
 @media (min-width: 1440px) {
   .admin-servicios .container {
     max-width: 1400px;
@@ -271,11 +448,11 @@
 
   .servicios-lista {
     grid-template-columns: repeat(3, 1fr);
-    gap: 2rem;
+    gap: 1.5rem;
   }
 
   .servicio-card {
-    padding: 1.75rem;
+    padding: 1.25rem;
   }
 
   .modal-content {
@@ -296,11 +473,19 @@
 
   .servicios-lista {
     grid-template-columns: repeat(4, 1fr);
-    gap: 2.5rem;
+    gap: 1.75rem;
   }
 
   .servicio-card {
-    padding: 2rem;
+    padding: 1.5rem;
+  }
+
+  .servicio-header h3 {
+    font-size: 1.1rem;
+  }
+
+  .servicio-precio {
+    font-size: 1.35rem;
   }
 
   .modal-content {

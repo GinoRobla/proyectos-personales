@@ -526,22 +526,3 @@ export const asociarBarbero = async (identificadorDeUsuario, identificadorDeBarb
   }
 };
 
-// ===== EXPORTACIÓN POR DEFECTO =====
-
-/**
- * Exportamos todas las funciones como un objeto para facilitar
- * su importación en otros archivos.
- *
- * EJEMPLO DE USO:
- * import authService from './services/authService.js';
- * const resultado = await authService.login(email, password);
- */
-export default {
-  registrar,
-  login,
-  verificarToken,
-  obtenerUsuarioPorId,
-  actualizarPerfil,
-  cambiarPassword,
-  asociarBarbero,
-};

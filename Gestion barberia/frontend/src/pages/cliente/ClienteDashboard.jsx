@@ -27,11 +27,11 @@ const ClienteDashboard = () => {
   const cargarProximosTurnos = async () => {
     try {
       setLoading(true);
-      // Obtener solo los próximos 3 turnos
+      // Obtener solo los próximos 3 turnos (solo reservados, no completados ni cancelados)
       const response = await turnoService.obtenerMisTurnos({
         pagina: 1,
         limite: 3,
-        estado: 'confirmado',
+        estado: 'reservado',
       });
 
       // Ordenar de más próximo a más lejano
@@ -222,8 +222,7 @@ const ClienteDashboard = () => {
               <div className="detalle-grupo">
                 <label>Estado</label>
                 <span className={`estado-badge estado-${turnoSeleccionado.estado}`}>
-                  {turnoSeleccionado.estado === 'pendiente' && 'Pendiente'}
-                  {turnoSeleccionado.estado === 'confirmado' && 'Reservado'}
+                  {turnoSeleccionado.estado === 'reservado' && 'Reservado'}
                   {turnoSeleccionado.estado === 'completado' && 'Completado'}
                   {turnoSeleccionado.estado === 'cancelado' && 'Cancelado'}
                 </span>
@@ -231,7 +230,7 @@ const ClienteDashboard = () => {
             </div>
 
             <div className="modal-footer">
-              {(turnoSeleccionado.estado === 'pendiente' || turnoSeleccionado.estado === 'confirmado') && (
+              {turnoSeleccionado.estado === 'reservado' && (
                 <>
                   <button
                     onClick={() => {

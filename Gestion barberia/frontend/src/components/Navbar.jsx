@@ -74,7 +74,7 @@ const Navbar = () => {
             {/* Menú Horizontal (Desktop) */}
             <div className="navbar-menu-horizontal">
               {usuario?.rol === 'cliente' && (
-                <>
+                <div className="menu-items-group">
                   <Link to="/cliente" className="menu-item">
                     Inicio
                   </Link>
@@ -87,14 +87,11 @@ const Navbar = () => {
                   <Link to="/cliente/perfil" className="menu-item">
                     Mi Perfil
                   </Link>
-                  <button onClick={handleLogout} className="menu-item logout">
-                    Cerrar Sesión
-                  </button>
-                </>
+                </div>
               )}
 
               {usuario?.rol === 'barbero' && (
-                <>
+                <div className="menu-items-group">
                   <Link to="/barbero" className="menu-item">
                     Inicio
                   </Link>
@@ -107,14 +104,11 @@ const Navbar = () => {
                   <Link to="/barbero/perfil" className="menu-item">
                     Mi Perfil
                   </Link>
-                  <button onClick={handleLogout} className="menu-item logout">
-                    Cerrar Sesión
-                  </button>
-                </>
+                </div>
               )}
 
               {usuario?.rol === 'admin' && (
-                <>
+                <div className="menu-items-group">
                   <Link to="/admin" className="menu-item">
                     Inicio
                   </Link>
@@ -133,11 +127,15 @@ const Navbar = () => {
                   <Link to="/admin/perfil" className="menu-item">
                     Mi Perfil
                   </Link>
-                  <button onClick={handleLogout} className="menu-item logout">
-                    Cerrar Sesión
-                  </button>
-                </>
+                </div>
               )}
+            </div>
+
+            {/* Logout separado a la derecha */}
+            <div className="navbar-logout">
+              <button onClick={handleLogout} className="menu-item logout">
+                Cerrar Sesión
+              </button>
             </div>
 
             {/* Menú Lateral (Mobile) */}
