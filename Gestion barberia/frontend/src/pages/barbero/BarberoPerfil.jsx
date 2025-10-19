@@ -5,7 +5,7 @@ import perfilService from '../../services/perfilService';
 
 const BarberoPerfil = () => {
   const { usuario, actualizarUsuario } = useAuth();
-  const { mostrarToast } = useToast();
+  const toast = useToast();
 
   const [loading, setLoading] = useState(true);
   const [guardando, setGuardando] = useState(false);
@@ -43,7 +43,7 @@ const BarberoPerfil = () => {
       });
     } catch (error) {
       console.error('Error al cargar perfil:', error);
-      mostrarToast('Error al cargar el perfil', 'error');
+      toast.error('Error al cargar el perfil');
     } finally {
       setLoading(false);
     }
@@ -67,24 +67,24 @@ const BarberoPerfil = () => {
     e.preventDefault();
 
     if (!perfil.nombre || !perfil.apellido || !perfil.email || !perfil.telefono) {
-      mostrarToast('Por favor completa todos los campos obligatorios', 'error');
+      toast.error('Por favor completa todos los campos obligatorios');
       return;
     }
 
     // Validar contraseñas si se están cambiando
     if (passwords.passwordActual || passwords.passwordNuevo || passwords.passwordConfirmar) {
       if (!passwords.passwordActual || !passwords.passwordNuevo || !passwords.passwordConfirmar) {
-        mostrarToast('Para cambiar la contraseña, completa todos los campos de contraseña', 'error');
+        toast.error('Para cambiar la contraseña, completa todos los campos de contraseña');
         return;
       }
 
       if (passwords.passwordNuevo !== passwords.passwordConfirmar) {
-        mostrarToast('Las contraseñas nuevas no coinciden', 'error');
+        toast.error('Las contraseñas nuevas no coinciden');
         return;
       }
 
       if (passwords.passwordNuevo.length < 6) {
-        mostrarToast('La contraseña debe tener al menos 6 caracteres', 'error');
+        toast.error('La contraseña debe tener al menos 6 caracteres');
         return;
       }
     }
@@ -104,16 +104,13 @@ const BarberoPerfil = () => {
           passwordNuevo: '',
           passwordConfirmar: '',
         });
-        mostrarToast('Perfil y contraseña actualizados correctamente', 'success');
+        toast.success('Perfil y contraseña actualizados correctamente');
       } else {
-        mostrarToast('Perfil actualizado correctamente', 'success');
+        toast.success('Perfil actualizado correctamente');
       }
     } catch (error) {
       console.error('Error al actualizar:', error);
-      mostrarToast(
-        error.response?.data?.message || 'Error al actualizar el perfil',
-        'error'
-      );
+      toast.error(error.response?.data?.message || 'Error al actualizar el perfil');
     } finally {
       setGuardando(false);
     }

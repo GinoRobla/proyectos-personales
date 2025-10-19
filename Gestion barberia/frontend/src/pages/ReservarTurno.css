@@ -482,6 +482,73 @@
   }
 }
 
+/* Laptop - Desde 1280px */
+@media (min-width: 1280px) {
+  /* Botón volver más chiquito */
+  .btn-volver {
+    width: auto !important;
+    max-width: 200px;
+  }
+
+  /* Resumen de reserva más pequeño y compacto */
+  .resumen-reserva {
+    max-width: 450px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    padding: 1rem !important;
+  }
+
+  .resumen-reserva h3 {
+    font-size: 1rem !important;
+    margin-bottom: 0.75rem !important;
+  }
+
+  .resumen-item {
+    padding: 0.4rem 0 !important;
+    font-size: 0.85rem !important;
+  }
+
+  /* Datos cliente form más pequeño */
+  .datos-cliente-form {
+    max-width: 450px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+
+  /* Paso contenido centrado con mismo ancho que resumen */
+  .paso-contenido {
+    max-width: 450px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    overflow-y: visible !important;
+    overflow: visible !important;
+    max-height: none !important;
+    height: auto !important;
+  }
+
+  /* Título h2 del paso alineado */
+  .paso-contenido h2 {
+    text-align: left !important;
+    font-size: 1.3rem !important;
+    margin-bottom: 1rem !important;
+  }
+
+  /* Remover scroll en confirmación */
+  .reservar-page {
+    overflow-y: visible !important;
+    overflow: visible !important;
+    min-height: auto !important;
+  }
+
+  .reservar-card {
+    overflow-y: visible !important;
+    overflow: visible !important;
+    max-height: none !important;
+    height: auto !important;
+    padding: 1.5rem !important;
+  }
+}
+
 /* Laptop */
 @media (min-width: 1440px) {
   .reservar-turno .container {

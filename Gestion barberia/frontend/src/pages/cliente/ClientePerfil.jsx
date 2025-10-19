@@ -2,322 +2,341 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import authService from '../../services/authService';
-import './ClientePerfil.css';
 
 const ClientePerfil = () => {
   const { usuario, actualizarUsuario } = useAuth();
   const toast = useToast();
 
-  const [editando, setEditando] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [formData, setFormData] = useState({
+  const [guardando, setGuardando] = useState(false);
+
+  // Estado para datos del perfil
+  const [perfil, setPerfil] = useState({
     nombre: '',
     apellido: '',
-    telefono: '',
     email: '',
+    telefono: '',
   });
 
-  const [cambiarPassword, setCambiarPassword] = useState(false);
-  const [passwordData, setPasswordData] = useState({
+  // Estado para cambio de contraseña
+  const [passwords, setPasswords] = useState({
     passwordActual: '',
     passwordNuevo: '',
-    passwordConfirm: '',
+    passwordConfirmar: '',
   });
 
   useEffect(() => {
     if (usuario) {
-      setFormData({
+      setPerfil({
         nombre: usuario.nombre || '',
         apellido: usuario.apellido || '',
-        telefono: usuario.telefono || '',
         email: usuario.email || '',
+        telefono: usuario.telefono || '',
       });
     }
   }, [usuario]);
 
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
+    setPerfil({
+      ...perfil,
       [e.target.name]: e.target.value,
     });
   };
 
   const handlePasswordChange = (e) => {
-    setPasswordData({
-      ...passwordData,
+    setPasswords({
+      ...passwords,
       [e.target.name]: e.target.value,
     });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
+
+    if (!perfil.nombre || !perfil.apellido || !perfil.email || !perfil.telefono) {
+      toast.error('Por favor completa todos los campos obligatorios');
+      return;
+    }
+
+    // Validar contraseñas si se están cambiando
+    if (passwords.passwordActual || passwords.passwordNuevo || passwords.passwordConfirmar) {
+      if (!passwords.passwordActual || !passwords.passwordNuevo || !passwords.passwordConfirmar) {
+        toast.error('Para cambiar la contraseña, completa todos los campos de contraseña');
+        return;
+      }
+
+      if (passwords.passwordNuevo !== passwords.passwordConfirmar) {
+        toast.error('Las contraseñas nuevas no coinciden');
+        return;
+      }
+
+      if (passwords.passwordNuevo.length < 6) {
+        toast.error('La contraseña debe tener al menos 6 caracteres');
+        return;
+      }
+    }
 
     try {
+      setGuardando(true);
+
       // Actualizar perfil
       const response = await authService.actualizarPerfil({
-        nombre: formData.nombre,
-        apellido: formData.apellido,
-        telefono: formData.telefono,
+        nombre: perfil.nombre,
+        apellido: perfil.apellido,
+        telefono: perfil.telefono,
       });
 
-      if (response.success) {
+      // Actualizar el usuario en el contexto
+      if (response.data) {
         actualizarUsuario(response.data);
+      }
 
-        // Si también quiere cambiar contraseña
-        if (cambiarPassword && passwordData.passwordActual && passwordData.passwordNuevo) {
-          if (passwordData.passwordNuevo !== passwordData.passwordConfirm) {
-            toast.error('Las contraseñas no coinciden');
-            setLoading(false);
-            return;
-          }
-
-          if (passwordData.passwordNuevo.length < 6) {
-            toast.error('La contraseña debe tener al menos 6 caracteres');
-            setLoading(false);
-            return;
-          }
-
-          try {
-            const passwordResponse = await authService.cambiarPassword(
-              passwordData.passwordActual,
-              passwordData.passwordNuevo
-            );
-
-            if (passwordResponse.success) {
-              toast.success('Perfil y contraseña actualizados correctamente');
-            }
-          } catch (err) {
-            toast.error(err.response?.data?.message || 'Error al cambiar contraseña');
-            setLoading(false);
-            return;
-          }
-        } else {
-          toast.success('Perfil actualizado correctamente');
-        }
-
-        setEditando(false);
-        setCambiarPassword(false);
-        setPasswordData({
+      // Cambiar contraseña si se proporcionaron los datos
+      if (passwords.passwordActual && passwords.passwordNuevo) {
+        await authService.cambiarPassword(passwords.passwordActual, passwords.passwordNuevo);
+        setPasswords({
           passwordActual: '',
           passwordNuevo: '',
-          passwordConfirm: '',
+          passwordConfirmar: '',
         });
+        toast.success('Perfil y contraseña actualizados correctamente');
+      } else {
+        toast.success('Perfil actualizado correctamente');
       }
-    } catch (err) {
-      toast.error(err.response?.data?.message || 'Error al actualizar perfil');
+    } catch (error) {
+      console.error('Error al actualizar:', error);
+      toast.error(error.response?.data?.message || 'Error al actualizar el perfil');
     } finally {
-      setLoading(false);
+      setGuardando(false);
     }
   };
 
   return (
-    <div className="perfil-page">
-      <div className="container">
-        <h1>Mi Perfil</h1>
+    <div style={{ padding: '2rem', maxWidth: '800px', margin: '0 auto' }}>
+      <h1 style={{ marginBottom: '2rem', fontSize: '1.75rem', fontWeight: '600' }}>
+        Mi Perfil
+      </h1>
 
-        {/* Información del Perfil */}
-        <div className="perfil-card">
-          <div className="perfil-header">
-            <div className="perfil-avatar">
-              {usuario?.nombre?.charAt(0)}{usuario?.apellido?.charAt(0)}
+      <div style={{
+        background: 'white',
+        borderRadius: '8px',
+        padding: '2rem',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+      }}>
+        <form onSubmit={handleSubmit}>
+          {/* Información Personal */}
+          <h2 style={{ fontSize: '1.25rem', fontWeight: '600', marginBottom: '1.5rem' }}>
+            Información Personal
+          </h2>
+
+          <div style={{ display: 'grid', gap: '1.5rem', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))' }}>
+            <div>
+              <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
+                Nombre *
+              </label>
+              <input
+                type="text"
+                name="nombre"
+                value={perfil.nombre}
+                onChange={handleChange}
+                required
+                style={{
+                  width: '100%',
+                  padding: '0.75rem',
+                  border: '1px solid #ddd',
+                  borderRadius: '6px',
+                  fontSize: '1rem'
+                }}
+              />
             </div>
-            <div className="perfil-info">
-              <h2>{usuario?.nombre} {usuario?.apellido}</h2>
-              <p className="perfil-rol">{usuario?.rol}</p>
+
+            <div>
+              <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
+                Apellido *
+              </label>
+              <input
+                type="text"
+                name="apellido"
+                value={perfil.apellido}
+                onChange={handleChange}
+                required
+                style={{
+                  width: '100%',
+                  padding: '0.75rem',
+                  border: '1px solid #ddd',
+                  borderRadius: '6px',
+                  fontSize: '1rem'
+                }}
+              />
+            </div>
+
+            <div>
+              <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
+                Email *
+              </label>
+              <input
+                type="email"
+                name="email"
+                value={perfil.email}
+                onChange={handleChange}
+                required
+                disabled
+                style={{
+                  width: '100%',
+                  padding: '0.75rem',
+                  border: '1px solid #ddd',
+                  borderRadius: '6px',
+                  fontSize: '1rem',
+                  background: '#f5f5f5',
+                  cursor: 'not-allowed'
+                }}
+              />
+              <small style={{ display: 'block', marginTop: '0.25rem', fontSize: '0.875rem', color: '#6c757d' }}>
+                El email no se puede modificar
+              </small>
+            </div>
+
+            <div>
+              <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
+                Teléfono *
+              </label>
+              <input
+                type="tel"
+                name="telefono"
+                value={perfil.telefono}
+                onChange={handleChange}
+                required
+                style={{
+                  width: '100%',
+                  padding: '0.75rem',
+                  border: '1px solid #ddd',
+                  borderRadius: '6px',
+                  fontSize: '1rem'
+                }}
+              />
             </div>
           </div>
 
-          {!editando ? (
-            <div className="perfil-detalles">
-              <div className="detalle-item">
-                <span className="label">Nombre:</span>
-                <span className="valor">{usuario?.nombre}</span>
-              </div>
-              <div className="detalle-item">
-                <span className="label">Apellido:</span>
-                <span className="valor">{usuario?.apellido}</span>
-              </div>
-              <div className="detalle-item">
-                <span className="label">Email:</span>
-                <span className="valor">{usuario?.email}</span>
-              </div>
-              <div className="detalle-item">
-                <span className="label">Teléfono:</span>
-                <span className="valor">{usuario?.telefono}</span>
-              </div>
+          {/* Divisor */}
+          <div style={{
+            margin: '2rem 0',
+            borderTop: '1px solid #e9ecef'
+          }}></div>
 
-              <div className="perfil-acciones">
-                <button
-                  onClick={() => setEditando(true)}
-                  className="btn btn-primary"
-                >
-                  Editar Perfil
-                </button>
-              </div>
+          {/* Cambio de Contraseña */}
+          <h2 style={{ fontSize: '1.25rem', fontWeight: '600', marginBottom: '0.5rem' }}>
+            Cambiar Contraseña
+          </h2>
+          <p style={{ fontSize: '0.875rem', color: '#6c757d', marginBottom: '1.5rem' }}>
+            Deja estos campos en blanco si no deseas cambiar tu contraseña
+          </p>
+
+          <div style={{ display: 'grid', gap: '1.5rem', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))' }}>
+            <div>
+              <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
+                Contraseña Actual
+              </label>
+              <input
+                type="password"
+                name="passwordActual"
+                value={passwords.passwordActual}
+                onChange={handlePasswordChange}
+                style={{
+                  width: '100%',
+                  padding: '0.75rem',
+                  border: '1px solid #ddd',
+                  borderRadius: '6px',
+                  fontSize: '1rem'
+                }}
+              />
             </div>
-          ) : (
-            <form onSubmit={handleSubmit} className="perfil-form">
-              <h3>Información Personal</h3>
 
-              <div className="input-group">
-                <label htmlFor="nombre" className="input-label">
-                  Nombre
-                </label>
-                <input
-                  type="text"
-                  id="nombre"
-                  name="nombre"
-                  className="input"
-                  value={formData.nombre}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
+            <div>
+              <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
+                Nueva Contraseña
+              </label>
+              <input
+                type="password"
+                name="passwordNuevo"
+                value={passwords.passwordNuevo}
+                onChange={handlePasswordChange}
+                minLength={6}
+                style={{
+                  width: '100%',
+                  padding: '0.75rem',
+                  border: '1px solid #ddd',
+                  borderRadius: '6px',
+                  fontSize: '1rem'
+                }}
+              />
+            </div>
 
-              <div className="input-group">
-                <label htmlFor="apellido" className="input-label">
-                  Apellido
-                </label>
-                <input
-                  type="text"
-                  id="apellido"
-                  name="apellido"
-                  className="input"
-                  value={formData.apellido}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
+            <div>
+              <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
+                Confirmar Nueva Contraseña
+              </label>
+              <input
+                type="password"
+                name="passwordConfirmar"
+                value={passwords.passwordConfirmar}
+                onChange={handlePasswordChange}
+                minLength={6}
+                style={{
+                  width: '100%',
+                  padding: '0.75rem',
+                  border: '1px solid #ddd',
+                  borderRadius: '6px',
+                  fontSize: '1rem'
+                }}
+              />
+            </div>
+          </div>
 
-              <div className="input-group">
-                <label htmlFor="email" className="input-label">
-                  Email
-                </label>
-                <input
-                  type="email"
-                  id="email"
-                  name="email"
-                  className="input"
-                  value={formData.email}
-                  disabled
-                />
-                <small className="input-hint">El email no se puede modificar</small>
-              </div>
+          {/* Botones */}
+          <div style={{ marginTop: '2rem', display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+            <button
+              type="submit"
+              disabled={guardando}
+              style={{
+                padding: '0.75rem 2rem',
+                background: '#007bff',
+                color: 'white',
+                border: 'none',
+                borderRadius: '6px',
+                fontSize: '1rem',
+                fontWeight: '500',
+                cursor: guardando ? 'not-allowed' : 'pointer',
+                opacity: guardando ? 0.6 : 1
+              }}
+            >
+              {guardando ? 'Guardando...' : 'Guardar Cambios'}
+            </button>
 
-              <div className="input-group">
-                <label htmlFor="telefono" className="input-label">
-                  Teléfono
-                </label>
-                <input
-                  type="tel"
-                  id="telefono"
-                  name="telefono"
-                  className="input"
-                  value={formData.telefono}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-
-              {/* Opción para cambiar contraseña */}
-              <div className="cambiar-password-toggle">
-                <label className="checkbox-label">
-                  <input
-                    type="checkbox"
-                    checked={cambiarPassword}
-                    onChange={(e) => setCambiarPassword(e.target.checked)}
-                  />
-                  <span>Cambiar contraseña</span>
-                </label>
-              </div>
-
-              {/* Campos de contraseña (condicionales) */}
-              {cambiarPassword && (
-                <>
-                  <h3 className="section-title">Cambiar Contraseña</h3>
-
-                  <div className="input-group">
-                    <label htmlFor="passwordActual" className="input-label">
-                      Contraseña Actual
-                    </label>
-                    <input
-                      type="password"
-                      id="passwordActual"
-                      name="passwordActual"
-                      className="input"
-                      value={passwordData.passwordActual}
-                      onChange={handlePasswordChange}
-                      required={cambiarPassword}
-                    />
-                  </div>
-
-                  <div className="input-group">
-                    <label htmlFor="passwordNuevo" className="input-label">
-                      Nueva Contraseña
-                    </label>
-                    <input
-                      type="password"
-                      id="passwordNuevo"
-                      name="passwordNuevo"
-                      className="input"
-                      value={passwordData.passwordNuevo}
-                      onChange={handlePasswordChange}
-                      required={cambiarPassword}
-                    />
-                    <small className="input-hint">Mínimo 6 caracteres</small>
-                  </div>
-
-                  <div className="input-group">
-                    <label htmlFor="passwordConfirm" className="input-label">
-                      Confirmar Nueva Contraseña
-                    </label>
-                    <input
-                      type="password"
-                      id="passwordConfirm"
-                      name="passwordConfirm"
-                      className="input"
-                      value={passwordData.passwordConfirm}
-                      onChange={handlePasswordChange}
-                      required={cambiarPassword}
-                    />
-                  </div>
-                </>
-              )}
-
-              <div className="perfil-acciones">
-                <button
-                  type="submit"
-                  className="btn btn-primary"
-                  disabled={loading}
-                >
-                  {loading ? 'Guardando...' : 'Guardar Cambios'}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setEditando(false);
-                    setCambiarPassword(false);
-                    setFormData({
-                      nombre: usuario?.nombre || '',
-                      apellido: usuario?.apellido || '',
-                      telefono: usuario?.telefono || '',
-                      email: usuario?.email || '',
-                    });
-                    setPasswordData({
-                      passwordActual: '',
-                      passwordNuevo: '',
-                      passwordConfirm: '',
-                    });
-                  }}
-                  className="btn btn-outline"
-                >
-                  Cancelar
-                </button>
-              </div>
-            </form>
-          )}
-        </div>
+            {(passwords.passwordActual || passwords.passwordNuevo || passwords.passwordConfirmar) && (
+              <button
+                type="button"
+                onClick={() => {
+                  setPasswords({
+                    passwordActual: '',
+                    passwordNuevo: '',
+                    passwordConfirmar: '',
+                  });
+                }}
+                style={{
+                  padding: '0.75rem 2rem',
+                  background: '#6c757d',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '6px',
+                  fontSize: '1rem',
+                  fontWeight: '500',
+                  cursor: 'pointer'
+                }}
+              >
+                Limpiar Contraseñas
+              </button>
+            )}
+          </div>
+        </form>
       </div>
     </div>
   );

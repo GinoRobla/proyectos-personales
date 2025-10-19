@@ -8,10 +8,16 @@ import './BarberoAgenda.css';
  */
 
 const BarberoAgenda = () => {
+  // Helper para obtener fecha local en formato YYYY-MM-DD
+  const obtenerFechaLocal = (date = new Date()) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
   const [turnos, setTurnos] = useState([]);
-  const [fechaSeleccionada, setFechaSeleccionada] = useState(
-    new Date().toISOString().split('T')[0]
-  );
+  const [fechaSeleccionada, setFechaSeleccionada] = useState(obtenerFechaLocal());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -69,19 +75,21 @@ const BarberoAgenda = () => {
   };
 
   const handleDiaAnterior = () => {
-    const fecha = new Date(fechaSeleccionada + 'T00:00:00');
+    const [year, month, day] = fechaSeleccionada.split('-').map(Number);
+    const fecha = new Date(year, month - 1, day);
     fecha.setDate(fecha.getDate() - 1);
-    setFechaSeleccionada(fecha.toISOString().split('T')[0]);
+    setFechaSeleccionada(obtenerFechaLocal(fecha));
   };
 
   const handleDiaSiguiente = () => {
-    const fecha = new Date(fechaSeleccionada + 'T00:00:00');
+    const [year, month, day] = fechaSeleccionada.split('-').map(Number);
+    const fecha = new Date(year, month - 1, day);
     fecha.setDate(fecha.getDate() + 1);
-    setFechaSeleccionada(fecha.toISOString().split('T')[0]);
+    setFechaSeleccionada(obtenerFechaLocal(fecha));
   };
 
   const handleHoy = () => {
-    setFechaSeleccionada(new Date().toISOString().split('T')[0]);
+    setFechaSeleccionada(obtenerFechaLocal());
   };
 
   const formatearFecha = (fecha) => {
@@ -98,10 +106,7 @@ const BarberoAgenda = () => {
   };
 
   const esHoy = () => {
-    const hoy = new Date();
-    hoy.setHours(0, 0, 0, 0);
-    const hoyString = hoy.toISOString().split('T')[0];
-    return fechaSeleccionada === hoyString;
+    return fechaSeleccionada === obtenerFechaLocal();
   };
 
   return (

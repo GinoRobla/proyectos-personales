@@ -1,70 +1,53 @@
+/**
+ * Controlador de turnos.
+ * Maneja reservas, cancelaciones y consulta de disponibilidad.
+ */
+
 import * as turnoService from '../services/turnoService.js';
 import { generarRespuestaPaginada } from '../middlewares/paginacionMiddleware.js';
 
 /**
- * Controlador de Turnos
- * Maneja las peticiones HTTP y delega la lógica de negocio al servicio
- */
-
-/**
- * Obtener todos los turnos con filtros opcionales y paginación
+ * Obtener todos los turnos con filtros y paginación
+ * GET /api/turnos
  */
 export const obtenerTurnos = async (req, res) => {
   try {
     const { estado, barberoId, fecha, desde, hasta } = req.query;
-
-    const filtros = { estado, barberoId, fecha, desde, hasta };
     const paginacion = req.paginacion || { skip: 0, limite: 10 };
 
-    const { turnos, total } = await turnoService.obtenerTodos(filtros, paginacion);
-
-    const respuesta = generarRespuestaPaginada(
-      turnos,
-      total,
-      paginacion.pagina || 1,
-      paginacion.limite
+    const { turnos, total } = await turnoService.obtenerTodos(
+      { estado, barberoId, fecha, desde, hasta },
+      paginacion
     );
 
-    res.status(200).json({
-      success: true,
-      ...respuesta,
-    });
+    const respuesta = generarRespuestaPaginada(turnos, total, paginacion.pagina || 1, paginacion.limite);
+
+    res.status(200).json({ success: true, ...respuesta });
   } catch (error) {
     console.error('Error al obtener turnos:', error);
-    res.status(500).json({
-      success: false,
-      message: error.message,
-    });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
 /**
  * Obtener un turno por ID
+ * GET /api/turnos/:id
  */
 export const obtenerTurnoPorId = async (req, res) => {
   try {
-    const { id } = req.params;
+    const turno = await turnoService.obtenerPorId(req.params.id);
 
-    const turno = await turnoService.obtenerPorId(id);
-
-    res.status(200).json({
-      success: true,
-      data: turno,
-    });
+    res.status(200).json({ success: true, data: turno });
   } catch (error) {
     console.error('Error al obtener turno:', error);
-
     const statusCode = error.message.includes('no encontrado') ? 404 : 500;
-
-    res.status(statusCode).json({
-      success: false,
-      message: error.message,
-    });
+    res.status(statusCode).json({ success: false, message: error.message });
   }
 };
 
 /**
- * Crear una nueva reserva (turno)
+ * Crear un nuevo turno
+ * POST /api/turnos
  */
 export const crearTurno = async (req, res) => {
   try {
@@ -80,24 +63,21 @@ export const crearTurno = async (req, res) => {
 
     let statusCode = 500;
     if (error.message.includes('no encontrado')) statusCode = 404;
-    if (error.message.includes('ya tiene un turno') || error.message.includes('Faltan campos'))
+    if (error.message.includes('ya tiene un turno') || error.message.includes('Faltan campos')) {
       statusCode = 400;
+    }
 
-    res.status(statusCode).json({
-      success: false,
-      message: error.message,
-    });
+    res.status(statusCode).json({ success: false, message: error.message });
   }
 };
 
 /**
  * Actualizar un turno
+ * PUT /api/turnos/:id
  */
 export const actualizarTurno = async (req, res) => {
   try {
-    const { id } = req.params;
-
-    const turnoActualizado = await turnoService.actualizar(id, req.body);
+    const turnoActualizado = await turnoService.actualizar(req.params.id, req.body);
 
     res.status(200).json({
       success: true,
@@ -111,21 +91,17 @@ export const actualizarTurno = async (req, res) => {
     if (error.message.includes('no encontrado')) statusCode = 404;
     if (error.message.includes('ya existe')) statusCode = 400;
 
-    res.status(statusCode).json({
-      success: false,
-      message: error.message,
-    });
+    res.status(statusCode).json({ success: false, message: error.message });
   }
 };
 
 /**
  * Cancelar un turno
+ * PATCH /api/turnos/:id/cancelar
  */
 export const cancelarTurno = async (req, res) => {
   try {
-    const { id } = req.params;
-
-    const turno = await turnoService.cancelar(id);
+    const turno = await turnoService.cancelar(req.params.id);
 
     res.status(200).json({
       success: true,
@@ -134,98 +110,68 @@ export const cancelarTurno = async (req, res) => {
     });
   } catch (error) {
     console.error('Error al cancelar turno:', error);
-
     const statusCode = error.message.includes('no encontrado') ? 404 : 500;
-
-    res.status(statusCode).json({
-      success: false,
-      message: error.message,
-    });
+    res.status(statusCode).json({ success: false, message: error.message });
   }
 };
 
 /**
- * Obtener mis turnos (cliente o barbero autenticado)
+ * Obtener turnos del usuario autenticado (cliente o barbero)
+ * GET /api/turnos/mis-turnos
  */
 export const obtenerMisTurnos = async (req, res) => {
   try {
-    const usuario = req.usuario; // Del middleware autenticar
+    const usuario = req.usuario;
     const { estado, fecha } = req.query;
     const paginacion = req.paginacion || { skip: 0, limite: 10 };
 
     let filtros = { estado, fecha };
 
-    // Si es cliente, filtrar por cliente
+    // Filtrar por cliente
     if (usuario.rol === 'cliente') {
-      // Buscar el cliente asociado al usuario
       const Cliente = (await import('../models/Cliente.js')).default;
       const cliente = await Cliente.findOne({ email: usuario.email });
 
-      if (cliente) {
-        filtros.clienteId = cliente._id;
-      } else {
-        // Si no hay cliente asociado, retornar array vacío
-        // (el usuario aún no ha creado ningún turno)
+      if (!cliente) {
         return res.status(200).json({
           success: true,
           datos: [],
-          paginacion: {
-            total: 0,
-            totalPaginas: 0,
-            paginaActual: paginacion.pagina || 1,
-            limite: paginacion.limite,
-          },
+          paginacion: { total: 0, totalPaginas: 0, paginaActual: paginacion.pagina || 1, limite: paginacion.limite },
         });
       }
+
+      filtros.clienteId = cliente._id;
     }
 
-    // Si es barbero, filtrar por barbero
+    // Filtrar por barbero
     if (usuario.rol === 'barbero') {
-      // Buscar el barbero asociado al usuario
       const Barbero = (await import('../models/Barbero.js')).default;
       const barbero = await Barbero.findOne({ email: usuario.email });
 
-      if (barbero) {
-        filtros.barberoId = barbero._id;
-      } else {
-        // Si no hay barbero asociado, retornar array vacío
+      if (!barbero) {
         return res.status(200).json({
           success: true,
           datos: [],
-          paginacion: {
-            total: 0,
-            totalPaginas: 0,
-            paginaActual: paginacion.pagina || 1,
-            limite: paginacion.limite,
-          },
+          paginacion: { total: 0, totalPaginas: 0, paginaActual: paginacion.pagina || 1, limite: paginacion.limite },
         });
       }
+
+      filtros.barberoId = barbero._id;
     }
 
     const { turnos, total } = await turnoService.obtenerTodos(filtros, paginacion);
+    const respuesta = generarRespuestaPaginada(turnos, total, paginacion.pagina || 1, paginacion.limite);
 
-    const respuesta = generarRespuestaPaginada(
-      turnos,
-      total,
-      paginacion.pagina || 1,
-      paginacion.limite
-    );
-
-    res.status(200).json({
-      success: true,
-      ...respuesta,
-    });
+    res.status(200).json({ success: true, ...respuesta });
   } catch (error) {
     console.error('Error al obtener mis turnos:', error);
-    res.status(500).json({
-      success: false,
-      message: error.message,
-    });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
 /**
  * Obtener horarios disponibles para una fecha
+ * GET /api/turnos/horarios-disponibles
  */
 export const obtenerHorariosDisponibles = async (req, res) => {
   try {
@@ -250,10 +196,7 @@ export const obtenerHorariosDisponibles = async (req, res) => {
     });
   } catch (error) {
     console.error('Error al obtener horarios disponibles:', error);
-    res.status(500).json({
-      success: false,
-      message: error.message,
-    });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 

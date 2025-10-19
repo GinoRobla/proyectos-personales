@@ -1,193 +1,69 @@
-/**
- * ============================================================================
- * SERVICIO: GESTIÓN DE TURNOS
- * ============================================================================
- *
- * Maneja todas las operaciones relacionadas con los turnos de la barbería.
- *
- * RESPONSABILIDADES:
- * - Obtener listado de turnos (todos o filtrados)
- * - Obtener turnos del usuario autenticado
- * - Crear nuevos turnos (reservas)
- * - Actualizar información de turnos
- * - Cambiar el estado de turnos
- * - Cancelar turnos
- * - Consultar horarios disponibles
- *
- * ENDPOINTS UTILIZADOS:
- * - GET /turnos - Listar todos los turnos (admin)
- * - GET /turnos/mis-turnos - Turnos del usuario autenticado
- * - GET /turnos/:id - Obtener un turno específico
- * - POST /turnos - Crear nuevo turno
- * - PUT /turnos/:id - Actualizar turno completo
- * - PATCH /turnos/:id/estado - Cambiar solo el estado
- * - PATCH /turnos/:id/cancelar - Cancelar turno
- * - GET /turnos/horarios-disponibles - Consultar disponibilidad
- */
-
+// Importa la instancia de 'api' (axios)
 import api from './api';
 
-// ============================================================================
-// DEFINICIÓN DEL SERVICIO
-// ============================================================================
-
+/**
+ * Este objeto contiene todas las funciones para
+ * "hablar" con los endpoints de /turnos en el backend.
+ */
 export const turnoService = {
-  // ==========================================================================
-  // OBTENER TODOS LOS TURNOS (ADMIN)
-  // ==========================================================================
-  /**
-   * OBTENER TODOS LOS TURNOS
-   *
-   * Obtiene el listado completo de turnos con paginación y filtros.
-   * Solo disponible para administradores.
-   *
-   * @param {Object} parametros - Parámetros de consulta opcionales
-   * @param {number} parametros.pagina - Número de página
-   * @param {number} parametros.limite - Cantidad de resultados por página
-   * @param {string} parametros.estado - Filtrar por estado del turno
-   * @param {string} parametros.fecha - Filtrar por fecha
-   * @returns {Promise<Object>} Lista de turnos con metadatos de paginación
-   */
+  
+  // Obtiene todos los turnos con filtros (Admin)
   obtenerTodos: async (parametros = {}) => {
+    // Llama a: GET /turnos (con params: ?pagina=1&estado=...)
     const respuesta = await api.get('/turnos', { params: parametros });
     return respuesta.data;
   },
 
-  // ==========================================================================
-  // OBTENER MIS TURNOS (CLIENTE O BARBERO)
-  // ==========================================================================
-  /**
-   * OBTENER MIS TURNOS
-   *
-   * Obtiene los turnos del usuario autenticado.
-   * - Si es cliente: turnos donde es el cliente
-   * - Si es barbero: turnos que tiene asignados
-   *
-   * @param {Object} parametros - Parámetros de consulta opcionales
-   * @param {string} parametros.estado - Filtrar por estado
-   * @param {string} parametros.fecha - Filtrar por fecha
-   * @returns {Promise<Object>} Lista de turnos del usuario
-   */
+  // Obtiene los turnos del usuario logueado (cliente o barbero)
   obtenerMisTurnos: async (parametros = {}) => {
+    // Llama a: GET /turnos/mis-turnos
     const respuesta = await api.get('/turnos/mis-turnos', { params: parametros });
     return respuesta.data;
   },
 
-  // ==========================================================================
-  // OBTENER UN TURNO POR ID
-  // ==========================================================================
-  /**
-   * OBTENER TURNO POR ID
-   *
-   * Obtiene los detalles completos de un turno específico.
-   *
-   * @param {string} idTurno - ID del turno a obtener
-   * @returns {Promise<Object>} Datos completos del turno
-   */
+  // Obtiene un turno específico por su ID
   obtenerTurnoPorId: async (idTurno) => {
+    // Llama a: GET /turnos/ID_DEL_TURNO
     const respuesta = await api.get(`/turnos/${idTurno}`);
     return respuesta.data;
   },
 
-  // ==========================================================================
-  // CREAR NUEVO TURNO (RESERVAR)
-  // ==========================================================================
-  /**
-   * CREAR TURNO
-   *
-   * Crea una nueva reserva de turno en el sistema.
-   *
-   * @param {Object} datosTurno - Información del turno a crear
-   * @param {string} datosTurno.servicioId - ID del servicio a realizar
-   * @param {string} datosTurno.fecha - Fecha del turno (YYYY-MM-DD)
-   * @param {string} datosTurno.hora - Hora del turno (HH:MM)
-   * @param {string} datosTurno.barberoId - ID del barbero (opcional)
-   * @param {Object} datosTurno.clienteData - Datos del cliente si no está autenticado
-   * @param {number} datosTurno.precio - Precio del servicio
-   * @returns {Promise<Object>} Turno creado
-   */
+  // Crea una nueva reserva
   crearTurno: async (datosTurno) => {
+    // Llama a: POST /turnos
     const respuesta = await api.post('/turnos', datosTurno);
     return respuesta.data;
   },
 
-  // ==========================================================================
-  // ACTUALIZAR TURNO
-  // ==========================================================================
-  /**
-   * ACTUALIZAR TURNO
-   *
-   * Actualiza la información completa de un turno existente.
-   *
-   * @param {string} idTurno - ID del turno a actualizar
-   * @param {Object} datosActualizados - Nuevos datos del turno
-   * @returns {Promise<Object>} Turno actualizado
-   */
+  // Actualiza un turno completo (fecha, hora, barbero, etc.)
   actualizarTurno: async (idTurno, datosActualizados) => {
+    // Llama a: PUT /turnos/ID_DEL_TURNO
     const respuesta = await api.put(`/turnos/${idTurno}`, datosActualizados);
     return respuesta.data;
   },
 
-  // ==========================================================================
-  // ACTUALIZAR SOLO EL ESTADO DEL TURNO
-  // ==========================================================================
-  /**
-   * ACTUALIZAR ESTADO
-   *
-   * Cambia únicamente el estado de un turno.
-   * Estados: pendiente, confirmado, en_proceso, completado, cancelado
-   *
-   * @param {string} idTurno - ID del turno
-   * @param {string} nuevoEstado - Nuevo estado del turno
-   * @returns {Promise<Object>} Turno con estado actualizado
-   */
+  // Actualiza *solo* el estado de un turno (ej: 'completado')
   actualizarEstado: async (idTurno, nuevoEstado) => {
+    // Llama a: PATCH /turnos/ID_DEL_TURNO/estado
     const respuesta = await api.patch(`/turnos/${idTurno}/estado`, {
       estado: nuevoEstado,
     });
     return respuesta.data;
   },
 
-  // ==========================================================================
-  // CANCELAR TURNO
-  // ==========================================================================
-  /**
-   * CANCELAR TURNO
-   *
-   * Marca un turno como cancelado.
-   *
-   * @param {string} idTurno - ID del turno a cancelar
-   * @returns {Promise<Object>} Turno cancelado
-   */
+  // Marca un turno como 'cancelado'
   cancelarTurno: async (idTurno) => {
+    // Llama a: PATCH /turnos/ID_DEL_TURNO/cancelar
     const respuesta = await api.patch(`/turnos/${idTurno}/cancelar`);
     return respuesta.data;
   },
 
-  // ==========================================================================
-  // OBTENER HORARIOS DISPONIBLES
-  // ==========================================================================
-  /**
-   * OBTENER HORARIOS DISPONIBLES
-   *
-   * Consulta qué horarios están disponibles para reservar en una fecha específica.
-   *
-   * @param {Object} parametros - Parámetros de consulta
-   * @param {string} parametros.fecha - Fecha a consultar (YYYY-MM-DD)
-   * @param {string} parametros.servicioId - ID del servicio (para calcular duración)
-   * @param {string} parametros.barberoId - ID del barbero específico (opcional)
-   * @returns {Promise<Object>} Lista de horarios disponibles
-   */
+  // Consulta los horarios disponibles para una fecha y servicio
   obtenerHorariosDisponibles: async (parametros = {}) => {
+    // Llama a: GET /turnos/horarios-disponibles
     const respuesta = await api.get('/turnos/horarios-disponibles', {
       params: parametros,
     });
     return respuesta.data;
   },
 };
-
-// ============================================================================
-// EXPORTACIÓN
-// ============================================================================
-
-export default turnoService;

@@ -1,129 +1,87 @@
-/**
- * ============================================================================
- * SERVICIO: CLIENTE HTTP (API)
- * ============================================================================
- *
- * Configuración centralizada del cliente HTTP basado en Axios para todas
- * las peticiones al backend.
- *
- * RESPONSABILIDADES:
- * - Crear instancia configurada de Axios con URL base
- * - Agregar automáticamente el token JWT a cada petición
- * - Manejar errores de autenticación globalmente
- * - Configurar headers por defecto
- *
- * INTERCEPTORES:
- * - Request: Agrega el token de autorización antes de cada petición
- * - Response: Maneja errores 401 (no autorizado) redirigiendo al login
- *
- * USO:
- * import api from './api';
- * const response = await api.get('/endpoint');
- * const response = await api.post('/endpoint', datos);
- */
-
 import axios from 'axios';
 
-// ============================================================================
-// CONFIGURACIÓN DE LA URL BASE
-// ============================================================================
+// --- 1. Configuración de la URL Base ---
 
-// URL del backend obtenida desde variables de entorno
-// Si no está definida, usar localhost como fallback
+// Lee la URL de tu backend desde las variables de entorno (.env)
+// Si no está definida (ej. en desarrollo), usa la URL local por defecto.
 const URL_BASE_API = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
-// ============================================================================
-// CREACIÓN DE LA INSTANCIA DE AXIOS
-// ============================================================================
+// --- 2. Creación de la Instancia de Axios ---
 
-/**
- * Instancia configurada de Axios para comunicación con el backend.
- *
- * Configuración:
- * - baseURL: URL base del API
- * - headers: Content-Type como JSON por defecto
- */
+// Creamos una "instancia" de axios.
+// Esto nos permite tener una configuración centralizada para todas las llamadas a la API.
 const api = axios.create({
+  // 'baseURL' se pondrá automáticamente al inicio de todas las peticiones.
+  // Ejemplo: api.get('/turnos') llamará a 'http://localhost:3000/api/turnos'
   baseURL: URL_BASE_API,
+  
+  // 'headers' por defecto para todas las peticiones
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
 // ============================================================================
-// INTERCEPTOR DE REQUEST
+// INTERCEPTORES
+// (Funciones que se "interceptan" o ejecutan en cada petición o respuesta)
 // ============================================================================
 
-/**
- * INTERCEPTOR: Agregar token de autenticación
- *
- * Se ejecuta antes de cada petición HTTP.
- *
- * Proceso:
- * 1. Buscar el token en localStorage
- * 2. Si existe, agregarlo al header Authorization
- * 3. Enviar la petición con el token incluido
- */
-api.interceptors.request.use(
-  (configuracion) => {
-    // Paso 1: Obtener el token guardado en localStorage
-    const tokenGuardado = localStorage.getItem('token');
+// --- 3. Interceptor de Petición (Request) ---
+// Esta función se ejecuta ANTES de que cada petición sea enviada.
 
-    // Paso 2: Si hay token, agregarlo a los headers
-    if (tokenGuardado) {
-      configuracion.headers.Authorization = `Bearer ${tokenGuardado}`;
+api.interceptors.request.use(
+  (config) => {
+    // 1. Busca el token guardado en el localStorage del navegador
+    const token = localStorage.getItem('token');
+
+    // 2. Si encuentra un token...
+    if (token) {
+      // 3. ...lo añade a los 'headers' de la petición.
+      // Así, el backend sabe quién eres en cada llamada.
+      config.headers.Authorization = `Bearer ${token}`;
     }
 
-    // Paso 3: Retornar la configuración modificada
-    return configuracion;
+    // 4. Devuelve la 'config' modificada para que la petición continúe
+    return config;
   },
   (error) => {
-    // Si hay error en la preparación de la petición, rechazar
+    // Si hay un error al preparar la petición, lo rechaza
     return Promise.reject(error);
   }
 );
 
-// ============================================================================
-// INTERCEPTOR DE RESPONSE
-// ============================================================================
+// --- 4. Interceptor de Respuesta (Response) ---
+// Esta función se ejecuta DESPUÉS de recibir una respuesta del backend.
 
-/**
- * INTERCEPTOR: Manejar errores de respuesta
- *
- * Se ejecuta después de recibir cada respuesta HTTP.
- *
- * Proceso:
- * 1. Si la respuesta es exitosa, pasarla sin modificar
- * 2. Si hay error 401 (No autorizado):
- *    - El token es inválido o expiró
- *    - Limpiar localStorage
- *    - Redirigir al usuario al login
- * 3. Para otros errores, rechazar la promesa normalmente
- */
 api.interceptors.response.use(
-  (respuesta) => {
-    // Paso 1: Si la respuesta es exitosa, retornarla sin cambios
-    return respuesta;
-  },
-  (error) => {
-    // Paso 2: Si el error es 401 (No autorizado)
-    if (error.response?.status === 401) {
-      // El token expiró o es inválido
-      // Limpiar datos de autenticación
-      localStorage.removeItem('token');
-      localStorage.removeItem('usuario');
+  // 4a. Si la respuesta fue exitosa (status 2xx), simplemente la devuelve.
+  (response) => response,
 
-      // Redirigir al login
+  // 4b. Si la respuesta tuvo un error...
+  (error) => {
+    // 5. Verificamos si el error es un 401 (No Autorizado)
+    // El '?' (optional chaining) evita un error si 'error.response' no existe.
+    if (error.response?.status === 401) {
+      
+      // Error 401 significa que el token es inválido o expiró.
+      console.error('Error 401: No autorizado. Redirigiendo al login...');
+
+      // 6. Limpiamos los datos de sesión del usuario
+      localStorage.removeItem('token');
+      localStorage.removeItem('usuario'); // O cualquier otra info de sesión
+
+      // 7. Redirigimos al usuario a la página de login
+      // Usamos 'window.location.href' para forzar una recarga completa.
       window.location.href = '/login';
     }
 
-    // Paso 3: Rechazar la promesa con el error
+    // 8. Para cualquier otro error (ej: 404, 500), lo rechazamos.
+    // Esto permite que el código que llamó a la API (ej: un .catch()) maneje el error.
     return Promise.reject(error);
   }
 );
 
-// ============================================================================
-// EXPORTACIÓN
-// ============================================================================
+// --- 5. Exportación ---
 
+// Exportamos la instancia 'api' para usarla en todo el frontend.
 export default api;

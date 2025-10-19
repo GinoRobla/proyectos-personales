@@ -25,11 +25,16 @@ const BarberoDashboard = () => {
   const cargarDatos = async () => {
     try {
       setLoading(true);
-      const hoy = new Date().toISOString().split('T')[0];
+      // Obtener fecha local en formato YYYY-MM-DD
+      const hoy = new Date();
+      const year = hoy.getFullYear();
+      const month = String(hoy.getMonth() + 1).padStart(2, '0');
+      const day = String(hoy.getDate()).padStart(2, '0');
+      const fechaHoy = `${year}-${month}-${day}`;
 
       // Obtener turnos de hoy
       const response = await turnoService.obtenerMisTurnos({
-        fecha: hoy,
+        fecha: fechaHoy,
         limite: 20,
       });
 
@@ -194,6 +199,7 @@ const BarberoDashboard = () => {
               {hayMasTurnos && (
                 <Link
                   to="/barbero/agenda"
+                  className="btn-ver-todos"
                   style={{
                     display: 'block',
                     width: '100%',
@@ -317,7 +323,7 @@ const BarberoDashboard = () => {
         )}
 
         {/* Acciones Rápidas */}
-        <div className="acciones-rapidas">
+        <div className="acciones-rapidas acciones-rapidas-agenda">
           <Link to="/barbero/agenda" className="accion-card">
             <div>
               <h3>Ver Agenda</h3>

@@ -414,6 +414,26 @@
   }
 }
 
+/* Laptop - Desde 1280px */
+@media (min-width: 1280px) {
+  .turnos-lista {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Botón Ver Todos - más chiquito de ancho */
+  .btn-ver-todos {
+    width: auto !important;
+    max-width: 300px;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+
+  /* Ocultar botón Ver Agenda completa */
+  .acciones-rapidas-agenda {
+    display: none !important;
+  }
+}
+
 /* Laptop */
 @media (min-width: 1440px) {
   .barbero-dashboard .container {
@@ -426,7 +446,7 @@
   }
 
   .turnos-lista {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: 1fr;
     gap: 2rem;
   }
 
@@ -451,7 +471,7 @@
   }
 
   .turnos-lista {
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: 1fr;
     gap: 2.5rem;
   }
 

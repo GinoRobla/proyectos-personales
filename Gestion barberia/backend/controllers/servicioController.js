@@ -1,12 +1,13 @@
+/**
+ * Controlador de servicios.
+ * Maneja CRUD de servicios de la barbería.
+ */
+
 import * as servicioService from '../services/servicioService.js';
 
 /**
- * Controlador de Servicios
- * Maneja las peticiones HTTP y delega la lógica de negocio al servicio
- */
-
-/**
  * Obtener todos los servicios
+ * GET /api/servicios
  */
 export const obtenerServicios = async (req, res) => {
   try {
@@ -26,40 +27,29 @@ export const obtenerServicios = async (req, res) => {
     });
   } catch (error) {
     console.error('Error al obtener servicios:', error);
-    res.status(500).json({
-      success: false,
-      message: error.message,
-    });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
 /**
  * Obtener un servicio por ID
+ * GET /api/servicios/:id
  */
 export const obtenerServicioPorId = async (req, res) => {
   try {
-    const { id } = req.params;
+    const servicio = await servicioService.obtenerPorId(req.params.id);
 
-    const servicio = await servicioService.obtenerPorId(id);
-
-    res.status(200).json({
-      success: true,
-      data: servicio,
-    });
+    res.status(200).json({ success: true, data: servicio });
   } catch (error) {
     console.error('Error al obtener servicio:', error);
-
     const statusCode = error.message.includes('no encontrado') ? 404 : 500;
-
-    res.status(statusCode).json({
-      success: false,
-      message: error.message,
-    });
+    res.status(statusCode).json({ success: false, message: error.message });
   }
 };
 
 /**
  * Crear un nuevo servicio
+ * POST /api/servicios
  */
 export const crearServicio = async (req, res) => {
   try {
@@ -72,24 +62,18 @@ export const crearServicio = async (req, res) => {
     });
   } catch (error) {
     console.error('Error al crear servicio:', error);
-
     const statusCode = error.message.includes('ya existe') ? 400 : 500;
-
-    res.status(statusCode).json({
-      success: false,
-      message: error.message,
-    });
+    res.status(statusCode).json({ success: false, message: error.message });
   }
 };
 
 /**
  * Actualizar un servicio
+ * PUT /api/servicios/:id
  */
 export const actualizarServicio = async (req, res) => {
   try {
-    const { id } = req.params;
-
-    const servicioActualizado = await servicioService.actualizar(id, req.body);
+    const servicioActualizado = await servicioService.actualizar(req.params.id, req.body);
 
     res.status(200).json({
       success: true,
@@ -103,21 +87,17 @@ export const actualizarServicio = async (req, res) => {
     if (error.message.includes('no encontrado')) statusCode = 404;
     if (error.message.includes('ya existe')) statusCode = 400;
 
-    res.status(statusCode).json({
-      success: false,
-      message: error.message,
-    });
+    res.status(statusCode).json({ success: false, message: error.message });
   }
 };
 
 /**
  * Eliminar (desactivar) un servicio
+ * DELETE /api/servicios/:id
  */
 export const eliminarServicio = async (req, res) => {
   try {
-    const { id } = req.params;
-
-    const servicio = await servicioService.eliminar(id);
+    const servicio = await servicioService.eliminar(req.params.id);
 
     res.status(200).json({
       success: true,
@@ -126,13 +106,8 @@ export const eliminarServicio = async (req, res) => {
     });
   } catch (error) {
     console.error('Error al eliminar servicio:', error);
-
     const statusCode = error.message.includes('no encontrado') ? 404 : 500;
-
-    res.status(statusCode).json({
-      success: false,
-      message: error.message,
-    });
+    res.status(statusCode).json({ success: false, message: error.message });
   }
 };
 

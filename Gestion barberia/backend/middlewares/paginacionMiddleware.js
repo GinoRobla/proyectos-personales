@@ -1,14 +1,12 @@
 /**
- * Middleware de Paginación
- * Extrae y valida parámetros de paginación de la query string
+ * Middleware de paginación.
+ * Extrae y valida parámetros de paginación de la query string.
  */
 
 export const paginacion = (req, res, next) => {
-  // Obtener parámetros de paginación (por defecto página 1, 10 resultados)
   const pagina = parseInt(req.query.pagina) || 1;
   const limite = parseInt(req.query.limite) || 10;
 
-  // Validar que sean números positivos
   if (pagina < 1) {
     return res.status(400).json({
       success: false,
@@ -23,21 +21,17 @@ export const paginacion = (req, res, next) => {
     });
   }
 
-  // Calcular skip (cuántos documentos saltar)
-  const skip = (pagina - 1) * limite;
-
-  // Agregar parámetros al request
   req.paginacion = {
     pagina,
     limite,
-    skip,
+    skip: (pagina - 1) * limite,
   };
 
   next();
 };
 
 /**
- * Función helper para generar respuesta paginada
+ * Genera respuesta paginada estándar
  */
 export const generarRespuestaPaginada = (datos, total, pagina, limite) => {
   const totalPaginas = Math.ceil(total / limite);

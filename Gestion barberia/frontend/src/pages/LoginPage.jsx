@@ -4,12 +4,10 @@
  * ============================================================================
  *
  * Página de inicio de sesión que permite a los usuarios autenticarse
- * en el sistema mediante credenciales tradicionales (email/contraseña)
- * o a través de autenticación con Google OAuth.
+ * en el sistema mediante credenciales tradicionales (email/contraseña).
  *
  * RESPONSABILIDADES:
  * - Permitir inicio de sesión con email y contraseña
- * - Ofrecer autenticación mediante Google OAuth
  * - Validar credenciales ingresadas
  * - Redirigir al dashboard correspondiente según el rol del usuario
  * - Prevenir acceso si el usuario ya está autenticado
@@ -25,9 +23,7 @@
  * FLUJO:
  * 1. El usuario llega a la página de login
  * 2. Si ya está autenticado, se redirige automáticamente a su dashboard
- * 3. El usuario puede elegir:
- *    a) Ingresar email y contraseña manualmente
- *    b) Usar el botón "Continuar con Google"
+ * 3. El usuario ingresa email y contraseña
  * 4. Al enviar el formulario:
  *    - Se validan los campos (email y contraseña requeridos)
  *    - Se llama al servicio de autenticación
@@ -51,7 +47,7 @@ const LoginPage = () => {
   // ============================================================================
 
   const navegar = useNavigate();
-  const { login, loginConGoogle, estaAutenticado, usuario } = useAuth();
+  const { login, estaAutenticado, usuario } = useAuth();
   const toast = useToast();
 
   // ============================================================================
@@ -173,21 +169,6 @@ const LoginPage = () => {
     }
   };
 
-  /**
-   * MANEJAR LOGIN CON GOOGLE
-   *
-   * Inicia el flujo de autenticación con Google OAuth.
-   *
-   * PROCESO:
-   * 1. Llama a la función loginConGoogle del contexto
-   * 2. El contexto redirige al usuario a la página de Google
-   * 3. Después de autenticarse, Google redirige a /auth/callback
-   * 4. AuthCallbackPage procesa el token y redirige al dashboard
-   */
-  const manejarLoginConGoogle = () => {
-    loginConGoogle();
-  };
-
   // ============================================================================
   // RENDERIZADO
   // ============================================================================
@@ -253,25 +234,6 @@ const LoginPage = () => {
               {estaCargando ? 'Ingresando...' : 'Ingresar'}
             </button>
           </form>
-
-          {/* Divisor visual entre login tradicional y OAuth */}
-          <div className="auth-divider">
-            <span>o continúa con</span>
-          </div>
-
-          {/* Botón: Login con Google */}
-          <button
-            type="button"
-            className="btn btn-google"
-            onClick={manejarLoginConGoogle}
-          >
-            <img
-              src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
-              alt="Google"
-              style={{ width: '20px', height: '20px' }}
-            />
-            Continuar con Google
-          </button>
 
           {/* Footer con link a página de registro */}
           <div className="auth-footer">

@@ -19,7 +19,6 @@
  *
  * FUNCIONES PROPORCIONADAS:
  * - iniciarSesion: Login con email y contraseña
- * - iniciarSesionConGoogle: Redirige a OAuth de Google
  * - registrarUsuario: Crear nueva cuenta de usuario
  * - cerrarSesion: Eliminar sesión y limpiar datos
  * - actualizarPerfil: Actualizar datos del perfil
@@ -139,20 +138,6 @@ export const AuthProvider = ({ children }) => {
 
     // Si hubo error, retornar el mensaje
     return { success: false, message: respuesta.message };
-  };
-
-  // ============================================================================
-  // FUNCIÓN: Iniciar sesión con Google OAuth
-  // ============================================================================
-  /**
-   * INICIAR SESIÓN CON GOOGLE
-   *
-   * Redirige al usuario al flujo de autenticación de Google OAuth.
-   * El callback manejará el token de respuesta.
-   */
-  const iniciarSesionConGoogle = () => {
-    // Redirigir a la URL de autenticación de Google OAuth
-    window.location.href = authService.getGoogleLoginUrl();
   };
 
   // ============================================================================
@@ -285,7 +270,6 @@ export const AuthProvider = ({ children }) => {
 
     // Funciones
     login: iniciarSesion,
-    loginConGoogle: iniciarSesionConGoogle,
     registro: registrarUsuario,
     logout: cerrarSesion,
     actualizarPerfil,

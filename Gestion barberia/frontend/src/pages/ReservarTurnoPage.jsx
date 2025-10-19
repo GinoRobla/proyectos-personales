@@ -163,7 +163,10 @@ const ReservarTurnoPage = () => {
 
   const esHoraPasada = (hora) => {
     const hoy = new Date();
-    const hoyString = hoy.toISOString().split('T')[0];
+    const year = hoy.getFullYear();
+    const month = String(hoy.getMonth() + 1).padStart(2, '0');
+    const day = String(hoy.getDate()).padStart(2, '0');
+    const hoyString = `${year}-${month}-${day}`;
 
     // Solo verificar si es el día de hoy
     if (fechaSeleccionada === hoyString) {
@@ -274,6 +277,14 @@ const ReservarTurnoPage = () => {
     }
   };
 
+  // Helper para obtener fecha local en formato YYYY-MM-DD
+  const obtenerFechaLocal = (date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
   // Obtener próximos 14 días hábiles (excluyendo domingos)
   const obtenerProximosDias = () => {
     const dias = [];
@@ -283,12 +294,12 @@ const ReservarTurnoPage = () => {
     while (dias.length < 14) {
       if (fecha.getDay() !== 0) { // Excluir domingos
         dias.push({
-          fecha: fecha.toISOString().split('T')[0],
+          fecha: obtenerFechaLocal(fecha),
           dia: fecha.getDate(),
           diaSemana: fecha.toLocaleDateString('es-AR', { weekday: 'short' }),
           mes: fecha.toLocaleDateString('es-AR', { month: 'short' }),
-          esHoy: fecha.toDateString() === hoy.toDateString(),
-          esMañana: fecha.toDateString() === new Date(hoy.getTime() + 86400000).toDateString()
+          esHoy: obtenerFechaLocal(fecha) === obtenerFechaLocal(hoy),
+          esMañana: obtenerFechaLocal(fecha) === obtenerFechaLocal(new Date(hoy.getTime() + 86400000))
         });
       }
       fecha.setDate(fecha.getDate() + 1);
@@ -301,7 +312,7 @@ const ReservarTurnoPage = () => {
   const obtenerFechaMaxima = () => {
     const hoy = new Date();
     const finMes = new Date(hoy.getFullYear(), hoy.getMonth() + 1, 0);
-    return finMes.toISOString().split('T')[0];
+    return obtenerFechaLocal(finMes);
   };
 
   return (
@@ -475,9 +486,9 @@ const ReservarTurnoPage = () => {
                                     : 'Disponible'
                               }
                             >
-                              {hora}
-                              {horaPasada && <span style={{ fontSize: '10px', display: 'block' }}>Pasado</span>}
-                              {!horaPasada && !disponible && <span style={{ fontSize: '10px', display: 'block' }}>Ocupado</span>}
+                              <span style={{ display: 'block' }}>{hora}</span>
+                              {horaPasada && <span style={{ fontSize: '10px', display: 'block', marginTop: '8px' }}>(Pasado)</span>}
+                              {!horaPasada && !disponible && <span style={{ fontSize: '10px', display: 'block', marginTop: '8px' }}>(Ocupado)</span>}
                             </button>
                           );
                         })}

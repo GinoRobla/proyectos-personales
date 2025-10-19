@@ -1,56 +1,33 @@
+/**
+ * Modelo de Usuario.
+ * Maneja autenticación, roles y datos básicos de usuarios.
+ */
+
 import mongoose from 'mongoose';
 import bcrypt from 'bcrypt';
 
-const esquemaDeUsuario = new mongoose.Schema({
-  nombre: {
-    type: String,
-    required: true
+const usuarioSchema = new mongoose.Schema(
+  {
+    nombre: { type: String, required: true },
+    apellido: { type: String, required: true },
+    email: { type: String, required: true, unique: true },
+    password: { type: String, required: true, select: false },
+    telefono: { type: String, required: true },
+    rol: {
+      type: String,
+      enum: ['cliente', 'barbero', 'admin'],
+      default: 'cliente',
+    },
+    foto: { type: String, default: 'https://via.placeholder.com/150' },
+    activo: { type: Boolean, default: true },
+    ultimoLogin: { type: Date },
+    barberoAsociado: { type: mongoose.Schema.Types.ObjectId, ref: 'Barbero' },
   },
-  apellido: {
-    type: String,
-    required: true
-  },
-  email: {
-    type: String,
-    required: true,
-    unique: true
-  },
-  password: {
-    type: String,
-    required: true,
-    select: false
-  },
-  telefono: {
-    type: String,
-    required: true
-  },
-  rol: {
-    type: String,
-    enum: ['cliente', 'barbero', 'admin'],
-    default: 'cliente'
-  },
-  foto: {
-    type: String,
-    default: 'https://via.placeholder.com/150'
-  },
-  activo: {
-    type: Boolean,
-    default: true
-  },
-  ultimoLogin: {
-    type: Date
-  },
-  barberoAsociado: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Barbero'
-  }
-}, {
-  timestamps: true
-});
+  { timestamps: true }
+);
 
-// Middleware: Encriptar password antes de guardar
-esquemaDeUsuario.pre('save', async function(next) {
-  // Solo encriptar si el password fue modificado
+// Encriptar password antes de guardar
+usuarioSchema.pre('save', async function (next) {
   if (!this.isModified('password')) return next();
 
   try {
@@ -62,34 +39,22 @@ esquemaDeUsuario.pre('save', async function(next) {
   }
 });
 
-// Método: Comparar password
-esquemaDeUsuario.methods.compararPassword = async function(passwordIngresado) {
+// Método para comparar contraseñas
+usuarioSchema.methods.compararPassword = async function (passwordIngresado) {
   return await bcrypt.compare(passwordIngresado, this.password);
 };
 
-// Campo virtual para nombre completo
-esquemaDeUsuario.virtual('nombreCompleto').get(function () {
+// Campos virtuales
+usuarioSchema.virtual('nombreCompleto').get(function () {
   return `${this.nombre} ${this.apellido}`;
 });
 
-// Nuevo campo virtual: descripción del rol
-esquemaDeUsuario.virtual('rolDescripcion').get(function () {
-  switch (this.rol) {
-    case 'cliente':
-      return 'Cliente';
-    case 'barbero':
-      return 'Barbero';
-    case 'admin':
-      return 'Administrador';
-    default:
-      return 'Desconocido';
-  }
+usuarioSchema.virtual('rolDescripcion').get(function () {
+  const roles = { cliente: 'Cliente', barbero: 'Barbero', admin: 'Administrador' };
+  return roles[this.rol] || 'Desconocido';
 });
 
-// Incluir virtuales al convertir a JSON u objetos
-esquemaDeUsuario.set('toJSON', { virtuals: true });
-esquemaDeUsuario.set('toObject', { virtuals: true });
+usuarioSchema.set('toJSON', { virtuals: true });
+usuarioSchema.set('toObject', { virtuals: true });
 
-const Usuario = mongoose.model('Usuario', esquemaDeUsuario);
-
-export default Usuario;
+export default mongoose.model('Usuario', usuarioSchema);

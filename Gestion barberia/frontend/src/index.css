@@ -187,17 +187,6 @@ body {
   background-color: #c82333;
 }
 
-.btn-google {
-  background-color: white;
-  color: var(--text-dark);
-  border: 1px solid #dadce0;
-  box-shadow: var(--shadow-sm);
-}
-
-.btn-google:hover {
-  box-shadow: var(--shadow);
-}
-
 /* Inputs - Mobile optimized */
 .input-group {
   margin-bottom: var(--spacing-md);

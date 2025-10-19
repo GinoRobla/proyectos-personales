@@ -1,52 +1,36 @@
-import mongoose from "mongoose";
+/**
+ * Modelo de Cliente.
+ * Información de clientes de la barbería.
+ */
+
+import mongoose from 'mongoose';
 
 const clienteSchema = new mongoose.Schema(
   {
-    nombre: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-    apellido: {
-      type: String,
-      required: true,
-      trim: true,
-    },
+    usuario: { type: mongoose.Schema.Types.ObjectId, ref: 'Usuario', required: true, unique: true },
+    nombre: { type: String, required: true, trim: true },
+    apellido: { type: String, required: true, trim: true },
     email: {
       type: String,
       required: true,
       lowercase: true,
       trim: true,
-      match: [/^\S+@\S+\.\S+$/, "Email inválido"],
+      match: [/^\S+@\S+\.\S+$/, 'Email inválido'],
     },
-    telefono: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-    activo: {
-      type: Boolean,
-      default: true,
-    },
+    telefono: { type: String, required: true, trim: true },
+    activo: { type: Boolean, default: true },
   },
-  {
-    timestamps: true,
-    versionKey: false,
-  }
+  { timestamps: true, versionKey: false }
 );
 
-// Índices
 clienteSchema.index({ email: 1 });
 clienteSchema.index({ telefono: 1 });
 
-// Campo virtual
-clienteSchema.virtual("nombreCompleto").get(function () {
+clienteSchema.virtual('nombreCompleto').get(function () {
   return `${this.nombre} ${this.apellido}`;
 });
 
-// Incluir virtuales en JSON y objetos
-clienteSchema.set("toJSON", { virtuals: true });
-clienteSchema.set("toObject", { virtuals: true });
+clienteSchema.set('toJSON', { virtuals: true });
+clienteSchema.set('toObject', { virtuals: true });
 
-const Cliente = mongoose.model("Cliente", clienteSchema);
-export default Cliente;
+export default mongoose.model('Cliente', clienteSchema);

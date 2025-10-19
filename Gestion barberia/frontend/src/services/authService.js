@@ -1,169 +1,63 @@
-/**
- * ============================================================================
- * SERVICIO: AUTENTICACIÓN
- * ============================================================================
- *
- * Maneja todas las operaciones relacionadas con autenticación y gestión
- * de perfiles de usuario.
- *
- * RESPONSABILIDADES:
- * - Registro de nuevos usuarios
- * - Inicio de sesión tradicional (email/contraseña)
- * - Inicio de sesión con Google OAuth
- * - Verificación de tokens JWT
- * - Gestión del perfil de usuario
- * - Cambio de contraseña
- *
- * ENDPOINTS UTILIZADOS:
- * - POST /auth/registro - Crear nueva cuenta
- * - POST /auth/login - Autenticar usuario
- * - GET /auth/verificar - Validar token JWT
- * - GET /auth/perfil - Obtener datos del perfil
- * - PUT /auth/perfil - Actualizar datos del perfil
- * - PUT /auth/cambiar-password - Cambiar contraseña
- */
-
+// Importa la instancia de 'api' (axios) que configuramos en el paso anterior
 import api from './api';
 
-// ============================================================================
-// DEFINICIÓN DEL SERVICIO
-// ============================================================================
-
+/**
+ * Este objeto contiene todas las funciones para
+ * "hablar" con los endpoints de /auth en el backend.
+ */
 export const authService = {
-  // ==========================================================================
-  // REGISTRAR NUEVO USUARIO
-  // ==========================================================================
-  /**
-   * REGISTRAR USUARIO
-   *
-   * Crea una nueva cuenta de usuario en el sistema.
-   *
-   * @param {Object} datosUsuario - Datos del nuevo usuario
-   * @param {string} datosUsuario.nombre - Nombre del usuario
-   * @param {string} datosUsuario.apellido - Apellido del usuario
-   * @param {string} datosUsuario.email - Email del usuario
-   * @param {string} datosUsuario.telefono - Teléfono del usuario
-   * @param {string} datosUsuario.password - Contraseña del usuario
-   * @param {string} datosUsuario.rol - Rol del usuario (cliente, barbero, admin)
-   * @returns {Promise<Object>} Respuesta con token y datos del usuario
-   */
+  
+  // Envía datos para crear una nueva cuenta de usuario
   registro: async (datosUsuario) => {
+    // Llama a: POST /auth/registro
     const respuesta = await api.post('/auth/registro', datosUsuario);
+    // Devuelve los datos de la respuesta (ej: { token, usuario })
     return respuesta.data;
   },
 
-  // ==========================================================================
-  // INICIAR SESIÓN TRADICIONAL
-  // ==========================================================================
-  /**
-   * INICIAR SESIÓN
-   *
-   * Autentica un usuario con email y contraseña.
-   *
-   * @param {string} correoElectronico - Email del usuario
-   * @param {string} contrasena - Contraseña del usuario
-   * @returns {Promise<Object>} Respuesta con token y datos del usuario
-   */
+  // Envía email y password para iniciar sesión
   login: async (correoElectronico, contrasena) => {
+    // Llama a: POST /auth/login
     const respuesta = await api.post('/auth/login', {
       email: correoElectronico,
       password: contrasena,
     });
+    // Devuelve { token, usuario }
     return respuesta.data;
   },
 
-  // ==========================================================================
-  // VERIFICAR TOKEN
-  // ==========================================================================
-  /**
-   * VERIFICAR TOKEN
-   *
-   * Valida si el token JWT actual sigue siendo válido.
-   *
-   * @returns {Promise<Object>} Respuesta con datos del usuario si el token es válido
-   */
+  // Verifica si el token (enviado automáticamente por el interceptor) sigue siendo válido
   verificarToken: async () => {
+    // Llama a: GET /auth/verificar
     const respuesta = await api.get('/auth/verificar');
+    // Devuelve los datos del usuario si el token es válido
     return respuesta.data;
   },
 
-  // ==========================================================================
-  // OBTENER PERFIL DEL USUARIO AUTENTICADO
-  // ==========================================================================
-  /**
-   * OBTENER PERFIL
-   *
-   * Obtiene los datos del perfil del usuario autenticado actualmente.
-   *
-   * @returns {Promise<Object>} Datos del perfil del usuario
-   */
+  // Obtiene los datos del perfil del usuario logueado
   obtenerPerfil: async () => {
+    // Llama a: GET /auth/perfil
     const respuesta = await api.get('/auth/perfil');
+    // Devuelve los datos del perfil
     return respuesta.data;
   },
 
-  // ==========================================================================
-  // ACTUALIZAR PERFIL DEL USUARIO
-  // ==========================================================================
-  /**
-   * ACTUALIZAR PERFIL
-   *
-   * Actualiza los datos del perfil del usuario autenticado.
-   *
-   * @param {Object} datosActualizados - Nuevos datos del perfil
-   * @param {string} datosActualizados.nombre - Nombre actualizado (opcional)
-   * @param {string} datosActualizados.apellido - Apellido actualizado (opcional)
-   * @param {string} datosActualizados.telefono - Teléfono actualizado (opcional)
-   * @returns {Promise<Object>} Datos actualizados del usuario
-   */
+  // Actualiza el perfil del usuario logueado (nombre, apellido, tel)
   actualizarPerfil: async (datosActualizados) => {
+    // Llama a: PUT /auth/perfil
     const respuesta = await api.put('/auth/perfil', datosActualizados);
+    // Devuelve el perfil actualizado
     return respuesta.data;
   },
 
-  // ==========================================================================
-  // CAMBIAR CONTRASEÑA
-  // ==========================================================================
-  /**
-   * CAMBIAR CONTRASEÑA
-   *
-   * Permite al usuario cambiar su contraseña actual por una nueva.
-   *
-   * @param {string} contrasenaActual - Contraseña actual del usuario
-   * @param {string} contrasenaNueva - Nueva contraseña deseada
-   * @returns {Promise<Object>} Confirmación del cambio de contraseña
-   */
+  // Envía la contraseña actual y la nueva para cambiarla
   cambiarPassword: async (contrasenaActual, contrasenaNueva) => {
+    // Llama a: PUT /auth/cambiar-password
     const respuesta = await api.put('/auth/cambiar-password', {
       passwordActual: contrasenaActual,
       passwordNuevo: contrasenaNueva,
     });
+    // Devuelve un mensaje de éxito
     return respuesta.data;
   },
-
-  // ==========================================================================
-  // OBTENER URL DE LOGIN CON GOOGLE
-  // ==========================================================================
-  /**
-   * OBTENER URL DE GOOGLE OAUTH
-   *
-   * Genera la URL de autenticación con Google OAuth.
-   *
-   * @returns {string} URL completa para redireccionar al flujo de Google OAuth
-   */
-  getGoogleLoginUrl: () => {
-    // Obtener la URL base del API desde variables de entorno
-    const urlBaseApi = import.meta.env.VITE_API_URL || 'http://localhost:3000';
-
-    // Remover '/api' del final si existe y agregar el endpoint de Google OAuth
-    const urlBase = urlBaseApi.replace('/api', '');
-
-    return `${urlBase}/api/auth/google`;
-  },
 };
-
-// ============================================================================
-// EXPORTACIÓN
-// ============================================================================
-
-export default authService;

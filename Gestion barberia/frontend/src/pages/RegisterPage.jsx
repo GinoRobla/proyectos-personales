@@ -8,7 +8,7 @@ import './AuthPages.css';
  */
 
 const RegisterPage = () => {
-  const { registro, loginConGoogle, estaAutenticado } = useAuth();
+  const { registro, estaAutenticado } = useAuth();
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
@@ -71,10 +71,6 @@ const RegisterPage = () => {
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleGoogleRegister = () => {
-    loginConGoogle();
   };
 
   return (
@@ -207,25 +203,6 @@ const RegisterPage = () => {
               {loading ? 'Registrando...' : 'Crear Cuenta'}
             </button>
           </form>
-
-          {/* Divisor */}
-          <div className="auth-divider">
-            <span>o regístrate con</span>
-          </div>
-
-          {/* Registro con Google */}
-          <button
-            type="button"
-            className="btn btn-google"
-            onClick={handleGoogleRegister}
-          >
-            <img
-              src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
-              alt="Google"
-              style={{ width: '20px', height: '20px' }}
-            />
-            Continuar con Google
-          </button>
 
           {/* Link a Login */}
           <div className="auth-footer">

@@ -85,6 +85,7 @@ const crearUsuariosIniciales = async () => {
 
     // Crear perfil de barbero (Barbero es una entidad independiente)
     const perfilBarbero = await Barbero.create({
+      usuario: usuarioBarbero._id,
       nombre: 'Carlos',
       apellido: 'Pérez',
       email: 'barbero@barberia.com',
@@ -112,6 +113,7 @@ const crearUsuariosIniciales = async () => {
 
     // Crear perfil de cliente (Cliente es una entidad independiente)
     const perfilCliente = await Cliente.create({
+      usuario: usuarioCliente._id,
       nombre: 'Juan',
       apellido: 'González',
       email: 'cliente@email.com',

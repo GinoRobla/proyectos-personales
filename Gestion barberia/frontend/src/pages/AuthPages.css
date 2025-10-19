@@ -61,25 +61,6 @@
   gap: var(--spacing-md);
 }
 
-.auth-divider {
-  display: flex;
-  align-items: center;
-  margin: var(--spacing-xl) 0;
-  color: var(--text-gray);
-  font-size: 0.875rem;
-}
-
-.auth-divider::before,
-.auth-divider::after {
-  content: '';
-  flex: 1;
-  border-bottom: 1px solid #e0e0e0;
-}
-
-.auth-divider span {
-  padding: 0 var(--spacing-md);
-}
-
 .auth-footer {
   text-align: center;
   margin-top: var(--spacing-xl);
@@ -157,5 +138,57 @@
 
   .form-row {
     grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* Laptop - Desde 1280px */
+@media (min-width: 1280px) {
+  .auth-page {
+    padding: var(--spacing-xl);
+  }
+
+  .auth-card {
+    max-width: 480px;
+    padding: 3rem 3.5rem;
+  }
+
+  .brand-name {
+    font-size: 2.25rem;
+  }
+
+  .auth-header h2 {
+    font-size: 1.75rem;
+  }
+}
+
+/* Desktop grande - 1440px */
+@media (min-width: 1440px) {
+  .auth-card {
+    max-width: 520px;
+    padding: 3.5rem 4rem;
+  }
+
+  .brand-name {
+    font-size: 2.5rem;
+  }
+}
+
+/* PC de Escritorio - 1920px */
+@media (min-width: 1920px) {
+  .auth-card {
+    max-width: 600px;
+    padding: 4rem 5rem;
+  }
+
+  .brand-name {
+    font-size: 3rem;
+  }
+
+  .auth-header h2 {
+    font-size: 2rem;
+  }
+
+  .auth-header p {
+    font-size: 1rem;
   }
 }

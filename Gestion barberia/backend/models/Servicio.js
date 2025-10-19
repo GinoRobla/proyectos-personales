@@ -1,7 +1,11 @@
+/**
+ * Modelo de Servicio.
+ * Servicios ofrecidos por la barbería (cortes, afeitado, etc.).
+ */
+
 import mongoose from 'mongoose';
 
-// Esquema de Servicio
-const esquemaDeServicio = new mongoose.Schema(
+const servicioSchema = new mongoose.Schema(
   {
     nombre: {
       type: String,
@@ -9,10 +13,7 @@ const esquemaDeServicio = new mongoose.Schema(
       trim: true,
       unique: true,
     },
-    descripcion: {
-      type: String,
-      default: '',
-    },
+    descripcion: { type: String, default: '' },
     precioBase: {
       type: Number,
       required: [true, 'El precio base es obligatorio'],
@@ -24,22 +25,12 @@ const esquemaDeServicio = new mongoose.Schema(
       min: [15, 'La duración mínima es 15 minutos'],
       max: [240, 'La duración máxima es 240 minutos'],
     },
-    activo: {
-      type: Boolean,
-      default: true,
-    },
+    activo: { type: Boolean, default: true },
   },
-  {
-    timestamps: true,
-    versionKey: false,
-  }
+  { timestamps: true, versionKey: false }
 );
 
-// Índices
-esquemaDeServicio.index({ nombre: 1 });
-esquemaDeServicio.index({ activo: 1 });
+servicioSchema.index({ nombre: 1 });
+servicioSchema.index({ activo: 1 });
 
-// Modelo
-const Servicio = mongoose.model('Servicio', esquemaDeServicio);
-
-export default Servicio;
+export default mongoose.model('Servicio', servicioSchema);

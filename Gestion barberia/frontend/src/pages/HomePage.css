@@ -191,3 +191,73 @@
     box-shadow: var(--shadow-lg);
   }
 }
+
+/* Laptop - Desde 1280px */
+@media (min-width: 1280px) {
+  .home-page .container {
+    max-width: 1200px;
+    padding: 0 2rem;
+  }
+
+  .hero {
+    min-height: 65vh;
+    padding: 4rem 0;
+  }
+
+  .hero-title {
+    font-size: 3.5rem;
+  }
+
+  .services-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+  }
+
+  .service-card {
+    padding: 2rem;
+  }
+
+  .benefits-grid {
+    gap: 2rem;
+  }
+}
+
+/* Desktop grande - 1440px */
+@media (min-width: 1440px) {
+  .home-page .container {
+    max-width: 1400px;
+    padding: 0 3rem;
+  }
+
+  .hero-title {
+    font-size: 4rem;
+  }
+
+  .services-grid {
+    gap: 2.5rem;
+  }
+}
+
+/* PC de Escritorio - 1920px */
+@media (min-width: 1920px) {
+  .home-page .container {
+    max-width: 1600px;
+    padding: 0 4rem;
+  }
+
+  .hero {
+    min-height: 70vh;
+  }
+
+  .hero-title {
+    font-size: 4.5rem;
+  }
+
+  .services-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .section-title {
+    font-size: 2.25rem;
+  }
+}

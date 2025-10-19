@@ -1,136 +1,88 @@
-/**
- * ============================================================================
- * SERVICIO DE TURNOS (RESERVAS)
- * ============================================================================
- *
- * Este archivo contiene toda la lógica de negocio relacionada con la gestión
- * de turnos y reservas en el sistema de la barbería.
- *
- * QUÉ ES UN TURNO:
- * Un turno es una reserva que hace un cliente para recibir un servicio
- * (corte de cabello, afeitado, etc.) en una fecha y hora específica,
- * opcionalmente con un barbero asignado.
- *
- * RESPONSABILIDADES DE ESTE ARCHIVO:
- * - Crear nuevos turnos (con o sin barbero asignado)
- * - Listar turnos con filtros (por estado, barbero, cliente, fecha)
- * - Obtener detalles de un turno específico
- * - Actualizar información de turnos (estado, barbero, notas, etc.)
- * - Cancelar turnos
- * - Verificar disponibilidad de horarios
- * - Gestionar el envío de emails de confirmación
- *
- * FLUJO TÍPICO DE UN TURNO:
- * 1. Cliente solicita un turno (o admin lo crea)
- * 2. Se verifica disponibilidad del horario y barbero
- * 3. Se crea o encuentra el cliente en la base de datos
- * 4. Se crea el turno con estado 'reservado'
- * 5. Se envían emails de confirmación (cliente, barbero, admin)
- * 6. El día del turno se envían recordatorios
- * 7. Después del servicio, el estado cambia a 'completado'
- * 8. Se marca como pagado cuando se recibe el pago
- */
-
 import Turno from '../models/Turno.js';
 import Cliente from '../models/Cliente.js';
 import Barbero from '../models/Barbero.js';
 import Servicio from '../models/Servicio.js';
 
-// ===== FUNCIONES PRINCIPALES DEL SERVICIO =====
+/**
+ * -------------------------------------------------------------------
+ * FUNCIÓN HELPER (USO INTERNO)
+ * -------------------------------------------------------------------
+ */
+
+/**
+ * (Helper) Crea un rango de fechas UTC para un día completo (00:00 a 23:59)
+ * @param {string} fechaString - Fecha en formato YYYY-MM-DD
+ * @returns {object} - Objeto de query de Mongoose {$gte, $lte}
+ */
+const _crearRangoFechaDia = (fechaString) => {
+  // Parsea el string (ej: "2025-10-20")
+  const [año, mes, dia] = fechaString.split('T')[0].split('-').map(Number);
+  
+  // Crea el inicio del día en UTC (ej: 20-10-2025 00:00:00Z)
+  const inicioDia = new Date(Date.UTC(año, mes - 1, dia, 0, 0, 0, 0));
+  // Crea el fin del día en UTC (ej: 20-10-2025 23:59:59Z)
+  const finDia = new Date(Date.UTC(año, mes - 1, dia, 23, 59, 59, 999));
+
+  // Devuelve el objeto de filtro para Mongoose
+  return { $gte: inicioDia, $lte: finDia };
+};
+
+/**
+ * -------------------------------------------------------------------
+ * SERVICIOS EXPORTADOS
+ * -------------------------------------------------------------------
+ */
 
 /**
  * OBTENER TODOS LOS TURNOS
- *
- * Lista turnos con opciones de filtrado y paginación.
- *
- * QUÉ HACE:
- * Permite buscar turnos aplicando filtros (estado, barbero, cliente, fecha)
- * y devuelve los resultados paginados.
- *
- * FILTROS SOPORTADOS:
- * - estado: Estado del turno (reservado, completado, cancelado)
- * - barberoId: ID del barbero asignado
- * - clienteId: ID del cliente
- * - fecha: Fecha específica (formato: YYYY-MM-DD)
- * - desde/hasta: Rango de fechas
- *
- * PAGINACIÓN:
- * - skip: Número de registros a saltar
- * - limite: Cantidad máxima de registros a devolver
- *
- * @param {object} filtros - Criterios de búsqueda
- * @param {object} paginacion - Opciones de paginación
- * @returns {object} - Objeto con turnos encontrados y total
+ * Lista turnos con filtros y paginación.
  */
 export const obtenerTodos = async (filtros = {}, paginacion = {}) => {
   try {
-    // Paso 1: Extraer filtros
     const { estado, barberoId, clienteId, fecha, desde, hasta } = filtros;
     const { skip = 0, limite = 10 } = paginacion;
 
-    // Paso 2: Construir la consulta de MongoDB
-    const consultaDeBusqueda = {};
+    // 1. Construir la consulta de búsqueda
+    const query = {};
 
-    // Filtro por estado (puede ser múltiple separado por comas)
+    // Filtro por estado (puede ser uno o varios: "reservado,completado")
     if (estado) {
       if (estado.includes(',')) {
-        // Múltiples estados: "reservado,completado"
-        const listaDeEstados = estado.split(',');
-        consultaDeBusqueda.estado = { $in: listaDeEstados };
+        query.estado = { $in: estado.split(',') }; // $in: ["reservado", "completado"]
       } else {
-        // Un solo estado
-        consultaDeBusqueda.estado = estado;
+        query.estado = estado;
       }
     }
 
-    // Filtro por barbero
-    if (barberoId) {
-      consultaDeBusqueda.barbero = barberoId;
-    }
+    if (barberoId) query.barbero = barberoId;
+    if (clienteId) query.cliente = clienteId;
 
-    // Filtro por cliente
-    if (clienteId) {
-      consultaDeBusqueda.cliente = clienteId;
-    }
-
-    // Filtro por fecha específica
+    // Filtro por fecha (usa el helper para buscar en todo el día UTC)
     if (fecha) {
-      // Extraer solo la parte de fecha (sin hora) para evitar problemas de zona horaria
-      const cadenaDeFecha = fecha.includes('T') ? fecha.split('T')[0] : fecha;
-      const [año, mes, dia] = cadenaDeFecha.split('-').map(Number);
-
-      // Crear rango de fechas en UTC para cubrir todo el día
-      const inicioDia = new Date(Date.UTC(año, mes - 1, dia, 0, 0, 0, 0));
-      const finDia = new Date(Date.UTC(año, mes - 1, dia, 23, 59, 59, 999));
-
-      consultaDeBusqueda.fecha = {
-        $gte: inicioDia, // Mayor o igual al inicio del día
-        $lte: finDia,    // Menor o igual al fin del día
-      };
+      query.fecha = _crearRangoFechaDia(fecha);
     } else if (desde && hasta) {
       // Filtro por rango de fechas
-      consultaDeBusqueda.fecha = {
+      query.fecha = {
         $gte: new Date(desde),
         $lte: new Date(hasta),
       };
     }
 
-    // Paso 3: Contar total de documentos (para la paginación)
-    const cantidadTotalDeTurnos = await Turno.countDocuments(consultaDeBusqueda);
+    // 2. Contar total de documentos (para la paginación)
+    const totalTurnos = await Turno.countDocuments(query);
 
-    // Paso 4: Obtener turnos con paginación y datos relacionados
-    const turnosEncontrados = await Turno.find(consultaDeBusqueda)
-      .populate('cliente')   // Cargar información del cliente
-      .populate('barbero')   // Cargar información del barbero
-      .populate('servicio')  // Cargar información del servicio
-      .sort({ fecha: -1, hora: -1 }) // Ordenar por más recientes primero
-      .skip(skip)            // Saltar registros (paginación)
-      .limit(limite);        // Limitar cantidad de resultados
+    // 3. Obtener turnos con paginación y datos relacionados (populate)
+    const turnos = await Turno.find(query)
+      .populate('cliente') // Trae los datos del Cliente
+      .populate('barbero') // Trae los datos del Barbero
+      .populate('servicio') // Trae los datos del Servicio
+      .sort({ fecha: -1, hora: -1 }) // Ordenar por más recientes
+      .skip(skip) // Saltar N registros
+      .limit(limite); // Devolver M registros
 
-    // Paso 5: Devolver resultados
     return {
-      turnos: turnosEncontrados,
-      total: cantidadTotalDeTurnos,
+      turnos,
+      total: totalTurnos,
     };
   } catch (error) {
     throw new Error(`Error al obtener turnos: ${error.message}`);
@@ -139,31 +91,20 @@ export const obtenerTodos = async (filtros = {}, paginacion = {}) => {
 
 /**
  * OBTENER TURNO POR ID
- *
- * Busca y devuelve un turno específico con toda su información relacionada.
- *
- * QUÉ HACE:
- * Busca un turno por su ID único e incluye los datos del cliente,
- * barbero y servicio asociados.
- *
- * @param {string} identificadorDeTurno - ID del turno a buscar
- * @returns {object} - Turno encontrado con datos completos
- * @throws {Error} - Si el turno no existe
+ * Busca un turno por su ID e incluye todos los datos relacionados.
  */
-export const obtenerPorId = async (identificadorDeTurno) => {
+export const obtenerPorId = async (turnoId) => {
   try {
-    // Buscar el turno y cargar los datos relacionados
-    const turnoEncontrado = await Turno.findById(identificadorDeTurno)
+    const turno = await Turno.findById(turnoId)
       .populate('cliente')
       .populate('barbero')
       .populate('servicio');
 
-    // Verificar que el turno exista
-    if (!turnoEncontrado) {
+    if (!turno) {
       throw new Error('Turno no encontrado');
     }
 
-    return turnoEncontrado;
+    return turno;
   } catch (error) {
     throw new Error(`Error al obtener turno: ${error.message}`);
   }
@@ -171,57 +112,36 @@ export const obtenerPorId = async (identificadorDeTurno) => {
 
 /**
  * CREAR NUEVO TURNO (RESERVA)
- *
- * Crea una nueva reserva de turno en el sistema.
- *
- * QUÉ HACE:
- * Valida los datos, verifica disponibilidad, crea o actualiza el cliente,
- * crea el turno y envía emails de confirmación.
- *
- * PROCESO COMPLETO:
- * 1. Validar campos obligatorios
- * 2. Verificar que el servicio exista
- * 3. Verificar que el barbero exista (si se especificó)
- * 4. Verificar disponibilidad del barbero en ese horario
- * 5. Buscar o crear el cliente
- * 6. Crear el turno con estado 'reservado'
- * 7. Enviar emails de confirmación (no bloqueante)
- * 8. Devolver el turno creado
- *
- * @param {object} datosDeTurno - Información del turno a crear
- * @returns {object} - Turno creado con datos completos
- * @throws {Error} - Si faltan datos o no hay disponibilidad
+ * Crea una nueva reserva en el sistema.
  */
 export const crear = async (datosDeTurno) => {
   try {
-    // Paso 1: Extraer datos del objeto de entrada
     const { clienteData, barberoId, servicioId, fecha, hora, precio, metodoPago, notasCliente } =
       datosDeTurno;
 
-    // Paso 2: Validar campos obligatorios
-    const faltanCampos = !clienteData || !servicioId || !fecha || !hora || precio === undefined;
-    if (faltanCampos) {
+    // 1. Validar campos obligatorios
+    if (!clienteData || !servicioId || !fecha || !hora || precio === undefined) {
       throw new Error('Faltan campos obligatorios');
     }
 
-    // Paso 3: Verificar que el servicio exista
-    const servicioEncontrado = await Servicio.findById(servicioId);
-    if (!servicioEncontrado) {
-      throw new Error('Servicio no encontrado');
-    }
+    // 2. Verificar que el servicio exista
+    const servicio = await Servicio.findById(servicioId);
+    if (!servicio) throw new Error('Servicio no encontrado');
 
-    // Paso 4: Verificar que el barbero exista (si se especificó uno)
-    let barberoAsignado = null;
+    // [FIX] Parsea la fecha a UTC para la consulta y para guardarla
+    const [año, mes, dia] = fecha.split('T')[0].split('-').map(Number);
+    const fechaInicioDia = new Date(Date.UTC(año, mes - 1, dia, 0, 0, 0, 0));
+    const fechaFinDia = new Date(Date.UTC(año, mes - 1, dia, 23, 59, 59, 999));
+
+    // 3. Verificar disponibilidad (si se eligió un barbero)
     if (barberoId) {
-      barberoAsignado = await Barbero.findById(barberoId);
-      if (!barberoAsignado) {
-        throw new Error('Barbero no encontrado');
-      }
+      const barbero = await Barbero.findById(barberoId);
+      if (!barbero) throw new Error('Barbero no encontrado');
 
-      // Paso 5: Verificar disponibilidad del barbero en ese horario
+      // Busca un turno en ese día, a esa hora, con ese barbero
       const turnoYaExiste = await Turno.findOne({
         barbero: barberoId,
-        fecha: new Date(fecha),
+        fecha: { $gte: fechaInicioDia, $lte: fechaFinDia }, // Busca en todo el día
         hora,
         estado: 'reservado', // Solo turnos activos
       });
@@ -231,48 +151,41 @@ export const crear = async (datosDeTurno) => {
       }
     }
 
-    // Paso 6: Buscar o crear cliente
-    let clienteDelTurno = await Cliente.findOne({ email: clienteData.email });
+    // 4. [REFACTOR] Buscar o Crear Cliente
+    // Usa findOneAndUpdate con 'upsert: true' para crear o actualizar en 1 paso
+    const clienteDelTurno = await Cliente.findOneAndUpdate(
+      { email: clienteData.email }, // Filtro de búsqueda
+      { // Datos a actualizar o crear
+        $set: { 
+          nombre: clienteData.nombre,
+          apellido: clienteData.apellido,
+          telefono: clienteData.telefono,
+        }
+      },
+      { 
+        new: true, // Devuelve el documento actualizado (o el nuevo)
+        upsert: true, // Si no lo encuentra, lo crea
+        runValidators: true // Corre las validaciones del modelo Cliente
+      }
+    );
 
-    if (!clienteDelTurno) {
-      // Cliente nuevo: crear registro
-      clienteDelTurno = new Cliente({
-        nombre: clienteData.nombre,
-        apellido: clienteData.apellido,
-        email: clienteData.email,
-        telefono: clienteData.telefono,
-      });
-      await clienteDelTurno.save();
-    } else {
-      // Cliente existente: actualizar datos (por si cambiaron)
-      clienteDelTurno.nombre = clienteData.nombre;
-      clienteDelTurno.apellido = clienteData.apellido;
-      clienteDelTurno.telefono = clienteData.telefono;
-      await clienteDelTurno.save();
-    }
-
-    // Paso 7: Crear el turno (reservado automáticamente)
+    // 5. Crear el turno (reservado automáticamente)
     const nuevoTurno = new Turno({
       cliente: clienteDelTurno._id,
-      barbero: barberoId || null, // null si no se especificó barbero
+      barbero: barberoId || null, // null si no se especificó
       servicio: servicioId,
-      fecha: new Date(fecha),
+      fecha: fechaInicioDia, // [FIX] Guarda la fecha como UTC a las 00:00
       hora,
       precio,
       metodoPago: metodoPago || 'pendiente',
       notasCliente: notasCliente || '',
-      estado: 'reservado', // Los turnos se reservan automáticamente
+      estado: 'reservado',
     });
 
     await nuevoTurno.save();
 
-    // Paso 8: Cargar los datos relacionados para la respuesta
-    await nuevoTurno.populate('cliente');
-    await nuevoTurno.populate('barbero');
-    await nuevoTurno.populate('servicio');
-
-    // Paso 9: NO enviar emails de confirmación
-    // Los recordatorios se enviarán SOLO por WhatsApp mediante el cron job
+    // 6. Cargar los datos relacionados para la respuesta
+    await nuevoTurno.populate(['cliente', 'barbero', 'servicio']);
 
     return nuevoTurno;
   } catch (error) {
@@ -282,89 +195,59 @@ export const crear = async (datosDeTurno) => {
 
 /**
  * ACTUALIZAR TURNO EXISTENTE
- *
- * Modifica la información de un turno ya creado.
- *
- * QUÉ PUEDE ACTUALIZARSE:
- * - Barbero asignado (puede cambiarse o removerse)
- * - Estado (reservado, completado, cancelado)
- * - Método de pago (efectivo, tarjeta, etc.)
- * - Estado de pago (pagado: true/false)
- * - Notas del barbero
- * - Fecha y hora del turno
- * - Servicio y precio
- *
- * @param {string} identificadorDeTurno - ID del turno a actualizar
- * @param {object} datosNuevos - Nuevos datos del turno
- * @returns {object} - Turno actualizado
- * @throws {Error} - Si el turno no existe o los datos son inválidos
+ * Modifica la información de un turno (estado, barbero, pago, etc.).
  */
-export const actualizar = async (identificadorDeTurno, datosNuevos) => {
+export const actualizar = async (turnoId, datosNuevos) => {
   try {
-    // Extraer datos a actualizar
     const { barberoId, estado, metodoPago, pagado, notasBarbero, fecha, hora, servicioId, precio } = datosNuevos;
 
-    // Buscar el turno
-    const turnoAActualizar = await Turno.findById(identificadorDeTurno);
-
-    if (!turnoAActualizar) {
+    // 1. Buscar el turno
+    const turno = await Turno.findById(turnoId);
+    if (!turno) {
       throw new Error('Turno no encontrado');
     }
 
-    // Actualizar servicio si se proporcionó
+    // 2. Actualizar campos (solo si se proporcionaron)
     if (servicioId) {
-      const servicioEncontrado = await Servicio.findById(servicioId);
-      if (!servicioEncontrado) {
+      if (!(await Servicio.findById(servicioId))) {
         throw new Error('Servicio no encontrado');
       }
-      turnoAActualizar.servicio = servicioId;
+      turno.servicio = servicioId;
     }
 
-    // Actualizar precio si se proporcionó
-    if (precio !== undefined) {
-      turnoAActualizar.precio = precio;
-    }
+    if (precio !== undefined) turno.precio = precio;
+    if (hora) turno.hora = hora;
 
-    // Actualizar fecha si se proporcionó
+    // [FIX] Si se actualiza la fecha, guardarla también en UTC
     if (fecha) {
-      turnoAActualizar.fecha = new Date(fecha);
+      const [año, mes, dia] = fecha.split('T')[0].split('-').map(Number);
+      turno.fecha = new Date(Date.UTC(año, mes - 1, dia));
     }
 
-    // Actualizar hora si se proporcionó
-    if (hora) {
-      turnoAActualizar.hora = hora;
-    }
-
-    // Actualizar barbero (permitir null para "sin barbero asignado")
+    // Actualizar barbero (permite 'null' para quitarlo)
     if (barberoId !== undefined) {
       if (barberoId === null) {
-        // Remover barbero asignado
-        turnoAActualizar.barbero = null;
+        turno.barbero = null;
       } else {
-        // Verificar que el barbero exista
-        const barberoEncontrado = await Barbero.findById(barberoId);
-        if (!barberoEncontrado) {
+        if (!(await Barbero.findById(barberoId))) {
           throw new Error('Barbero no encontrado');
         }
-        turnoAActualizar.barbero = barberoId;
+        turno.barbero = barberoId;
       }
     }
 
-    // Actualizar otros campos si se proporcionaron
-    if (estado) turnoAActualizar.estado = estado;
-    if (metodoPago) turnoAActualizar.metodoPago = metodoPago;
-    if (pagado !== undefined) turnoAActualizar.pagado = pagado;
-    if (notasBarbero !== undefined) turnoAActualizar.notasBarbero = notasBarbero;
+    if (estado) turno.estado = estado;
+    if (metodoPago) turno.metodoPago = metodoPago;
+    if (pagado !== undefined) turno.pagado = pagado;
+    if (notasBarbero !== undefined) turno.notasBarbero = notasBarbero;
 
-    // Guardar cambios
-    await turnoAActualizar.save();
+    // 3. Guardar cambios (esto dispara validaciones del modelo)
+    await turno.save();
 
-    // Cargar datos relacionados
-    await turnoAActualizar.populate('cliente');
-    await turnoAActualizar.populate('barbero');
-    await turnoAActualizar.populate('servicio');
+    // 4. Cargar datos relacionados para la respuesta
+    await turno.populate(['cliente', 'barbero', 'servicio']);
 
-    return turnoAActualizar;
+    return turno;
   } catch (error) {
     throw new Error(`Error al actualizar turno: ${error.message}`);
   }
@@ -372,36 +255,24 @@ export const actualizar = async (identificadorDeTurno, datosNuevos) => {
 
 /**
  * CANCELAR TURNO
- *
- * Marca un turno como cancelado.
- *
- * QUÉ HACE:
- * Cambia el estado del turno a 'cancelado'. El turno se mantiene en la
- * base de datos para historial, pero ya no se considera activo.
- *
- * @param {string} identificadorDeTurno - ID del turno a cancelar
- * @returns {object} - Turno cancelado
- * @throws {Error} - Si el turno no existe
+ * Marca un turno como 'cancelado' (no lo borra).
  */
-export const cancelar = async (identificadorDeTurno) => {
+export const cancelar = async (turnoId) => {
   try {
-    // Buscar el turno
-    const turnoACancelar = await Turno.findById(identificadorDeTurno);
-
-    if (!turnoACancelar) {
+    // 1. Buscar el turno
+    const turno = await Turno.findById(turnoId);
+    if (!turno) {
       throw new Error('Turno no encontrado');
     }
 
-    // Cambiar estado a cancelado
-    turnoACancelar.estado = 'cancelado';
-    await turnoACancelar.save();
+    // 2. Cambiar estado y guardar
+    turno.estado = 'cancelado';
+    await turno.save();
 
-    // Cargar datos relacionados
-    await turnoACancelar.populate('cliente');
-    await turnoACancelar.populate('barbero');
-    await turnoACancelar.populate('servicio');
-
-    return turnoACancelar;
+    // 3. Devolver el turno actualizado con sus datos
+    await turno.populate(['cliente', 'barbero', 'servicio']);
+    
+    return turno;
   } catch (error) {
     throw new Error(`Error al cancelar turno: ${error.message}`);
   }
@@ -409,114 +280,63 @@ export const cancelar = async (identificadorDeTurno) => {
 
 /**
  * OBTENER HORARIOS DISPONIBLES
- *
- * Devuelve los horarios disponibles para una fecha específica.
- *
- * QUÉ HACE:
- * Compara los horarios base de la barbería con los turnos ya reservados
- * para mostrar solo los horarios libres.
- *
- * HORARIOS BASE:
- * La barbería trabaja de 9:00 AM a 5:00 PM con turnos de 1 hora.
- *
- * CÓMO FUNCIONA:
- * 1. Define los horarios base (9:00 a 17:00)
- * 2. Busca turnos ocupados en esa fecha
- * 3. Filtra los horarios que ya están ocupados
- * 4. Devuelve solo los disponibles
- *
- * @param {string} fecha - Fecha a consultar (formato: YYYY-MM-DD)
- * @param {string} [barberoId] - ID del barbero (opcional)
- * @returns {array} - Lista de horarios disponibles
+ * Devuelve los horarios libres para una fecha y (opcional) barbero.
  */
 export const obtenerHorariosDisponibles = async (fecha, barberoId = null) => {
   try {
-    // Validar que se proporcione la fecha
     if (!fecha) {
       throw new Error('La fecha es requerida');
     }
 
-    // Horarios base de la barbería (9:00 AM a 18:30 PM, turnos de 45 min)
-    const horariosBaseDeLaBarberia = [
-      '09:00',
-      '09:45',
-      '10:30',
-      '11:00',
-      '11:45',
-      '12:30',
-      '13:15',
-      '14:00',
-      '14:45',
-      '15:30',
-      '16:15',
-      '17:00',
-      '17:45',
-      '18:30',
+    // Horarios fijos de la barbería
+    const horariosBase = [
+      '09:00', '09:45', '10:30', '11:00', '11:45', '12:30',
+      '13:15', '14:00', '14:45', '15:30', '16:15', '17:00',
+      '17:45', '18:30',
     ];
 
-    // Preparar la fecha para la consulta
-    const fechaAConsultar = new Date(fecha);
-    fechaAConsultar.setHours(0, 0, 0, 0);
-
-    // Construir consulta para buscar turnos ocupados
-    const consultaDeTurnosOcupados = {
-      fecha: {
-        $gte: fechaAConsultar,
-        $lte: new Date(fechaAConsultar.getTime() + 24 * 60 * 60 * 1000),
-      },
-      estado: 'reservado', // Solo turnos activos
+    // 1. [FIX] Busca turnos ocupados usando el rango UTC del día
+    const rangoDia = _crearRangoFechaDia(fecha);
+    const queryOcupados = {
+      fecha: rangoDia,
+      estado: 'reservado',
     };
 
-    // Si se especificó un barbero, filtrar por ese barbero
+    // 2. lógica de filtrado
     if (barberoId) {
-      consultaDeTurnosOcupados.barbero = barberoId;
+      // CASO 1: Barbero Específico
+      queryOcupados.barbero = barberoId;
+      
+      const turnosOcupados = await Turno.find(queryOcupados);
+      const horasOcupadas = turnosOcupados.map((turno) => turno.hora);
 
-      // CASO 1: Barbero específico - mostrar horarios libres de ese barbero
-      const turnosOcupados = await Turno.find(consultaDeTurnosOcupados);
-      const horasYaOcupadas = turnosOcupados.map((turno) => turno.hora);
+      // Devuelve los horarios base que NO están en la lista de ocupados
+      return horariosBase.filter((h) => !horasOcupadas.includes(h));
 
-      // Filtrar horarios disponibles
-      const horariosDisponibles = horariosBaseDeLaBarberia.filter(
-        (horario) => !horasYaOcupadas.includes(horario)
-      );
-
-      return horariosDisponibles;
     } else {
-      // CASO 2: Barbero "indistinto" - mostrar horarios donde AL MENOS UN barbero esté disponible
+      // CASO 2: Barbero "Indistinto" (ver si *al menos uno* está libre)
 
-      // Obtener todos los barberos activos
       const barberosActivos = await Barbero.find({ activo: true });
       const totalBarberos = barberosActivos.length;
 
-      if (totalBarberos === 0) {
-        // Si no hay barberos activos, no hay horarios disponibles
-        return [];
-      }
+      if (totalBarberos === 0) return []; // No hay barberos, no hay horarios
 
-      // Buscar TODOS los turnos reservados de la fecha (sin filtrar por barbero)
-      const turnosOcupados = await Turno.find(consultaDeTurnosOcupados).populate('barbero');
+      // Busca *todos* los turnos de ese día
+      const turnosOcupados = await Turno.find(queryOcupados);
 
-      // Agrupar turnos por hora para contar cuántos barberos están ocupados por horario
-      const barberosPorHorario = {};
-
+      // Cuenta cuántos barberos están ocupados en cada horario
+      const conteoPorHora = {};
       turnosOcupados.forEach((turno) => {
-        if (!barberosPorHorario[turno.hora]) {
-          barberosPorHorario[turno.hora] = 0;
-        }
-        // Solo contar si tiene barbero asignado
-        if (turno.barbero) {
-          barberosPorHorario[turno.hora]++;
+        if (turno.barbero) { // Solo cuenta si tiene barbero asignado
+          conteoPorHora[turno.hora] = (conteoPorHora[turno.hora] || 0) + 1;
         }
       });
 
-      // Filtrar horarios donde AL MENOS UN barbero esté disponible
-      // Un horario está disponible si: (barberos ocupados) < (total de barberos)
-      const horariosDisponibles = horariosBaseDeLaBarberia.filter((horario) => {
-        const barberosOcupados = barberosPorHorario[horario] || 0;
-        return barberosOcupados < totalBarberos; // Hay al menos un barbero disponible
+      // Devuelve los horarios donde los barberos ocupados < total de barberos
+      return horariosBase.filter((horario) => {
+        const ocupados = conteoPorHora[horario] || 0;
+        return ocupados < totalBarberos;
       });
-
-      return horariosDisponibles;
     }
   } catch (error) {
     throw new Error(`Error al obtener horarios disponibles: ${error.message}`);
@@ -525,49 +345,29 @@ export const obtenerHorariosDisponibles = async (fecha, barberoId = null) => {
 
 /**
  * VALIDAR DISPONIBILIDAD
- *
- * Verifica si un horario específico está disponible.
- *
- * QUÉ HACE:
- * Busca si ya existe un turno activo en la fecha, hora y barbero especificados.
- *
- * @param {string} fecha - Fecha a verificar
- * @param {string} hora - Hora a verificar (formato: HH:MM)
- * @param {string} [barberoId] - ID del barbero (opcional)
- * @returns {boolean} - true si está disponible, false si está ocupado
+ * Verifica si un slot (fecha, hora, barbero) está libre.
  */
 export const validarDisponibilidad = async (fecha, hora, barberoId = null) => {
   try {
-    // Construir consulta
-    const consultaDeVerificacion = {
-      fecha: new Date(fecha),
+    // 1. [FIX] Busca turnos ocupados usando el rango UTC del día
+    const rangoDia = _crearRangoFechaDia(fecha);
+    
+    const query = {
+      fecha: rangoDia,
       hora,
       estado: 'reservado',
     };
 
-    // Si se especificó barbero, incluirlo en la búsqueda
     if (barberoId) {
-      consultaDeVerificacion.barbero = barberoId;
+      query.barbero = barberoId;
     }
 
-    // Buscar si existe un turno con esas características
-    const turnoYaExiste = await Turno.findOne(consultaDeVerificacion);
+    // 2. Busca si existe un turno
+    const turnoYaExiste = await Turno.findOne(query);
 
-    // Si NO existe turno, el horario está disponible
+    // 3. Devuelve true si NO existe (está disponible)
     return !turnoYaExiste;
   } catch (error) {
     throw new Error(`Error al validar disponibilidad: ${error.message}`);
   }
-};
-
-// ===== EXPORTACIÓN =====
-
-export default {
-  obtenerTodos,
-  obtenerPorId,
-  crear,
-  actualizar,
-  cancelar,
-  obtenerHorariosDisponibles,
-  validarDisponibilidad,
 };

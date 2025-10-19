@@ -540,6 +540,29 @@
     font-size: 1.75rem;
   }
 
+  /* Botón Ver todos los turnos con estilo de botón */
+  .ver-todos-btn {
+    background: var(--primary) !important;
+    color: white !important;
+    border: 2px solid var(--primary) !important;
+    padding: 0.75rem 1.5rem !important;
+    font-weight: 600 !important;
+    font-size: 0.875rem !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: auto !important;
+    max-width: 250px !important;
+    margin: 0 auto !important;
+    transition: all 0.3s ease !important;
+  }
+
+  .ver-todos-btn:hover {
+    background: #333 !important;
+    border-color: #333 !important;
+    transform: scale(1.05) !important;
+  }
+
   /* Botón de reservar en el empty state más chico */
   .empty-state .btn {
     padding: 0.5rem 1rem;

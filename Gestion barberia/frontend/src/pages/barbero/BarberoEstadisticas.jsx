@@ -3,6 +3,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import estadisticasService from '../../services/estadisticasService';
 import barberoService from '../../services/barberoService';
+import './BarberoEstadisticas.css';
 
 /**
  * ============================================================================
@@ -40,9 +41,6 @@ const BarberoEstadisticas = () => {
   const [editandoObjetivo, setEditandoObjetivo] = useState(false);
   const [nuevoObjetivo, setNuevoObjetivo] = useState(0);
   const [guardandoObjetivo, setGuardandoObjetivo] = useState(false);
-
-  // Vista de evolución
-  const [vistaEvolucion, setVistaEvolucion] = useState('dia'); // 'dia' o 'semana'
 
   // ===== CARGAR DATOS =====
 
@@ -130,7 +128,7 @@ const BarberoEstadisticas = () => {
     );
   }
 
-  const { indicadoresPrincipales, evolucionIngresos, serviciosMasRealizados } = estadisticas;
+  const { indicadoresPrincipales, serviciosMasRealizados } = estadisticas;
 
   // ===== RENDER PRINCIPAL =====
 
@@ -378,7 +376,7 @@ const BarberoEstadisticas = () => {
 
           {/* EDITAR OBJETIVO */}
           {editandoObjetivo && (
-            <div style={{ marginBottom: '1rem' }}>
+            <div style={{ marginBottom: '1rem' }} className="objetivo-editar-container">
               <label
                 style={{
                   display: 'block',
@@ -393,6 +391,7 @@ const BarberoEstadisticas = () => {
                 type="number"
                 value={nuevoObjetivo}
                 onChange={(e) => setNuevoObjetivo(parseInt(e.target.value) || 0)}
+                className="objetivo-input"
                 style={{
                   width: '100%',
                   padding: '0.75rem',
@@ -402,10 +401,11 @@ const BarberoEstadisticas = () => {
                   marginBottom: '0.5rem',
                 }}
               />
-              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }} className="objetivo-botones">
                 <button
                   onClick={handleGuardarObjetivo}
                   disabled={guardandoObjetivo}
+                  className="btn-guardar-objetivo"
                   style={{
                     flex: '1 1 auto',
                     minWidth: '120px',
@@ -426,6 +426,7 @@ const BarberoEstadisticas = () => {
                     setEditandoObjetivo(false);
                     setNuevoObjetivo(indicadoresPrincipales.objetivoMensual);
                   }}
+                  className="btn-cancelar-objetivo"
                   style={{
                     flex: '1 1 auto',
                     minWidth: '120px',
@@ -507,237 +508,6 @@ const BarberoEstadisticas = () => {
                 : `Te faltan ${formatearMoneda(Math.abs(indicadoresPrincipales.diferenciaMeta))} para alcanzar tu objetivo`}
             </p>
           </div>
-        </div>
-
-        {/* EVOLUCIÓN DE INGRESOS */}
-        <div
-          style={{
-            background: 'white',
-            padding: '1.5rem',
-            borderRadius: '8px',
-            boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-            marginBottom: '2rem',
-          }}
-        >
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              marginBottom: '1.5rem',
-              flexWrap: 'wrap',
-              gap: '0.5rem',
-            }}
-          >
-            <h3
-              style={{
-                fontSize: '1.125rem',
-                fontWeight: '600',
-                color: '#212529',
-                margin: 0,
-              }}
-            >
-              Evolución de Ingresos
-            </h3>
-
-            {/* Selector de vista */}
-            <div style={{ display: 'flex', gap: '0.5rem' }}>
-              <button
-                onClick={() => setVistaEvolucion('dia')}
-                style={{
-                  padding: '0.5rem 1rem',
-                  background: vistaEvolucion === 'dia' ? '#007bff' : '#e9ecef',
-                  color: vistaEvolucion === 'dia' ? 'white' : '#495057',
-                  border: 'none',
-                  borderRadius: '6px',
-                  cursor: 'pointer',
-                  fontSize: '0.875rem',
-                }}
-              >
-                Por Día
-              </button>
-              <button
-                onClick={() => setVistaEvolucion('semana')}
-                style={{
-                  padding: '0.5rem 1rem',
-                  background: vistaEvolucion === 'semana' ? '#007bff' : '#e9ecef',
-                  color: vistaEvolucion === 'semana' ? 'white' : '#495057',
-                  border: 'none',
-                  borderRadius: '6px',
-                  cursor: 'pointer',
-                  fontSize: '0.875rem',
-                }}
-              >
-                Por Semana
-              </button>
-            </div>
-          </div>
-
-          {/* Vista por Día */}
-          {vistaEvolucion === 'dia' && (
-            <div>
-              {evolucionIngresos.porDia.length === 0 ? (
-                <p style={{ color: '#6c757d', textAlign: 'center' }}>
-                  No hay datos de ingresos para este mes
-                </p>
-              ) : (
-                <div style={{ overflowX: 'auto' }}>
-                  <table
-                    style={{
-                      width: '100%',
-                      borderCollapse: 'collapse',
-                      fontSize: '0.875rem',
-                    }}
-                  >
-                    <thead>
-                      <tr style={{ borderBottom: '2px solid #dee2e6' }}>
-                        <th
-                          style={{
-                            padding: '0.75rem',
-                            textAlign: 'left',
-                            fontWeight: '600',
-                            color: '#495057',
-                          }}
-                        >
-                          Día
-                        </th>
-                        <th
-                          style={{
-                            padding: '0.75rem',
-                            textAlign: 'right',
-                            fontWeight: '600',
-                            color: '#495057',
-                          }}
-                        >
-                          Turnos
-                        </th>
-                        <th
-                          style={{
-                            padding: '0.75rem',
-                            textAlign: 'right',
-                            fontWeight: '600',
-                            color: '#495057',
-                          }}
-                        >
-                          Ingresos
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {evolucionIngresos.porDia.map((item, index) => (
-                        <tr
-                          key={index}
-                          style={{
-                            borderBottom: '1px solid #e9ecef',
-                            background: index % 2 === 0 ? '#f8f9fa' : 'white',
-                          }}
-                        >
-                          <td style={{ padding: '0.75rem' }}>Día {item.dia}</td>
-                          <td style={{ padding: '0.75rem', textAlign: 'right' }}>
-                            {item.turnos}
-                          </td>
-                          <td
-                            style={{
-                              padding: '0.75rem',
-                              textAlign: 'right',
-                              fontWeight: '600',
-                              color: '#28a745',
-                            }}
-                          >
-                            {formatearMoneda(item.ingresos)}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Vista por Semana */}
-          {vistaEvolucion === 'semana' && (
-            <div>
-              {evolucionIngresos.porSemana.length === 0 ? (
-                <p style={{ color: '#6c757d', textAlign: 'center' }}>
-                  No hay datos de ingresos semanales
-                </p>
-              ) : (
-                <div style={{ overflowX: 'auto' }}>
-                  <table
-                    style={{
-                      width: '100%',
-                      borderCollapse: 'collapse',
-                      fontSize: '0.875rem',
-                    }}
-                  >
-                    <thead>
-                      <tr style={{ borderBottom: '2px solid #dee2e6' }}>
-                        <th
-                          style={{
-                            padding: '0.75rem',
-                            textAlign: 'left',
-                            fontWeight: '600',
-                            color: '#495057',
-                          }}
-                        >
-                          Semana
-                        </th>
-                        <th
-                          style={{
-                            padding: '0.75rem',
-                            textAlign: 'right',
-                            fontWeight: '600',
-                            color: '#495057',
-                          }}
-                        >
-                          Turnos
-                        </th>
-                        <th
-                          style={{
-                            padding: '0.75rem',
-                            textAlign: 'right',
-                            fontWeight: '600',
-                            color: '#495057',
-                          }}
-                        >
-                          Ingresos
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {evolucionIngresos.porSemana.map((item, index) => (
-                        <tr
-                          key={index}
-                          style={{
-                            borderBottom: '1px solid #e9ecef',
-                            background: index % 2 === 0 ? '#f8f9fa' : 'white',
-                          }}
-                        >
-                          <td style={{ padding: '0.75rem' }}>
-                            Semana {item.semana} - {item.anio}
-                          </td>
-                          <td style={{ padding: '0.75rem', textAlign: 'right' }}>
-                            {item.turnos}
-                          </td>
-                          <td
-                            style={{
-                              padding: '0.75rem',
-                              textAlign: 'right',
-                              fontWeight: '600',
-                              color: '#28a745',
-                            }}
-                          >
-                            {formatearMoneda(item.ingresos)}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </div>
-          )}
         </div>
 
         {/* SERVICIOS MÁS REALIZADOS */}

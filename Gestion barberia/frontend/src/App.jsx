@@ -7,7 +7,6 @@ import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import ReservarTurnoPage from './pages/ReservarTurnoPage';
-import AuthCallbackPage from './pages/AuthCallbackPage';
 
 // Páginas protegidas - Cliente
 import ClienteDashboard from './pages/cliente/ClienteDashboard';
@@ -44,7 +43,6 @@ function App() {
             <Route index element={<LoginPage />} />
             <Route path="registro" element={<RegisterPage />} />
             <Route path="reservar" element={<ReservarTurnoPage />} />
-            <Route path="auth/callback" element={<AuthCallbackPage />} />
 
             {/* Rutas protegidas - Cliente */}
             <Route

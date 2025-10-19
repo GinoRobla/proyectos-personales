@@ -491,6 +491,29 @@
   }
 }
 
+/* Laptop - Desde 1280px */
+@media (min-width: 1280px) {
+  /* Filtro de fecha más chiquito */
+  .fecha-selector {
+    max-width: 400px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+
+  .fecha-manual-container {
+    max-width: 400px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+
+  /* Tarjetas de turnos más chiquitas */
+  .turnos-timeline {
+    max-width: 700px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+}
+
 /* Laptop */
 @media (min-width: 1440px) {
   .barbero-agenda .container {

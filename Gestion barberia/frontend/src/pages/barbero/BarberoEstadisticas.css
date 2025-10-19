@@ -1,0 +1,51 @@
+/* Estadísticas del Barbero - Responsive */
+
+/* Laptop - Desde 1280px */
+@media (min-width: 1280px) {
+  /* Contenedor de edición de objetivo más pequeño */
+  .objetivo-editar-container {
+    max-width: 400px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+
+  /* Input más pequeño */
+  .objetivo-input {
+    max-width: 100% !important;
+    padding: 0.5rem !important;
+    font-size: 0.875rem !important;
+  }
+
+  /* Botones más pequeños */
+  .objetivo-botones {
+    justify-content: center !important;
+    gap: 0.75rem !important;
+  }
+
+  .btn-guardar-objetivo,
+  .btn-cancelar-objetivo {
+    flex: 0 1 auto !important;
+    min-width: 100px !important;
+    max-width: 120px !important;
+    padding: 0.5rem 1rem !important;
+    font-size: 0.8rem !important;
+  }
+}
+
+/* Desktop grande - 1440px */
+@media (min-width: 1440px) {
+  .objetivo-editar-container {
+    max-width: 450px !important;
+  }
+}
+
+/* PC de Escritorio - 1920px */
+@media (min-width: 1920px) {
+  .objetivo-editar-container {
+    max-width: 500px !important;
+  }
+
+  .objetivo-input {
+    font-size: 0.9rem !important;
+  }
+}

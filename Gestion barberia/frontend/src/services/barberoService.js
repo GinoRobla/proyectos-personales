@@ -1,166 +1,65 @@
-/**
- * ============================================================================
- * SERVICIO: GESTIÓN DE BARBEROS
- * ============================================================================
- *
- * Maneja todas las operaciones relacionadas con los barberos de la barbería.
- *
- * RESPONSABILIDADES:
- * - Obtener listado de barberos
- * - Consultar disponibilidad de barberos
- * - Obtener información de un barbero específico
- * - Crear nuevos barberos (admin)
- * - Actualizar información de barberos (admin)
- * - Eliminar barberos (admin)
- *
- * ENDPOINTS UTILIZADOS:
- * - GET /barberos - Listar barberos
- * - GET /barberos/disponibles - Barberos disponibles en fecha/hora
- * - GET /barberos/:id - Obtener un barbero específico
- * - POST /barberos - Crear nuevo barbero
- * - PUT /barberos/:id - Actualizar barbero
- * - DELETE /barberos/:id - Eliminar barbero
- */
-
+// Importa la instancia de 'api' (axios)
 import api from './api';
 
-// ============================================================================
-// DEFINICIÓN DEL SERVICIO
-// ============================================================================
-
+/**
+ * Este objeto contiene todas las funciones para
+ * "hablar" con los endpoints de /barberos en el backend.
+ */
 export const barberoService = {
-  // ==========================================================================
-  // OBTENER LISTADO DE BARBEROS
-  // ==========================================================================
-  /**
-   * OBTENER BARBEROS
-   *
-   * Obtiene el listado de barberos de la barbería.
-   *
-   * @param {boolean} soloActivos - Si es true, solo devuelve barberos activos
-   * @returns {Promise<Object>} Lista de barberos
-   */
+
+  // Obtiene la lista de barberos (opcionalmente filtra por activos)
   obtenerBarberos: async (soloActivos) => {
-    const parametros = {};
-
-    // Si se especifica filtro de activos, agregarlo a los parámetros
+    // 1. Prepara los parámetros de la URL (ej: /barberos?activo=true)
+    const params = {};
     if (soloActivos !== undefined) {
-      parametros.activo = soloActivos;
+      params.activo = soloActivos;
     }
 
-    const respuesta = await api.get('/barberos', { params: parametros });
+    // 2. Llama a: GET /barberos, pasando los parámetros
+    const respuesta = await api.get('/barberos', { params });
     return respuesta.data;
   },
 
-  // ==========================================================================
-  // OBTENER BARBEROS DISPONIBLES
-  // ==========================================================================
-  /**
-   * OBTENER BARBEROS DISPONIBLES
-   *
-   * Consulta qué barberos están disponibles en una fecha y hora específica.
-   * Útil para saber quién puede atender un turno en un momento determinado.
-   *
-   * @param {string} fecha - Fecha a consultar (YYYY-MM-DD)
-   * @param {string} hora - Hora a consultar (HH:MM)
-   * @returns {Promise<Object>} Lista de barberos disponibles
-   */
+  // Busca barberos libres en una fecha y hora específicas
   obtenerBarberosDisponibles: async (fecha, hora) => {
-    const parametros = {};
+    // 1. Prepara los parámetros (ej: /barberos/disponibles?fecha=...&hora=...)
+    const params = {};
+    if (fecha) params.fecha = fecha;
+    if (hora) params.hora = hora;
 
-    // Agregar fecha si está definida
-    if (fecha) {
-      parametros.fecha = fecha;
-    }
-
-    // Agregar hora si está definida
-    if (hora) {
-      parametros.hora = hora;
-    }
-
-    const respuesta = await api.get('/barberos/disponibles', {
-      params: parametros,
-    });
+    // 2. Llama a: GET /barberos/disponibles
+    const respuesta = await api.get('/barberos/disponibles', { params });
     return respuesta.data;
   },
 
-  // ==========================================================================
-  // OBTENER UN BARBERO POR ID
-  // ==========================================================================
-  /**
-   * OBTENER BARBERO POR ID
-   *
-   * Obtiene la información detallada de un barbero específico.
-   *
-   * @param {string} idBarbero - ID del barbero a obtener
-   * @returns {Promise<Object>} Datos completos del barbero
-   */
+  // Obtiene la información de un solo barbero por su ID
   obtenerBarberoPorId: async (idBarbero) => {
+    // Llama a: GET /barberos/ID_DEL_BARBERO
     const respuesta = await api.get(`/barberos/${idBarbero}`);
     return respuesta.data;
   },
 
-  // ==========================================================================
-  // CREAR NUEVO BARBERO (ADMIN)
-  // ==========================================================================
-  /**
-   * CREAR BARBERO
-   *
-   * Crea un nuevo barbero en el sistema.
-   * Solo disponible para administradores.
-   *
-   * @param {Object} datosBarbero - Información del barbero a crear
-   * @param {string} datosBarbero.nombre - Nombre del barbero
-   * @param {string} datosBarbero.apellido - Apellido del barbero
-   * @param {string} datosBarbero.email - Email del barbero
-   * @param {string} datosBarbero.telefono - Teléfono del barbero
-   * @param {Array<string>} datosBarbero.especialidades - Lista de especialidades
-   * @param {boolean} datosBarbero.activo - Si está activo o no
-   * @returns {Promise<Object>} Barbero creado
-   */
+  // Crea un nuevo barbero (solo Admin)
   crearBarbero: async (datosBarbero) => {
+    // Llama a: POST /barberos
     const respuesta = await api.post('/barberos', datosBarbero);
     return respuesta.data;
   },
 
-  // ==========================================================================
-  // ACTUALIZAR BARBERO (ADMIN)
-  // ==========================================================================
-  /**
-   * ACTUALIZAR BARBERO
-   *
-   * Actualiza la información de un barbero existente.
-   * Solo disponible para administradores.
-   *
-   * @param {string} idBarbero - ID del barbero a actualizar
-   * @param {Object} datosActualizados - Nuevos datos del barbero
-   * @returns {Promise<Object>} Barbero actualizado
-   */
+  // Actualiza un barbero existente (solo Admin)
   actualizarBarbero: async (idBarbero, datosActualizados) => {
+    // Llama a: PUT /barberos/ID_DEL_BARBERO
     const respuesta = await api.put(`/barberos/${idBarbero}`, datosActualizados);
     return respuesta.data;
   },
 
-  // ==========================================================================
-  // ELIMINAR BARBERO (ADMIN)
-  // ==========================================================================
-  /**
-   * ELIMINAR BARBERO
-   *
-   * Elimina un barbero del sistema (soft delete: marca como inactivo).
-   * Solo disponible para administradores.
-   *
-   * @param {string} idBarbero - ID del barbero a eliminar
-   * @returns {Promise<Object>} Confirmación de eliminación
-   */
+  // Elimina (desactiva) un barbero (solo Admin)
   eliminarBarbero: async (idBarbero) => {
+    // Llama a: DELETE /barberos/ID_DEL_BARBERO
     const respuesta = await api.delete(`/barberos/${idBarbero}`);
     return respuesta.data;
   },
 };
 
-// ============================================================================
-// EXPORTACIÓN
-// ============================================================================
-
+// Exporta el servicio para que pueda ser usado en otros archivos
 export default barberoService;

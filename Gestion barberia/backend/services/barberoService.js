@@ -1,377 +1,137 @@
-/**
- * ============================================================================
- * SERVICIO DE BARBEROS
- * ============================================================================
- *
- * Este archivo contiene toda la lógica de negocio relacionada con la gestión
- * de barberos en el sistema de la barbería.
- *
- * QUÉ ES UN BARBERO:
- * Un barbero es un empleado de la barbería que presta servicios a los clientes.
- * Tiene información profesional (especialidad, horarios) además de una cuenta
- * de usuario para acceder al sistema.
- *
- * RESPONSABILIDADES DE ESTE ARCHIVO:
- * - Crear nuevos barberos (perfil profesional + cuenta de usuario)
- * - Listar barberos con filtros
- * - Obtener información de un barbero específico
- * - Actualizar datos de barberos
- * - Eliminar barberos (y su cuenta de usuario asociada)
- * - Verificar disponibilidad de barberos
- * - Obtener barberos disponibles para una fecha/hora
- *
- * IMPORTANTE:
- * Cada barbero tiene DOS registros en la base de datos:
- * 1. Barbero: Información profesional (especialidad, horarios, foto)
- * 2. Usuario: Cuenta para login (email, contraseña, rol 'barbero')
- */
-
 import Barbero from '../models/Barbero.js';
+import Usuario from '../models/Usuario.js';
+import Turno from '../models/Turno.js';
 
-// ===== FUNCIONES PRINCIPALES =====
-
-/**
- * OBTENER TODOS LOS BARBEROS
- *
- * Lista todos los barberos del sistema con opciones de filtrado.
- *
- * QUÉ HACE:
- * Devuelve una lista de barberos ordenada alfabéticamente por nombre.
- * Puede filtrar por barberos activos o inactivos.
- *
- * FILTROS:
- * - activo: true/false para filtrar por estado activo
- *
- * @param {object} filtros - Criterios de búsqueda
- * @returns {array} - Lista de barberos encontrados
- */
-export const obtenerTodos = async (filtros = {}) => {
-  try {
-    // Construir consulta de búsqueda
-    const consultaDeBusqueda = {};
-
-    // Filtrar por estado activo si se especifica
-    if (filtros.activo !== undefined) {
-      consultaDeBusqueda.activo = filtros.activo;
-    }
-
-    // Buscar barberos y ordenar por nombre
-    const barberosEncontrados = await Barbero.find(consultaDeBusqueda).sort({ nombre: 1 });
-
-    return barberosEncontrados;
-  } catch (error) {
-    throw new Error(`Error al obtener barberos: ${error.message}`);
-  }
+// Obtiene todos los barberos, con opción de filtrar por estado.
+export const obtenerTodos = (filtros = {}) => {
+  const consulta = filtros.activo !== undefined ? { activo: filtros.activo } : {};
+  return Barbero.find(consulta).sort({ nombre: 1 });
 };
 
-/**
- * OBTENER BARBERO POR ID
- *
- * Busca y devuelve un barbero específico por su ID.
- *
- * @param {string} identificadorDeBarbero - ID del barbero a buscar
- * @returns {object} - Barbero encontrado
- * @throws {Error} - Si el barbero no existe
- */
-export const obtenerPorId = async (identificadorDeBarbero) => {
-  try {
-    // Buscar el barbero
-    const barberoEncontrado = await Barbero.findById(identificadorDeBarbero);
-
-    // Verificar que exista
-    if (!barberoEncontrado) {
-      throw new Error('Barbero no encontrado');
-    }
-
-    return barberoEncontrado;
-  } catch (error) {
-    throw new Error(`Error al obtener barbero: ${error.message}`);
+// Obtiene un barbero por su ID.
+export const obtenerPorId = async (barberoId) => {
+  const barbero = await Barbero.findById(barberoId);
+  if (!barbero) {
+    throw new Error('Barbero no encontrado');
   }
+  return barbero;
 };
 
-/**
- * CREAR NUEVO BARBERO
- *
- * Crea un nuevo barbero con su perfil profesional y cuenta de usuario.
- *
- * QUÉ HACE:
- * 1. Valida que no exista otro barbero con el mismo email
- * 2. Crea el perfil profesional del barbero
- * 3. Crea automáticamente una cuenta de usuario con rol 'barbero'
- * 4. Devuelve el barbero creado
- *
- * IMPORTANTE:
- * - El email debe ser único (no puede haber dos barberos con el mismo email)
- * - Se crea automáticamente un usuario asociado para que pueda iniciar sesión
- * - La contraseña por defecto es 'barbero123' (debe cambiarse después)
- *
- * @param {object} datosDelBarbero - Información del barbero a crear
- * @returns {object} - Barbero creado
- * @throws {Error} - Si faltan datos o el email ya existe
- */
-export const crear = async (datosDelBarbero) => {
-  try {
-    // Extraer datos
-    const { nombre, apellido, email, telefono, foto, horarioLaboral, password } = datosDelBarbero;
+// Crea un nuevo perfil de barbero y su cuenta de usuario asociada.
+export const crear = async (datosBarbero) => {
+  const { nombre, apellido, email, telefono, foto, horarioLaboral, password } = datosBarbero;
 
-    // Validar campos obligatorios
-    const faltanCampos = !nombre || !apellido || !email || !telefono;
-    if (faltanCampos) {
-      throw new Error('Faltan campos obligatorios');
-    }
-
-    // Verificar que el email no exista en la colección de Barberos
-    const barberoConMismoEmail = await Barbero.findOne({ email });
-    if (barberoConMismoEmail) {
-      throw new Error('Ya existe un barbero con ese email');
-    }
-
-    // Verificar que el email no exista en la colección de Usuarios
-    const Usuario = (await import('../models/Usuario.js')).default;
-    const usuarioConMismoEmail = await Usuario.findOne({ email });
-    if (usuarioConMismoEmail) {
-      throw new Error('Ya existe un usuario con ese email');
-    }
-
-    // Crear el perfil profesional del barbero
-    const nuevoBarbero = new Barbero({
-      nombre,
-      apellido,
-      email,
-      telefono,
-      foto,
-      horarioLaboral: horarioLaboral || undefined,
-    });
-
-    await nuevoBarbero.save();
-
-    // Crear la cuenta de usuario asociada
-    const nuevoUsuario = new Usuario({
-      nombre,
-      apellido,
-      email,
-      telefono,
-      password: password || 'barbero123', // Contraseña por defecto si no se proporciona
-      rol: 'barbero',
-      activo: true,
-    });
-
-    await nuevoUsuario.save();
-
-    return nuevoBarbero;
-  } catch (error) {
-    throw new Error(`Error al crear barbero: ${error.message}`);
+  if (!nombre || !apellido || !email || !telefono) {
+    throw new Error('Faltan campos obligatorios');
   }
+
+  const [barberoExistente, usuarioExistente] = await Promise.all([
+    Barbero.findOne({ email }),
+    Usuario.findOne({ email }),
+  ]);
+
+  if (barberoExistente || usuarioExistente) {
+    throw new Error('El email ya está en uso');
+  }
+
+  const nuevoBarbero = new Barbero({ nombre, apellido, email, telefono, foto, horarioLaboral });
+  const nuevoUsuario = new Usuario({
+    nombre,
+    apellido,
+    email,
+    telefono,
+    password: password || 'barbero123',
+    rol: 'barbero',
+    activo: true,
+  });
+
+  await Promise.all([nuevoBarbero.save(), nuevoUsuario.save()]);
+  return nuevoBarbero;
 };
 
-/**
- * ACTUALIZAR BARBERO
- *
- * Modifica la información de un barbero existente.
- *
- * QUÉ PUEDE ACTUALIZARSE:
- * - Nombre y apellido
- * - Email (verificando que no esté en uso)
- * - Teléfono y foto
- * - Especialidad
- * - Horario laboral
- * - Estado activo/inactivo
- *
- * @param {string} identificadorDeBarbero - ID del barbero a actualizar
- * @param {object} datosNuevos - Nuevos datos del barbero
- * @returns {object} - Barbero actualizado
- * @throws {Error} - Si el barbero no existe o el email ya está en uso
- */
-export const actualizar = async (identificadorDeBarbero, datosNuevos) => {
-  try {
-    // Extraer datos a actualizar
-    const { nombre, apellido, email, telefono, foto, horarioLaboral, activo, objetivoMensual } =
-      datosNuevos;
-
-    // Buscar el barbero
-    const barberoAActualizar = await Barbero.findById(identificadorDeBarbero);
-
-    if (!barberoAActualizar) {
-      throw new Error('Barbero no encontrado');
-    }
-
-    // Si se está cambiando el email, verificar que no exista otro barbero con ese email
-    if (email && email !== barberoAActualizar.email) {
-      const emailYaEnUso = await Barbero.findOne({ email });
-      if (emailYaEnUso) {
-        throw new Error('Ya existe un barbero con ese email');
-      }
-    }
-
-    // Actualizar solo los campos proporcionados
-    if (nombre) barberoAActualizar.nombre = nombre;
-    if (apellido) barberoAActualizar.apellido = apellido;
-    if (email) barberoAActualizar.email = email;
-    if (telefono) barberoAActualizar.telefono = telefono;
-    if (foto) barberoAActualizar.foto = foto;
-    if (horarioLaboral) barberoAActualizar.horarioLaboral = horarioLaboral;
-    if (activo !== undefined) {
-      barberoAActualizar.activo = activo;
-
-      // También actualizar el estado de la cuenta de usuario asociada
-      const Usuario = (await import('../models/Usuario.js')).default;
-      await Usuario.updateOne(
-        { email: barberoAActualizar.email, rol: 'barbero' },
-        { activo: activo }
-      );
-    }
-    if (objetivoMensual !== undefined) barberoAActualizar.objetivoMensual = objetivoMensual;
-
-    // Guardar cambios
-    await barberoAActualizar.save();
-
-    return barberoAActualizar;
-  } catch (error) {
-    throw new Error(`Error al actualizar barbero: ${error.message}`);
+// Actualiza la información de un barbero y su usuario asociado.
+export const actualizar = async (barberoId, datos) => {
+  const barbero = await Barbero.findById(barberoId);
+  if (!barbero) {
+    throw new Error('Barbero no encontrado');
   }
+
+  const usuario = await Usuario.findOne({ email: barbero.email, rol: 'barbero' });
+
+  // Si se cambia el email, verificar que no esté en uso y actualizar ambos documentos.
+  if (datos.email && datos.email !== barbero.email) {
+    const emailExistente = await Usuario.findOne({ email: datos.email });
+    if (emailExistente) {
+      throw new Error('El email ya está en uso');
+    }
+    barbero.email = datos.email;
+    if (usuario) usuario.email = datos.email;
+  }
+
+  // Actualizar campos compartidos en el usuario
+  if (usuario) {
+    if (datos.nombre) usuario.nombre = datos.nombre;
+    if (datos.apellido) usuario.apellido = datos.apellido;
+    if (datos.telefono) usuario.telefono = datos.telefono;
+    if (datos.activo !== undefined) usuario.activo = datos.activo;
+  }
+
+  // Actualizar campos del barbero
+  if (datos.nombre) barbero.nombre = datos.nombre;
+  if (datos.apellido) barbero.apellido = datos.apellido;
+  if (datos.telefono) barbero.telefono = datos.telefono;
+  if (datos.foto) barbero.foto = datos.foto;
+  if (datos.horarioLaboral) barbero.horarioLaboral = datos.horarioLaboral;
+  if (datos.activo !== undefined) barbero.activo = datos.activo;
+  if (datos.objetivoMensual !== undefined) barbero.objetivoMensual = datos.objetivoMensual;
+
+  await Promise.all([barbero.save(), usuario?.save()]);
+  return barbero;
 };
 
-/**
- * ELIMINAR BARBERO
- *
- * Elimina permanentemente un barbero y su cuenta de usuario asociada.
- *
- * QUÉ HACE:
- * 1. Busca el barbero a eliminar
- * 2. Elimina la cuenta de usuario asociada (mismo email, rol 'barbero')
- * 3. Elimina el perfil profesional del barbero
- *
- * IMPORTANTE:
- * Esta es una eliminación PERMANENTE. Si solo quieres desactivar temporalmente
- * al barbero, usa la función actualizar() con activo: false.
- *
- * @param {string} identificadorDeBarbero - ID del barbero a eliminar
- * @returns {object} - Barbero eliminado
- * @throws {Error} - Si el barbero no existe
- */
-export const eliminar = async (identificadorDeBarbero) => {
-  try {
-    // Buscar el barbero
-    const barberoAEliminar = await Barbero.findById(identificadorDeBarbero);
-
-    if (!barberoAEliminar) {
-      throw new Error('Barbero no encontrado');
-    }
-
-    // Eliminar la cuenta de usuario asociada
-    const Usuario = (await import('../models/Usuario.js')).default;
-    await Usuario.deleteOne({ email: barberoAEliminar.email, rol: 'barbero' });
-
-    // Eliminar el perfil del barbero
-    await Barbero.findByIdAndDelete(identificadorDeBarbero);
-
-    return barberoAEliminar;
-  } catch (error) {
-    throw new Error(`Error al eliminar barbero: ${error.message}`);
+// Elimina un barbero y su cuenta de usuario asociada.
+export const eliminar = async (barberoId) => {
+  const barbero = await Barbero.findByIdAndDelete(barberoId);
+  if (!barbero) {
+    throw new Error('Barbero no encontrado');
   }
+  await Usuario.deleteOne({ email: barbero.email, rol: 'barbero' });
+  return barbero;
 };
 
-/**
- * VERIFICAR DISPONIBILIDAD DE UN BARBERO
- *
- * Verifica si un barbero específico está disponible en una fecha/hora.
- *
- * QUÉ HACE:
- * Valida que el barbero exista y esté activo.
- *
- * NOTA:
- * Actualmente solo verifica que esté activo. Aquí se podría agregar
- * lógica adicional para verificar horarios laborales según el día de la semana.
- *
- * @param {string} identificadorDeBarbero - ID del barbero
- * @param {string} fecha - Fecha a verificar
- * @param {string} hora - Hora a verificar
- * @returns {boolean} - true si está disponible
- * @throws {Error} - Si el barbero no existe o no está activo
- */
-export const verificarDisponibilidad = async (identificadorDeBarbero, fecha, hora) => {
-  try {
-    // Buscar el barbero
-    const barberoEncontrado = await Barbero.findById(identificadorDeBarbero);
-
-    if (!barberoEncontrado) {
-      throw new Error('Barbero no encontrado');
-    }
-
-    if (!barberoEncontrado.activo) {
-      throw new Error('El barbero no está activo');
-    }
-
-    // Aquí se podría agregar lógica adicional para verificar
-    // el horario laboral del barbero según el día de la semana
-
-    return true;
-  } catch (error) {
-    throw new Error(`Error al verificar disponibilidad: ${error.message}`);
+// Verifica si un barbero está disponible en una fecha y hora específicas.
+export const verificarDisponibilidad = async (barberoId) => {
+  const barbero = await Barbero.findById(barberoId);
+  if (!barbero) {
+    throw new Error('Barbero no encontrado');
   }
+  if (!barbero.activo) {
+    throw new Error('El barbero no está activo');
+  }
+  return true;
 };
 
-/**
- * OBTENER BARBEROS DISPONIBLES
- *
- * Devuelve la lista de barberos disponibles para una fecha y hora específica.
- *
- * QUÉ HACE:
- * 1. Obtiene todos los barberos activos
- * 2. Si se especifica fecha/hora, filtra los que tienen turnos ocupados
- * 3. Devuelve solo los barberos disponibles
- *
- * CÓMO FUNCIONA:
- * - Sin fecha/hora: devuelve todos los barberos activos
- * - Con fecha/hora: excluye los que tienen turnos en ese horario
- *
- * @param {string} fecha - Fecha a consultar (opcional)
- * @param {string} hora - Hora a consultar (opcional)
- * @returns {array} - Lista de barberos disponibles
- */
+// Obtiene los barberos disponibles para una fecha y hora dadas.
 export const obtenerDisponibles = async (fecha, hora) => {
-  try {
-    // Importar el modelo de Turno
-    const Turno = (await import('../models/Turno.js')).default;
-
-    // Obtener todos los barberos activos
-    const barberosActivos = await Barbero.find({ activo: true }).sort({ nombre: 1 });
-
-    // Si no hay fecha y hora, retornar todos los barberos activos
-    if (!fecha || !hora) {
-      return barberosActivos;
-    }
-
-    // Preparar la fecha para la consulta
-    const fechaAConsultar = new Date(fecha);
-    fechaAConsultar.setHours(0, 0, 0, 0);
-
-    // Buscar turnos ocupados en esa fecha y hora
-    const turnosOcupados = await Turno.find({
-      fecha: {
-        $gte: fechaAConsultar,
-        $lte: new Date(fechaAConsultar.getTime() + 24 * 60 * 60 * 1000),
-      },
-      hora,
-      estado: 'reservado',
-      barbero: { $ne: null }, // Solo turnos con barbero asignado
-    });
-
-    // Obtener IDs de barberos ocupados
-    const identificadoresDeBarberosOcupados = turnosOcupados.map((turno) => turno.barbero.toString());
-
-    // Filtrar barberos disponibles (los que NO están ocupados)
-    const barberosDisponibles = barberosActivos.filter(
-      (barbero) => !identificadoresDeBarberosOcupados.includes(barbero._id.toString())
-    );
-
-    return barberosDisponibles;
-  } catch (error) {
-    throw new Error(`Error al obtener barberos disponibles: ${error.message}`);
+  const barberosActivos = await Barbero.find({ activo: true }).sort({ nombre: 1 });
+  if (!fecha || !hora) {
+    return barberosActivos;
   }
-};
 
-// ===== EXPORTACIÓN =====
+  const fechaInicio = new Date(fecha);
+  fechaInicio.setUTCHours(0, 0, 0, 0);
+  const fechaFin = new Date(fechaInicio);
+  fechaFin.setDate(fechaFin.getDate() + 1);
+
+  const turnos = await Turno.find({
+    fecha: { $gte: fechaInicio, $lt: fechaFin },
+    hora,
+    estado: 'reservado',
+  }).select('barbero');
+
+  const idsBarberosOcupados = new Set(turnos.map((turno) => turno.barbero?.toString()));
+  return barberosActivos.filter((barbero) => !idsBarberosOcupados.has(barbero._id.toString()));
+};
 
 export default {
   obtenerTodos,
