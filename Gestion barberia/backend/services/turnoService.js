@@ -279,71 +279,6 @@ export const cancelar = async (turnoId) => {
 };
 
 /**
- * OBTENER HORARIOS DISPONIBLES
- * Devuelve los horarios libres para una fecha y (opcional) barbero.
- */
-export const obtenerHorariosDisponibles = async (fecha, barberoId = null) => {
-  try {
-    if (!fecha) {
-      throw new Error('La fecha es requerida');
-    }
-
-    // Horarios fijos de la barbería
-    const horariosBase = [
-      '09:00', '09:45', '10:30', '11:00', '11:45', '12:30',
-      '13:15', '14:00', '14:45', '15:30', '16:15', '17:00',
-      '17:45', '18:30',
-    ];
-
-    // 1. [FIX] Busca turnos ocupados usando el rango UTC del día
-    const rangoDia = _crearRangoFechaDia(fecha);
-    const queryOcupados = {
-      fecha: rangoDia,
-      estado: 'reservado',
-    };
-
-    // 2. lógica de filtrado
-    if (barberoId) {
-      // CASO 1: Barbero Específico
-      queryOcupados.barbero = barberoId;
-      
-      const turnosOcupados = await Turno.find(queryOcupados);
-      const horasOcupadas = turnosOcupados.map((turno) => turno.hora);
-
-      // Devuelve los horarios base que NO están en la lista de ocupados
-      return horariosBase.filter((h) => !horasOcupadas.includes(h));
-
-    } else {
-      // CASO 2: Barbero "Indistinto" (ver si *al menos uno* está libre)
-
-      const barberosActivos = await Barbero.find({ activo: true });
-      const totalBarberos = barberosActivos.length;
-
-      if (totalBarberos === 0) return []; // No hay barberos, no hay horarios
-
-      // Busca *todos* los turnos de ese día
-      const turnosOcupados = await Turno.find(queryOcupados);
-
-      // Cuenta cuántos barberos están ocupados en cada horario
-      const conteoPorHora = {};
-      turnosOcupados.forEach((turno) => {
-        if (turno.barbero) { // Solo cuenta si tiene barbero asignado
-          conteoPorHora[turno.hora] = (conteoPorHora[turno.hora] || 0) + 1;
-        }
-      });
-
-      // Devuelve los horarios donde los barberos ocupados < total de barberos
-      return horariosBase.filter((horario) => {
-        const ocupados = conteoPorHora[horario] || 0;
-        return ocupados < totalBarberos;
-      });
-    }
-  } catch (error) {
-    throw new Error(`Error al obtener horarios disponibles: ${error.message}`);
-  }
-};
-
-/**
  * VALIDAR DISPONIBILIDAD
  * Verifica si un slot (fecha, hora, barbero) está libre.
  */
@@ -369,5 +304,179 @@ export const validarDisponibilidad = async (fecha, hora, barberoId = null) => {
     return !turnoYaExiste;
   } catch (error) {
     throw new Error(`Error al validar disponibilidad: ${error.message}`);
+  }
+};
+
+export const obtenerDiasDisponibles = () => {
+  try {
+    const dias = [];
+    const hoy = new Date();
+    let fecha = new Date(hoy);
+
+    // Asegurarse de que 'hoy' comience a las 00:00 para evitar problemas de zona horaria
+    fecha.setHours(0, 0, 0, 0);
+
+    while (dias.length < 14) {
+      if (fecha.getDay() !== 0) { // 0 = Domingo
+        dias.push(new Date(fecha));
+      }
+      fecha.setDate(fecha.getDate() + 1);
+    }
+    return dias;
+  } catch (error) {
+    throw new Error(`Error al obtener días disponibles: ${error.message}`);
+  }
+};
+
+export const obtenerHorariosDisponibles = async (fecha, barberoId = null) => {
+  try {
+    if (!fecha) {
+      throw new Error('La fecha es requerida');
+    }
+
+    // Horarios fijos de la barbería
+    const horariosBase = [
+      '09:00', '09:45', '10:30', '11:15', '12:00', '12:45',
+      '13:30', '14:15', '15:00', '15:45', '16:30', '17:15', // Último turno empieza 17:15
+    ];  
+
+    const rangoDia = _crearRangoFechaDia(fecha);
+    const queryOcupados = { fecha: rangoDia, estado: 'reservado' };
+
+    let horariosFiltrados = [...horariosBase];
+
+    // **NUEVO**: Filtrar horarios pasados si la fecha es hoy
+    const hoy = new Date();
+    const fechaSeleccionadaDate = new Date(fecha + 'T00:00:00'); // Asumir UTC
+    
+    // Comparamos solo día, mes y año
+    if (fechaSeleccionadaDate.getUTCFullYear() === hoy.getUTCFullYear() &&
+        fechaSeleccionadaDate.getUTCMonth() === hoy.getUTCMonth() &&
+        fechaSeleccionadaDate.getUTCDate() === hoy.getUTCDate()) {
+      
+      const horaActual = hoy.getHours();
+      const minutoActual = hoy.getMinutes();
+
+      horariosFiltrados = horariosBase.filter(hora => {
+        const [horaNum, minutoNum] = hora.split(':').map(Number);
+        if (horaNum < horaActual) return false;
+        if (horaNum === horaActual && minutoNum <= minutoActual) return false;
+        return true;
+      });
+    }
+
+    // La lógica de disponibilidad sigue igual, pero parte de `horariosFiltrados`
+    if (barberoId) {
+      queryOcupados.barbero = barberoId;
+      const turnosOcupados = await Turno.find(queryOcupados);
+      const horasOcupadas = new Set(turnosOcupados.map((turno) => turno.hora));
+      return horariosFiltrados.filter((h) => !horasOcupadas.has(h));
+    } else {
+      const barberosActivos = await Barbero.countDocuments({ activo: true });
+      if (barberosActivos === 0) return [];
+
+      const turnosOcupados = await Turno.find(queryOcupados);
+      const conteoPorHora = {};
+      turnosOcupados.forEach((turno) => {
+        if (turno.barbero) {
+          conteoPorHora[turno.hora] = (conteoPorHora[turno.hora] || 0) + 1;
+        }
+      });
+
+      return horariosFiltrados.filter((horario) => {
+        const ocupados = conteoPorHora[horario] || 0;
+        return ocupados < barberosActivos;
+      });
+    }
+  } catch (error) {
+    throw new Error(`Error al obtener horarios disponibles: ${error.message}`);
+  }
+};
+
+const _verificarConflicto = (turnoNuevo, turnosExistentes) => {
+  if (!turnoNuevo?.hora || !turnoNuevo?.servicio) return false;
+  
+  const [hN, mN] = turnoNuevo.hora.split(':').map(Number);
+  const inicioN = hN * 60 + mN;
+  // Usamos 45 min como duración base si el servicio no la tiene (aunque debería)
+  const duracionN = turnoNuevo.servicio.duracion || 45; 
+  const finN = inicioN + duracionN;
+
+  for (const turnoE of turnosExistentes) {
+    if (!turnoE?.hora || !turnoE?.servicio) continue;
+    const [hE, mE] = turnoE.hora.split(':').map(Number);
+    const inicioE = hE * 60 + mE;
+    const duracionE = turnoE.servicio.duracion || 45;
+    const finE = inicioE + duracionE;
+
+    // Lógica de superposición
+    if (inicioN < finE && finN > inicioE) {
+      return true; // Hay conflicto
+    }
+  }
+  return false; // Sin conflicto
+};
+
+export const obtenerDisponibilidadParaTurnos = async (idsTurnos) => {
+  try {
+    if (!idsTurnos || idsTurnos.length === 0) {
+      return {};
+    }
+
+    // 1. Obtener los turnos a verificar (con cliente y servicio)
+    const turnosAVerificar = await Turno.find({ _id: { $in: idsTurnos } })
+      .populate('servicio', 'duracion')
+      .populate('cliente', 'nombre apellido');
+
+    if (turnosAVerificar.length === 0) {
+      return {};
+    }
+
+    // 2. Obtener todos los barberos activos
+    const barberosActivos = await Barbero.find({ activo: true }, '_id nombre');
+
+    // 3. Obtener todas las fechas únicas de los turnos a verificar
+    const fechasUnicas = [...new Set(turnosAVerificar.map(t => t.fecha.toISOString().split('T')[0]))];
+
+    // 4. Obtener TODOS los turnos (con barbero) en esas fechas para verificar conflictos
+    const turnosOcupados = await Turno.find({
+      fecha: { $in: fechasUnicas.map(f => _crearRangoFechaDia(f)) },
+      barbero: { $exists: true },
+      estado: 'reservado'
+    }).populate('servicio', 'duracion');
+
+    // 5. Procesar la disponibilidad
+    const disponibilidadFinal = {};
+
+    for (const turno of turnosAVerificar) {
+      const turnoIdStr = turno._id.toString();
+      const fechaTurnoStr = turno.fecha.toISOString().split('T')[0];
+      disponibilidadFinal[turnoIdStr] = [];
+
+      for (const barbero of barberosActivos) {
+        const barberoIdStr = barbero._id.toString();
+
+        // Filtrar los turnos ocupados solo para este barbero y esta fecha
+        const turnosDelBarberoEnFecha = turnosOcupados.filter(t =>
+          t.barbero.toString() === barberoIdStr &&
+          t.fecha.toISOString().split('T')[0] === fechaTurnoStr
+        );
+
+        // Verificar conflicto
+        const tieneConflicto = _verificarConflicto(turno, turnosDelBarberoEnFecha);
+        
+        disponibilidadFinal[turnoIdStr].push({
+          _id: barbero._id,
+          nombre: barbero.nombre,
+          isDisponible: !tieneConflicto
+        });
+      }
+    }
+
+    return disponibilidadFinal;
+
+  } catch (error) {
+    console.error("Error en obtenerDisponibilidadParaTurnos:", error);
+    throw new Error(`Error al verificar disponibilidad: ${error.message}`);
   }
 };

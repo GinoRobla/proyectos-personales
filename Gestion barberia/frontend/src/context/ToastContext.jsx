@@ -1,186 +1,78 @@
-/**
- * ============================================================================
- * CONTEXTO: NOTIFICACIONES TOAST
- * ============================================================================
- *
- * Maneja el sistema de notificaciones tipo toast en toda la aplicación.
- *
- * RESPONSABILIDADES:
- * - Mantener la lista de notificaciones activas
- * - Mostrar y ocultar notificaciones toast
- * - Proporcionar funciones de conveniencia para diferentes tipos de mensajes
- * - Gestionar el ciclo de vida de cada notificación
- *
- * TIPOS DE NOTIFICACIONES:
- * - success: Mensajes de éxito (verde)
- * - error: Mensajes de error (rojo)
- * - warning: Mensajes de advertencia (amarillo)
- * - info: Mensajes informativos (azul)
- *
- * FUNCIONES PROPORCIONADAS:
- * - mostrarToast: Función genérica para mostrar cualquier tipo de toast
- * - exito: Atajo para mostrar mensaje de éxito
- * - error: Atajo para mostrar mensaje de error
- * - advertencia: Atajo para mostrar mensaje de advertencia
- * - informacion: Atajo para mostrar mensaje informativo
- */
-
 import { createContext, useContext, useState } from 'react';
 import Toast from '../components/Toast';
 
-// ============================================================================
-// CREACIÓN DEL CONTEXTO
-// ============================================================================
-
+// 1. Se crea un Context de React para compartir las funciones de notificación.
 const ToastContext = createContext();
 
-// ============================================================================
-// HOOK PERSONALIZADO: useToast
-// ============================================================================
 /**
- * Hook para acceder al sistema de notificaciones toast desde cualquier componente.
- *
- * Uso:
- * const toast = useToast();
- * toast.exito('Operación exitosa');
- * toast.error('Ocurrió un error');
- *
- * @throws {Error} Si se usa fuera de un ToastProvider
- * @returns {Object} Funciones para mostrar notificaciones
+ * Hook para usar las notificaciones desde cualquier componente de forma sencilla.
+ * Lanza un error si se intenta usar fuera del ToastProvider.
  */
 export const useToast = () => {
-  const contexto = useContext(ToastContext);
-
-  if (!contexto) {
-    throw new Error('useToast debe usarse dentro de ToastProvider');
+  const context = useContext(ToastContext);
+  if (!context) {
+    throw new Error('useToast debe usarse dentro de un ToastProvider');
   }
-
-  return contexto;
+  return context;
 };
 
-// ============================================================================
-// PROVEEDOR DEL CONTEXTO
-// ============================================================================
-
+/**
+ * Componente "Proveedor" que gestiona el estado de los toasts
+ * y los muestra en la pantalla. Debe envolver tu aplicación.
+ */
 export const ToastProvider = ({ children }) => {
-  // ESTADO: Lista de notificaciones toast activas
-  // Cada toast tiene: { id, message, type, duration }
-  const [listaToasts, setListaToasts] = useState([]);
+  // Almacena la lista de notificaciones (toasts) que se están mostrando.
+  const [toasts, setToasts] = useState([]);
 
-  // ============================================================================
-  // FUNCIÓN: Mostrar notificación toast
-  // ============================================================================
   /**
-   * MOSTRAR TOAST
-   *
-   * Muestra una notificación toast en la pantalla.
-   *
-   * Proceso:
-   * 1. Generar un ID único para el toast
-   * 2. Agregar el nuevo toast a la lista de toasts activos
-   * 3. El componente Toast se encargará de ocultarse automáticamente
-   *
-   * @param {string} mensaje - Texto a mostrar en la notificación
-   * @param {string} tipo - Tipo de notificación: 'success', 'error', 'warning', 'info'
-   * @param {number} duracion - Duración en milisegundos (por defecto 3000ms)
+   * Elimina una notificación de la pantalla usando su ID.
+   * @param {number} id - El ID de la notificación a quitar.
    */
-  const mostrarToast = (mensaje, tipo = 'info', duracion = 3000) => {
-    // Paso 1: Generar ID único usando timestamp
-    const idUnico = Date.now();
-
-    // Paso 2: Agregar el nuevo toast a la lista
-    setListaToasts((toastsAnteriores) => [
-      ...toastsAnteriores,
-      { id: idUnico, message: mensaje, type: tipo, duration: duracion },
-    ]);
+  const removeToast = (id) => {
+    // Filtra la lista, quedándose con todos los toasts menos el que coincide con el ID.
+    setToasts(currentToasts => currentToasts.filter(toast => toast.id !== id));
   };
 
-  // ============================================================================
-  // FUNCIÓN: Eliminar notificación toast
-  // ============================================================================
   /**
-   * ELIMINAR TOAST
-   *
-   * Elimina un toast específico de la lista de notificaciones activas.
-   *
-   * @param {number} id - ID del toast a eliminar
+   * Añade una nueva notificación a la lista para que aparezca en pantalla.
+   * @param {string} message - El texto que se mostrará.
+   * @param {string} type - El tipo de notificación ('success', 'error', 'warning', 'info').
+   * @param {number} duration - Cuánto tiempo (en ms) será visible.
    */
-  const eliminarToast = (id) => {
-    setListaToasts((toastsAnteriores) =>
-      toastsAnteriores.filter((toast) => toast.id !== id)
-    );
+  const showToast = (message, type = 'info', duration = 3000) => {
+    const newToast = {
+      id: Date.now(), // Se usa el timestamp como un ID único y simple.
+      message,
+      type,
+      duration,
+    };
+    // Añade el nuevo toast a la lista existente de toasts.
+    setToasts(currentToasts => [...currentToasts, newToast]);
   };
 
-  // ============================================================================
-  // FUNCIONES DE CONVENIENCIA
-  // ============================================================================
-  // Atajos para mostrar diferentes tipos de notificaciones sin especificar el tipo
-
-  /**
-   * MOSTRAR MENSAJE DE ÉXITO
-   *
-   * Atajo para mostrar una notificación de éxito (verde).
-   *
-   * @param {string} mensaje - Texto del mensaje
-   * @param {number} duracion - Duración opcional en milisegundos
-   */
-  const exito = (mensaje, duracion) => mostrarToast(mensaje, 'success', duracion);
-
-  /**
-   * MOSTRAR MENSAJE DE ERROR
-   *
-   * Atajo para mostrar una notificación de error (rojo).
-   *
-   * @param {string} mensaje - Texto del mensaje
-   * @param {number} duracion - Duración opcional en milisegundos
-   */
-  const errorToast = (mensaje, duracion) => mostrarToast(mensaje, 'error', duracion);
-
-  /**
-   * MOSTRAR MENSAJE DE ADVERTENCIA
-   *
-   * Atajo para mostrar una notificación de advertencia (amarillo).
-   *
-   * @param {string} mensaje - Texto del mensaje
-   * @param {number} duracion - Duración opcional en milisegundos
-   */
-  const advertencia = (mensaje, duracion) => mostrarToast(mensaje, 'warning', duracion);
-
-  /**
-   * MOSTRAR MENSAJE INFORMATIVO
-   *
-   * Atajo para mostrar una notificación informativa (azul).
-   *
-   * @param {string} mensaje - Texto del mensaje
-   * @param {number} duracion - Duración opcional en milisegundos
-   */
-  const informacion = (mensaje, duracion) => mostrarToast(mensaje, 'info', duracion);
-
-  // ============================================================================
-  // VALOR DEL CONTEXTO
-  // ============================================================================
-  // Objeto que contiene todas las funciones disponibles para mostrar notificaciones
-  const valorContexto = {
-    showToast: mostrarToast,
-    success: exito,
-    error: errorToast,
-    warning: advertencia,
-    info: informacion,
+  // Objeto con las funciones que se compartirán a través del contexto.
+  const contextValue = {
+    success: (message, duration) => showToast(message, 'success', duration),
+    error: (message, duration) => showToast(message, 'error', duration),
+    warning: (message, duration) => showToast(message, 'warning', duration),
+    info: (message, duration) => showToast(message, 'info', duration),
   };
 
   return (
-    <ToastContext.Provider value={valorContexto}>
+    <ToastContext.Provider value={contextValue}>
+      {/* Muestra el resto de la aplicación */}
       {children}
 
-      {/* Contenedor de todas las notificaciones toast activas */}
+      {/* Área fija donde aparecerán todas las notificaciones */}
       <div className="toast-container">
-        {listaToasts.map((toast) => (
+        {toasts.map((toast) => (
           <Toast
             key={toast.id}
             message={toast.message}
             type={toast.type}
             duration={toast.duration}
-            onClose={() => eliminarToast(toast.id)}
+            // La función para cerrar se pasa al componente Toast.
+            onClose={() => removeToast(toast.id)}
           />
         ))}
       </div>

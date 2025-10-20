@@ -66,4 +66,21 @@ export const turnoService = {
     });
     return respuesta.data;
   },
+
+  obtenerDiasDisponibles: async () => {
+    // Llama a: GET /turnos/dias-disponibles
+    const respuesta = await api.get('/turnos/dias-disponibles');
+    return respuesta.data;
+  },
+
+  obtenerDisponibilidadBarberos: async (idsTurnos) => {
+    // Llama a: GET /turnos/disponibilidad-barberos?turnos=id1,id2
+    const respuesta = await api.get('/turnos/disponibilidad-barberos', {
+      params: {
+        turnos: idsTurnos.join(','), // Envía los IDs como string separado por comas
+      },
+    });
+    return respuesta.data;
+  },
+  
 };

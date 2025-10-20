@@ -738,3 +738,43 @@
     padding: 2rem;
   }
 }
+
+/* ... (Estilos existentes) ... */
+
+/* Estilos para lista de barberos en cards */
+.ocupado-label { 
+  margin-left: 8px; 
+  font-size: 0.75rem; 
+  font-weight: bold; 
+  color: #dc3545; 
+}
+
+.btn-barbero.ocupado { 
+  background: #f8d7da; 
+  border-color: #f5c6cb; 
+  color: #721c24; 
+  cursor: not-allowed; 
+  opacity: 0.7; 
+}
+
+/* Estilos para el modal */
+.horario-btn.ocupado-modal { 
+  background: #f8d7da; 
+  color: #721c24; 
+  border-color: #f5c6cb; 
+}
+
+.mensaje-vacio { 
+  text-align: center; 
+  padding: 3rem 1rem; 
+  background: #fff; 
+  border-radius: 8px; 
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.page-subtitle {
+  text-align: center;
+  color: #6c757d;
+  margin-top: -2rem;
+  margin-bottom: 2rem;
+}

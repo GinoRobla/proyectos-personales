@@ -483,3 +483,48 @@
     padding: 2rem;
   }
 }
+
+/* ... (Estilos existentes) ... */
+
+.turno-item-simple { 
+  display: flex; 
+  align-items: center; 
+  gap: 1rem; 
+  padding: 0.75rem; 
+  background: #f9f9f9; 
+  border-radius: 6px; 
+  margin-bottom: 0.5rem; 
+  font-size: 0.85rem;
+}
+.turno-hora-simple { 
+  font-weight: bold; 
+  color: var(--primary); 
+  min-width: 50px; 
+}
+.turno-cliente-simple { 
+  flex-grow: 1; 
+}
+.turno-servicio-simple { 
+  color: #555; 
+}
+.proximo-turno-card { 
+  background: #e7f3ff; 
+  border-left: 4px solid #007bff; 
+  padding: 1rem; 
+  border-radius: 6px; 
+  display: flex; 
+  flex-direction: column; 
+  gap: 0.5rem; 
+}
+.proximo-turno-card div { 
+  display: flex; 
+  justify-content: space-between; 
+}
+.proximo-turno-card label { 
+  font-weight: bold; 
+  color: #555; 
+  font-size: 0.8rem; 
+}
+.proximo-turno-card span { 
+  font-size: 0.9rem; 
+}
