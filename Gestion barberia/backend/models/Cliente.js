@@ -4,6 +4,7 @@
  */
 
 import mongoose from 'mongoose';
+import { validarTelefonoArgentino } from '../utils/phoneValidator.js';
 
 const clienteSchema = new mongoose.Schema(
   {
@@ -17,7 +18,22 @@ const clienteSchema = new mongoose.Schema(
       trim: true,
       match: [/^\S+@\S+\.\S+$/, 'Email inválido'],
     },
-    telefono: { type: String, required: true, trim: true },
+    telefono: {
+      type: String,
+      required: true,
+      trim: true,
+      validate: {
+        validator: function (telefono) {
+          const resultado = validarTelefonoArgentino(telefono);
+          return resultado.valido;
+        },
+        message: (props) => {
+          const resultado = validarTelefonoArgentino(props.value);
+          return resultado.error || 'Número de teléfono inválido';
+        },
+      },
+    },
+    telefonoVerificado: { type: Boolean, default: false },
     activo: { type: Boolean, default: true },
   },
   { timestamps: true, versionKey: false }

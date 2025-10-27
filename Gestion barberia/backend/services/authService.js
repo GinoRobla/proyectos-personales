@@ -2,6 +2,7 @@ import jwt from 'jsonwebtoken';
 import Usuario from '../models/Usuario.js';
 import Barbero from '../models/Barbero.js';
 import dotenv from 'dotenv';
+import { validarTelefonoArgentino } from '../utils/phoneValidator.js';
 
 dotenv.config();
 
@@ -39,6 +40,12 @@ export const registrar = async (datosUsuario) => {
     throw new Error('La contraseña debe tener al menos 6 caracteres');
   }
 
+  // Validar y normalizar número de teléfono
+  const resultadoTelefono = validarTelefonoArgentino(telefono);
+  if (!resultadoTelefono.valido) {
+    throw new Error(resultadoTelefono.error);
+  }
+
   const usuarioExistente = await Usuario.findOne({ email });
   if (usuarioExistente) {
     throw new Error('Este email ya está registrado. Intenta con otro o inicia sesión');
@@ -49,7 +56,7 @@ export const registrar = async (datosUsuario) => {
     apellido,
     email,
     password,
-    telefono,
+    telefono: resultadoTelefono.numeroNormalizado, // Guardar teléfono normalizado
     rol,
     foto,
   });

@@ -5,6 +5,7 @@
 
 import mongoose from 'mongoose';
 import bcrypt from 'bcrypt';
+import { validarTelefonoArgentino } from '../utils/phoneValidator.js';
 
 const usuarioSchema = new mongoose.Schema(
   {
@@ -12,7 +13,20 @@ const usuarioSchema = new mongoose.Schema(
     apellido: { type: String, required: true },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true, select: false },
-    telefono: { type: String, required: true },
+    telefono: {
+      type: String,
+      required: true,
+      validate: {
+        validator: function (telefono) {
+          const resultado = validarTelefonoArgentino(telefono);
+          return resultado.valido;
+        },
+        message: (props) => {
+          const resultado = validarTelefonoArgentino(props.value);
+          return resultado.error || 'Número de teléfono inválido';
+        },
+      },
+    },
     rol: {
       type: String,
       enum: ['cliente', 'barbero', 'admin'],

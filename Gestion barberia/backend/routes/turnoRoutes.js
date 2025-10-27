@@ -24,7 +24,7 @@ router.get('/dias-disponibles', obtenerDiasDisponibles);
 router.get('/mis-turnos', autenticar, paginacion, obtenerMisTurnos);
 router.get('/', paginacion, obtenerTurnos);
 router.get('/:id', obtenerTurnoPorId);
-router.post('/', crearTurno);
+router.post('/', autenticar, crearTurno); // Requiere autenticación
 router.put('/:id', actualizarTurno);
 router.patch('/:id/cancelar', cancelarTurno);
 

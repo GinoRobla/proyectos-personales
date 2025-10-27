@@ -3,6 +3,7 @@ import Cliente from '../models/Cliente.js';
 import Barbero from '../models/Barbero.js';
 import Servicio from '../models/Servicio.js';
 import { enviarCancelacionBarberoWhatsApp } from './whatsappService.js';
+import { validarTelefonoArgentino } from '../utils/phoneValidator.js';
 
 /**
  * -------------------------------------------------------------------
@@ -253,18 +254,24 @@ export const crear = async (datosDeTurno) => {
       }
     }
 
-    // 4. [REFACTOR] Buscar o Crear Cliente
+    // 4. Validar y normalizar teléfono
+    const resultadoTelefono = validarTelefonoArgentino(clienteData.telefono);
+    if (!resultadoTelefono.valido) {
+      throw new Error(resultadoTelefono.error);
+    }
+
+    // 5. [REFACTOR] Buscar o Crear Cliente
     // Usa findOneAndUpdate con 'upsert: true' para crear o actualizar en 1 paso
     const clienteDelTurno = await Cliente.findOneAndUpdate(
       { email: clienteData.email }, // Filtro de búsqueda
       { // Datos a actualizar o crear
-        $set: { 
+        $set: {
           nombre: clienteData.nombre,
           apellido: clienteData.apellido,
-          telefono: clienteData.telefono,
+          telefono: resultadoTelefono.numeroNormalizado, // Guardar teléfono normalizado
         }
       },
-      { 
+      {
         new: true, // Devuelve el documento actualizado (o el nuevo)
         upsert: true, // Si no lo encuentra, lo crea
         runValidators: true // Corre las validaciones del modelo Cliente

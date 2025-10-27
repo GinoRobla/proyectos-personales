@@ -497,26 +497,62 @@
 
 /* ... (Estilos existentes) ... */
 
-.turno-item-simple { 
-  display: flex; 
-  align-items: center; 
-  gap: 1rem; 
-  padding: 0.75rem; 
-  background: #f9f9f9; 
-  border-radius: 6px; 
-  margin-bottom: 0.5rem; 
+.turno-item-simple {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background: #f9f9f9;
+  border-radius: 6px;
+  margin-bottom: 0.5rem;
   font-size: 0.85rem;
+  overflow: hidden; /* Evita que se salga */
 }
-.turno-hora-simple { 
-  font-weight: bold; 
-  color: var(--primary); 
-  min-width: 50px; 
+.turno-hora-simple {
+  font-weight: bold;
+  color: var(--primary);
+  min-width: 45px;
+  flex-shrink: 0; /* No se reduce */
+  text-align: center;
 }
-.turno-cliente-simple { 
-  flex-grow: 1; 
+.turno-cliente-simple {
+  flex: 1 1 auto; /* Crece y se ajusta */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0; /* Permite que se reduzca si es necesario */
 }
-.turno-servicio-simple { 
-  color: #555; 
+.turno-servicio-simple {
+  color: #555;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 120px; /* Ancho máximo */
+  flex-shrink: 1; /* Puede reducirse si falta espacio */
+}
+
+/* Responsive para móviles - TODO EN UNA LÍNEA */
+@media (max-width: 768px) {
+  .turno-item-simple {
+    gap: 0.4rem;
+    padding: 0.6rem;
+    font-size: 0.8rem;
+  }
+
+  .turno-hora-simple {
+    min-width: 40px;
+    font-size: 0.8rem;
+  }
+
+  .turno-servicio-simple {
+    max-width: 80px; /* Más pequeño en móvil */
+    font-size: 0.75rem;
+  }
+
+  .estado-badge {
+    font-size: 0.65rem;
+    padding: 0.2rem 0.4rem;
+  }
 }
 .proximo-turno-card { 
   background: #e7f3ff; 

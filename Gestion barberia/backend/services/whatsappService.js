@@ -199,3 +199,23 @@ export const enviarReporteDiarioAdminWhatsApp = async (adminTelefono, estadistic
   // 4. Enviar usando el helper
   return await _enviarWhatsApp(adminTelefono, mensaje);
 };
+
+/**
+ * 4️⃣ Enviar mensaje de bienvenida/confirmación a un cliente nuevo
+ * @param {string} clienteTelefono - Teléfono del cliente
+ * @param {string} clienteNombre - Nombre del cliente
+ * @returns {Promise<boolean>} - true si se envió, false si no
+ */
+export const enviarMensajeBienvenida = async (clienteTelefono, clienteNombre) => {
+  const businessName = process.env.BUSINESS_NAME || 'Barbería GR';
+
+  const mensaje =
+    `¡Hola ${clienteNombre}! 👋\n\n` +
+    `Bienvenido a *${businessName}*.\n\n` +
+    `Tu número de teléfono ha sido registrado correctamente. ` +
+    `Recibirás recordatorios por WhatsApp 30 minutos antes de tus turnos.\n\n` +
+    `Si tienes alguna consulta, no dudes en contactarnos.\n\n` +
+    `¡Gracias por elegirnos! 💈`;
+
+  return await _enviarWhatsApp(clienteTelefono, mensaje);
+};

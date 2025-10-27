@@ -53,7 +53,7 @@
 .stats-grid {
   display: grid;
   gap: var(--spacing-lg);
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 200px), 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 250px), 1fr));
   margin-bottom: var(--spacing-xl);
 }
 
@@ -62,10 +62,11 @@
   padding: var(--spacing-lg);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-sm);
+  border: 1px solid #e9ecef;
 }
 
 .stat-card h3 {
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   color: var(--text-gray);
   margin-bottom: var(--spacing-sm);
   text-transform: uppercase;
@@ -73,9 +74,10 @@
 }
 
 .stat-value {
-  font-size: 1.8rem;
+  font-size: 2rem;
   font-weight: 700;
   line-height: 1.2;
+  margin-bottom: var(--spacing-xs);
 }
 
 .stat-value.primary { color: var(--success); }
@@ -195,86 +197,6 @@
 .diferencia.positiva { color: var(--success); }
 .diferencia.negativa { color: var(--error); }
 
-/* Evolución de Ingresos Cards */
-.evolucion-card {
-  background: white;
-  padding: var(--spacing-lg);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-sm);
-  margin-bottom: var(--spacing-xl);
-}
-
-.evolucion-card h3 {
-  font-size: 1.1rem;
-  font-weight: 600;
-  margin-bottom: var(--spacing-lg);
-  color: var(--text-dark);
-}
-
-.evolucion-lista {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-md);
-}
-
-.evolucion-item {
-  display: grid;
-  grid-template-columns: 80px 1fr auto;
-  gap: var(--spacing-md);
-  align-items: center;
-  padding: var(--spacing-sm);
-  background: #f8f9fa;
-  border-radius: var(--radius-md);
-  transition: all 0.2s ease;
-}
-
-.evolucion-item:hover {
-  background: #e9ecef;
-  transform: translateX(5px);
-}
-
-.evolucion-fecha {
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: var(--text-gray);
-  text-align: center;
-}
-
-.evolucion-barra-container {
-  flex: 1;
-  height: 24px;
-  background: #e9ecef;
-  border-radius: var(--radius-full);
-  overflow: hidden;
-  position: relative;
-}
-
-.evolucion-barra {
-  height: 100%;
-  background: linear-gradient(90deg, #28a745 0%, #20c997 100%);
-  border-radius: var(--radius-full);
-  transition: width 0.3s ease;
-  min-width: 2%;
-}
-
-.evolucion-valor {
-  text-align: right;
-  font-size: 0.9rem;
-  font-weight: 700;
-  color: var(--text-dark);
-  min-width: 120px;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-}
-
-.evolucion-turnos {
-  font-size: 0.75rem;
-  font-weight: 400;
-  color: var(--text-gray);
-  margin-top: 0.1rem;
-}
-
 /* Empty State Small - para secciones sin datos */
 .empty-state-small {
   text-align: center;
@@ -293,7 +215,7 @@
 /* Tabla de Servicios */
 .servicios-tabla-card {
   background: white;
-  padding: var(--spacing-lg);
+  padding: var(--spacing-md);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-sm);
   overflow-x: auto; /* Scroll horizontal en móvil */
@@ -308,15 +230,14 @@
 .servicios-tabla-card table {
   width: 100%;
   border-collapse: collapse;
-  min-width: 400px; /* Evitar que se comprima demasiado */
 }
 
 .servicios-tabla-card th,
 .servicios-tabla-card td {
-  padding: var(--spacing-sm) var(--spacing-md);
+  padding: var(--spacing-xs) var(--spacing-sm);
   text-align: left;
   border-bottom: 1px solid #eee;
-  font-size: 0.9rem;
+  font-size: 0.8rem;
 }
 
 .servicios-tabla-card th {
@@ -336,11 +257,24 @@
   text-align: center;
 }
 
+/* Responsive para tabla de servicios */
+@media (min-width: 768px) {
+  .servicios-tabla-card {
+    padding: var(--spacing-lg);
+  }
+
+  .servicios-tabla-card th,
+  .servicios-tabla-card td {
+    padding: var(--spacing-sm) var(--spacing-md);
+    font-size: 0.9rem;
+  }
+}
+
 
 /* Responsive */
 @media (min-width: 768px) {
   .page-header h1 { font-size: 2rem; }
-  .stat-value { font-size: 2rem; }
+  .stat-value { font-size: 2.25rem; }
 }
 
 /* Laptop - Desde 1280px */

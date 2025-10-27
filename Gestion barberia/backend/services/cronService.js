@@ -14,8 +14,13 @@ const verificarTurnosProximos = async () => {
     const anticipacionMinutos = parseInt(process.env.ANTICIPACION_RECORDATORIO_MINUTOS) || 30;
     const intervaloCron = 5;
 
+    // Ventana normal: 30-35 minutos antes del turno
     const tiempoMinimo = new Date(ahora.getTime() + anticipacionMinutos * 60000);
     const tiempoMaximo = new Date(ahora.getTime() + (anticipacionMinutos + intervaloCron) * 60000);
+
+    // Para turnos reservados con poca anticipación: enviar inmediatamente si faltan menos de 30 min
+    const tiempoMinimoInmediato = ahora;
+    const tiempoMaximoInmediato = new Date(ahora.getTime() + anticipacionMinutos * 60000);
 
     const turnos = await Turno.find({
       recordatorioEnviado: false,
@@ -25,21 +30,48 @@ const verificarTurnosProximos = async () => {
 
     if (!turnos.length) return;
 
+    let recordatoriosEnviados = 0;
+
     for (const turno of turnos) {
       const [horas, minutos] = turno.hora.split(':');
-      const fechaTurno = new Date(turno.fecha);
-      fechaTurno.setHours(parseInt(horas), parseInt(minutos));
 
-      if (fechaTurno >= tiempoMinimo && fechaTurno <= tiempoMaximo) {
+      // Construir la fecha+hora del turno usando UTC para evitar problemas de zona horaria
+      const fechaTurnoUTC = new Date(turno.fecha);
+      const año = fechaTurnoUTC.getUTCFullYear();
+      const mes = fechaTurnoUTC.getUTCMonth();
+      const dia = fechaTurnoUTC.getUTCDate();
+
+      // Crear fecha con la hora del turno en hora LOCAL
+      const fechaTurno = new Date(año, mes, dia, parseInt(horas), parseInt(minutos), 0, 0);
+
+      // Calcular minutos hasta el turno
+      const minutosHastaTurno = Math.floor((fechaTurno - ahora) / 60000);
+
+      // Condición 1: Ventana normal (30-35 min antes)
+      const dentroVentanaNormal = fechaTurno >= tiempoMinimo && fechaTurno <= tiempoMaximo;
+
+      // Condición 2: Turno reservado con poca anticipación (menos de 30 min y no ha pasado)
+      const reservadoConPocaAnticipacion =
+        fechaTurno >= tiempoMinimoInmediato &&
+        fechaTurno < tiempoMaximoInmediato;
+
+      if (dentroVentanaNormal || reservadoConPocaAnticipacion) {
         try {
           await enviarRecordatorioClienteWhatsApp(turno, turno.cliente, turno.barbero, turno.servicio);
           turno.recordatorioEnviado = true;
           await turno.save();
-          console.log(`✅ Recordatorio enviado para el turno ${turno._id}`);
+          recordatoriosEnviados++;
+
+          const tipoRecordatorio = dentroVentanaNormal ? '30 min antes' : 'inmediato';
+          console.log(`✅ Recordatorio ${tipoRecordatorio} enviado para turno ${turno._id} (${turno.hora}, faltan ${minutosHastaTurno} min)`);
         } catch (error) {
           console.error(`❌ Error al enviar recordatorio para el turno ${turno._id}:`, error.message);
         }
       }
+    }
+
+    if (recordatoriosEnviados > 0) {
+      console.log(`✅ Total de recordatorios enviados: ${recordatoriosEnviados}`);
     }
   } catch (error) {
     console.error('❌ Error al verificar turnos próximos:', error.message);
@@ -50,28 +82,67 @@ const verificarTurnosProximos = async () => {
 const completarTurnosFinalizados = async () => {
   try {
     const ahora = new Date();
+
+    // Buscar turnos reservados de hoy o anteriores
+    // No podemos filtrar por hora aquí porque la fecha está en UTC 00:00
+    const finDelDia = new Date();
+    finDelDia.setHours(23, 59, 59, 999);
+
     const turnos = await Turno.find({
       estado: 'reservado',
-      fecha: { $lte: ahora },
+      fecha: { $lte: finDelDia },
     }).populate('servicio');
 
     if (!turnos.length) return;
 
+    let turnosCompletados = 0;
+
     const promesas = turnos.map(async (turno) => {
       const duracion = turno.servicio?.duracion || 45;
       const [horas, minutos] = turno.hora.split(':');
-      const fechaTurno = new Date(turno.fecha);
-      fechaTurno.setHours(parseInt(horas), parseInt(minutos));
 
+      // Construir la fecha+hora del turno usando UTC para evitar problemas de zona horaria
+      // turno.fecha está en UTC 00:00:00, necesitamos agregarle la hora local del turno
+      const fechaTurnoUTC = new Date(turno.fecha);
+
+      // Obtener el año, mes, día en UTC
+      const año = fechaTurnoUTC.getUTCFullYear();
+      const mes = fechaTurnoUTC.getUTCMonth();
+      const dia = fechaTurnoUTC.getUTCDate();
+
+      // Crear fecha con la hora del turno en hora LOCAL (no UTC)
+      // Esto respeta la zona horaria de Argentina
+      const fechaTurno = new Date(año, mes, dia, parseInt(horas), parseInt(minutos), 0, 0);
+
+      // Calcular la fecha+hora de finalización del turno
       const fechaFin = new Date(fechaTurno.getTime() + duracion * 60000);
 
+      // DEBUG: Logs detallados
+      console.log(`[DEBUG completar] Turno ${turno._id}:`);
+      console.log(`  - Hora turno: ${turno.hora}`);
+      console.log(`  - turno.fecha (DB UTC): ${turno.fecha.toISOString()}`);
+      console.log(`  - Fecha extraída (año/mes/dia): ${año}-${mes + 1}-${dia}`);
+      console.log(`  - fechaTurno (local ${horas}:${minutos}): ${fechaTurno.toLocaleString('es-AR', { timeZone: 'America/Argentina/Buenos_Aires' })} (${fechaTurno.toISOString()})`);
+      console.log(`  - fechaFin (+ ${duracion}min): ${fechaFin.toLocaleString('es-AR', { timeZone: 'America/Argentina/Buenos_Aires' })} (${fechaFin.toISOString()})`);
+      console.log(`  - ahora: ${ahora.toLocaleString('es-AR', { timeZone: 'America/Argentina/Buenos_Aires' })} (${ahora.toISOString()})`);
+      console.log(`  - ahora >= fechaFin: ${ahora >= fechaFin}`);
+
+      // Solo marcar como completado si ya pasó la hora de finalización
       if (ahora >= fechaFin) {
         turno.estado = 'completado';
+        turnosCompletados++;
+        console.log(`✅ Turno ${turno._id} completado (${turno.hora} + ${duracion}min)`);
         return turno.save();
+      } else {
+        console.log(`⏳ Turno ${turno._id} aún no termina (falta ${Math.floor((fechaFin - ahora) / 60000)} min)`);
       }
     });
 
     await Promise.all(promesas);
+
+    if (turnosCompletados > 0) {
+      console.log(`✅ Total de turnos completados: ${turnosCompletados}`);
+    }
   } catch (error) {
     console.error('❌ Error al completar turnos:', error.message);
   }

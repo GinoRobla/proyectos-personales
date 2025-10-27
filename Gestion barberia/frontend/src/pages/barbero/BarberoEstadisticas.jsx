@@ -104,14 +104,7 @@ const BarberoEstadisticas = () => {
     }
 
 
-    const { indicadoresPrincipales, serviciosMasRealizados, evolucionIngresos } = estadisticas;
-
-    // Debug: ver qué datos llegan
-    console.log('Estadísticas completas:', JSON.stringify(estadisticas, null, 2));
-    console.log('Evolución por día:', evolucionIngresos?.porDia);
-    console.log('Evolución por semana:', evolucionIngresos?.porSemana);
-    console.log('¿Tiene datos por día?', evolucionIngresos?.porDia?.length > 0);
-    console.log('¿Tiene datos por semana?', evolucionIngresos?.porSemana?.length > 0);
+    const { indicadoresPrincipales, serviciosMasRealizados } = estadisticas;
 
     return (
         <div className="barbero-estadisticas-page">
@@ -199,66 +192,6 @@ const BarberoEstadisticas = () => {
                              )}
                          </div>
                      )}
-                </div>
-
-                {/* Evolución de Ingresos por Día */}
-                <div className="evolucion-card">
-                  <h3>Evolución de Ingresos Diarios</h3>
-                  {evolucionIngresos?.porDia?.length > 0 ? (
-                    <div className="evolucion-lista">
-                      {evolucionIngresos.porDia.map((item, index) => (
-                        <div key={index} className="evolucion-item">
-                          <div className="evolucion-fecha">Día {item.dia}</div>
-                          <div className="evolucion-barra-container">
-                            <div
-                              className="evolucion-barra"
-                              style={{
-                                width: `${Math.min((item.ingresos / Math.max(...evolucionIngresos.porDia.map(d => d.ingresos))) * 100, 100)}%`
-                              }}
-                            ></div>
-                          </div>
-                          <div className="evolucion-valor">
-                            {formatearMoneda(item.ingresos)}
-                            <span className="evolucion-turnos">({item.turnos} turnos)</span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="empty-state-small">
-                      <p>No hay ingresos registrados para este mes</p>
-                    </div>
-                  )}
-                </div>
-
-                {/* Evolución de Ingresos por Semana */}
-                <div className="evolucion-card">
-                  <h3>Evolución de Ingresos Semanales (Últimas 4 semanas)</h3>
-                  {evolucionIngresos?.porSemana?.length > 0 ? (
-                    <div className="evolucion-lista">
-                      {evolucionIngresos.porSemana.map((item, index) => (
-                        <div key={index} className="evolucion-item">
-                          <div className="evolucion-fecha">Semana {item.semana}</div>
-                          <div className="evolucion-barra-container">
-                            <div
-                              className="evolucion-barra"
-                              style={{
-                                width: `${Math.min((item.ingresos / Math.max(...evolucionIngresos.porSemana.map(s => s.ingresos))) * 100, 100)}%`
-                              }}
-                            ></div>
-                          </div>
-                          <div className="evolucion-valor">
-                            {formatearMoneda(item.ingresos)}
-                            <span className="evolucion-turnos">({item.turnos} turnos)</span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="empty-state-small">
-                      <p>No hay ingresos registrados en las últimas 4 semanas</p>
-                    </div>
-                  )}
                 </div>
 
                 {/* Servicios Más Realizados */}

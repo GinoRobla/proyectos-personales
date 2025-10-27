@@ -768,49 +768,6 @@ export const obtenerEstadisticasBarbero = async (barberoId, filtros = {}) => {
     const ingresosSemanales = ingresosSemana[0]?.total || 0;
 
     // 5. Cálculos para Gráficos
-    // 💰 EVOLUCIÓN DE INGRESOS (por día del mes)
-    const evolucionIngresosPorDia = await Turno.aggregate([
-      { $match: { ...queryMes, estado: 'completado' } },
-      {
-        $group: {
-          _id: {
-            dia: { $dayOfMonth: '$fecha' },
-            mes: { $month: '$fecha' },
-            anio: { $year: '$fecha' },
-          },
-          ingresos: { $sum: '$precio' },
-          turnos: { $sum: 1 },
-        },
-      },
-      { $sort: { '_id.dia': 1 } },
-    ]);
-
-    // 💰 EVOLUCIÓN DE INGRESOS (últimas 4 semanas)
-    const hace4Semanas = new Date(hoy);
-    hace4Semanas.setDate(hoy.getDate() - 28); // Resta 28 días
-    hace4Semanas.setHours(0, 0, 0, 0);
-
-    const evolucionIngresosPorSemana = await Turno.aggregate([
-      {
-        $match: {
-          barbero: barberoId,
-          estado: 'completado',
-          fecha: { $gte: hace4Semanas, $lte: hoy }, // Rango: últimas 4 semanas
-        },
-      },
-      {
-        $group: {
-          _id: {
-            semana: { $week: '$fecha' }, // Agrupa por número de semana
-            anio: { $year: '$fecha' },
-          },
-          ingresos: { $sum: '$precio' },
-          turnos: { $sum: 1 },
-        },
-      },
-      { $sort: { '_id.anio': 1, '_id.semana': 1 } },
-    ]);
-
     // 💇 SERVICIOS MÁS REALIZADOS EN EL MES
     const serviciosMasRealizados = await Turno.aggregate([
       { $match: { ...queryMes, estado: 'completado' } },
@@ -842,22 +799,6 @@ export const obtenerEstadisticasBarbero = async (barberoId, filtros = {}) => {
         ? Math.round((ingresosMensuales / objetivoMensual) * 100)
         : 0;
 
-    // Formatear evolución de ingresos por día
-    const evolucionDiariaFmt = evolucionIngresosPorDia.map(item => ({
-      fecha: `${item._id.anio}-${String(item._id.mes).padStart(2, '0')}-${String(item._id.dia).padStart(2, '0')}`,
-      dia: item._id.dia,
-      ingresos: item.ingresos,
-      turnos: item.turnos,
-    }));
-    
-    // Formatear evolución de ingresos por semana
-    const evolucionSemanalFmt = evolucionIngresosPorSemana.map(item => ({
-      semana: item._id.semana,
-      anio: item._id.anio,
-      ingresos: item.ingresos,
-      turnos: item.turnos,
-    }));
-    
     // Formatear servicios más realizados
     const serviciosMasRealizadosFmt = serviciosMasRealizados.map(item => ({
       servicio: {
@@ -887,10 +828,6 @@ export const obtenerEstadisticasBarbero = async (barberoId, filtros = {}) => {
         porcentajeObjetivo,
         // Calcula cuánto falta o sobra para la meta
         diferenciaMeta: ingresosMensuales - objetivoMensual,
-      },
-      evolucionIngresos: {
-        porDia: evolucionDiariaFmt,
-        porSemana: evolucionSemanalFmt,
       },
       serviciosMasRealizados: serviciosMasRealizadosFmt,
     };

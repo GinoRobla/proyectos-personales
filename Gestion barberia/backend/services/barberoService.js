@@ -1,6 +1,7 @@
 import Barbero from '../models/Barbero.js';
 import Usuario from '../models/Usuario.js';
 import Turno from '../models/Turno.js';
+import { validarTelefonoArgentino } from '../utils/phoneValidator.js';
 
 // Obtiene todos los barberos, con opción de filtrar por estado.
 export const obtenerTodos = (filtros = {}) => {
@@ -19,10 +20,16 @@ export const obtenerPorId = async (barberoId) => {
 
 // Crea un nuevo perfil de barbero y su cuenta de usuario asociada.
 export const crear = async (datosBarbero) => {
-  const { nombre, apellido, email, telefono, foto, horarioLaboral, password } = datosBarbero;
+  const { nombre, apellido, email, telefono, foto, password } = datosBarbero;
 
   if (!nombre || !apellido || !email || !telefono) {
     throw new Error('Faltan campos obligatorios');
+  }
+
+  // Validar y normalizar teléfono
+  const resultadoTelefono = validarTelefonoArgentino(telefono);
+  if (!resultadoTelefono.valido) {
+    throw new Error(resultadoTelefono.error);
   }
 
   const [barberoExistente, usuarioExistente] = await Promise.all([
@@ -38,7 +45,7 @@ export const crear = async (datosBarbero) => {
     nombre,
     apellido,
     email,
-    telefono,
+    telefono: resultadoTelefono.numeroNormalizado,
     password: password || 'barbero123',
     rol: 'barbero',
     activo: true,
@@ -51,7 +58,7 @@ export const crear = async (datosBarbero) => {
     nombre,
     apellido,
     email,
-    telefono,
+    telefono: resultadoTelefono.numeroNormalizado,
     foto
   });
 
@@ -64,6 +71,16 @@ export const actualizar = async (barberoId, datos) => {
   const barbero = await Barbero.findById(barberoId);
   if (!barbero) {
     throw new Error('Barbero no encontrado');
+  }
+
+  // Validar y normalizar teléfono si se proporciona
+  let telefonoNormalizado = null;
+  if (datos.telefono) {
+    const resultadoTelefono = validarTelefonoArgentino(datos.telefono);
+    if (!resultadoTelefono.valido) {
+      throw new Error(resultadoTelefono.error);
+    }
+    telefonoNormalizado = resultadoTelefono.numeroNormalizado;
   }
 
   const usuario = await Usuario.findOne({ email: barbero.email, rol: 'barbero' });
@@ -82,7 +99,7 @@ export const actualizar = async (barberoId, datos) => {
   if (usuario) {
     if (datos.nombre) usuario.nombre = datos.nombre;
     if (datos.apellido) usuario.apellido = datos.apellido;
-    if (datos.telefono) usuario.telefono = datos.telefono;
+    if (telefonoNormalizado) usuario.telefono = telefonoNormalizado;
     if (datos.activo !== undefined) usuario.activo = datos.activo;
     // Actualizar contraseña si se proporciona
     if (datos.password) {
@@ -93,9 +110,8 @@ export const actualizar = async (barberoId, datos) => {
   // Actualizar campos del barbero
   if (datos.nombre) barbero.nombre = datos.nombre;
   if (datos.apellido) barbero.apellido = datos.apellido;
-  if (datos.telefono) barbero.telefono = datos.telefono;
+  if (telefonoNormalizado) barbero.telefono = telefonoNormalizado;
   if (datos.foto) barbero.foto = datos.foto;
-  if (datos.horarioLaboral) barbero.horarioLaboral = datos.horarioLaboral;
   if (datos.activo !== undefined) barbero.activo = datos.activo;
   if (datos.objetivoMensual !== undefined) barbero.objetivoMensual = datos.objetivoMensual;
 

@@ -381,6 +381,24 @@
   margin-top: 0.5rem;
 }
 
+/* Estilos para el footer del modal de eliminación */
+.modal-content-eliminar .modal-footer {
+  padding: var(--spacing-sm) var(--spacing-md) !important;
+  border-top: 1px solid #e0e0e0 !important;
+  display: flex !important;
+  gap: var(--spacing-sm) !important;
+  justify-content: center !important; /* Centrar botones */
+  flex-direction: row !important; /* Forzar fila horizontal */
+}
+
+.modal-content-eliminar .modal-footer .btn {
+  padding: 0.5rem 1.25rem !important; /* Botones más pequeños */
+  font-size: 0.875rem !important;
+  min-width: 100px !important;
+  max-width: 150px !important;
+  flex: 0 1 auto !important; /* No crecen, uno al lado del otro */
+}
+
 /* Modal para formulario de creación - TODAS las pantallas */
 .modal-overlay-form {
   position: fixed !important;
