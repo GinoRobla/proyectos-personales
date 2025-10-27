@@ -105,67 +105,6 @@ export const verificarConfiguracion = async () => {
 };
 
 /**
- * Enviar mensaje de confirmación al CLIENTE
- */
-export const enviarConfirmacionWhatsApp = async (turno, cliente, barbero, servicio) => {
-  // 1. Formatear la fecha (con zona horaria de Argentina)
-  const fecha = new Date(turno.fecha).toLocaleDateString('es-AR', {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-    timeZone: 'America/Argentina/Buenos_Aires', // Asegura la fecha correcta
-  });
-
-  // 2. Construir el mensaje
-  const mensaje = `🎉 *¡Tu turno ha sido confirmado!*\n\n` +
-    `📅 *Fecha:* ${fecha}\n` +
-    `🕐 *Hora:* ${turno.hora}\n` +
-    `✂️ *Servicio:* ${servicio.nombre}\n` +
-    `👨‍🦰 *Barbero:* ${barbero ? `${barbero.nombre} ${barbero.apellido}` : 'Por asignar'}\n` +
-    `💰 *Precio:* $${turno.precio}\n\n` +
-    `⏰ Te enviaremos un recordatorio 30 minutos antes.\n\n` +
-    `📍 ${process.env.BUSINESS_NAME}\n` +
-    `¡Gracias por tu preferencia!`;
-
-  // 3. Enviar usando el helper (pasamos el teléfono del cliente)
-  return await _enviarWhatsApp(cliente?.telefono, mensaje);
-};
-
-/**
- * Enviar notificación de nuevo turno al BARBERO
- */
-export const enviarNotificacionBarberoWhatsApp = async (turno, clienteData, barbero, servicio) => {
-  // 1. Validar si hay barbero asignado
-  if (!barbero) {
-    console.log('ℹ️ No hay barbero asignado, no se envía notificación');
-    return false;
-  }
-  
-  // 2. Formatear la fecha
-  const fecha = new Date(turno.fecha).toLocaleDateString('es-AR', {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-    timeZone: 'America/Argentina/Buenos_Aires',
-  });
-
-  // 3. Construir el mensaje
-  const mensaje = `📅 *Nuevo turno asignado*\n\n` +
-    `👤 *Cliente:* ${clienteData.nombre} ${clienteData.apellido}\n` +
-    `📞 *Teléfono:* ${clienteData.telefono}\n` +
-    `✂️ *Servicio:* ${servicio.nombre} (${servicio.duracion} min)\n` +
-    `📅 *Fecha:* ${fecha}\n` +
-    `🕐 *Hora:* ${turno.hora}\n` +
-    (turno.notasCliente ? `📝 *Notas:* ${turno.notasCliente}\n` : '') +
-    `\n⏰ Te enviaremos un recordatorio 30 minutos antes.`;
-
-  // 4. Enviar usando el helper (pasamos el teléfono del barbero)
-  return await _enviarWhatsApp(barbero?.telefono, mensaje);
-};
-
-/**
  * Enviar recordatorio 30 minutos antes al CLIENTE
  */
 export const enviarRecordatorioClienteWhatsApp = async (turno, clienteData, barbero, servicio) => {
@@ -192,12 +131,12 @@ export const enviarRecordatorioClienteWhatsApp = async (turno, clienteData, barb
 };
 
 /**
- * Enviar recordatorio 30 minutos antes al BARBERO
+ * Enviar notificación de cancelación al BARBERO
  */
-export const enviarRecordatorioBarberoWhatsApp = async (turno, clienteData, barbero, servicio) => {
+export const enviarCancelacionBarberoWhatsApp = async (turno, clienteData, barbero, servicio) => {
   // 1. Validar si hay barbero asignado
   if (!barbero) {
-    console.log('ℹ️ No hay barbero asignado, no se envía recordatorio');
+    console.log('ℹ️ No hay barbero asignado, no se envía notificación de cancelación');
     return false;
   }
 
@@ -210,16 +149,53 @@ export const enviarRecordatorioBarberoWhatsApp = async (turno, clienteData, barb
   });
 
   // 3. Construir el mensaje
-  const mensaje = `⏰ *Tienes un turno en 30 minutos*\n\n` +
-    `Hola ${barbero.nombre}, recordatorio de tu próximo turno:\n\n` +
+  const mensaje = `❌ *Turno cancelado*\n\n` +
+    `Hola ${barbero.nombre}, te informamos que se canceló el siguiente turno:\n\n` +
     `👤 *Cliente:* ${clienteData.nombre} ${clienteData.apellido}\n` +
     `📞 *Teléfono:* ${clienteData.telefono}\n` +
-    `✂️ *Servicio:* ${servicio.nombre} (${servicio.duracion} min)\n` +
+    `✂️ *Servicio:* ${servicio.nombre}\n` +
     `📅 *Fecha:* ${fecha}\n` +
-    `🕐 *Hora:* ${turno.hora}\n` +
-    (turno.notasCliente ? `📝 *Notas del cliente:* ${turno.notasCliente}\n` : '') +
-    `\n¡Prepárate para atender al cliente!`;
+    `🕐 *Hora:* ${turno.hora}\n\n` +
+    `Este horario ahora está disponible para nuevas reservas.`;
 
   // 4. Enviar usando el helper
   return await _enviarWhatsApp(barbero?.telefono, mensaje);
+};
+
+/**
+ * Enviar reporte diario al ADMIN
+ */
+export const enviarReporteDiarioAdminWhatsApp = async (adminTelefono, estadisticas, enlaceEstadisticas) => {
+  // 1. Validar que haya teléfono de admin
+  if (!adminTelefono) {
+    console.log('ℹ️ No hay teléfono de admin configurado, no se envía reporte');
+    return false;
+  }
+
+  // 2. Formatear la fecha de hoy
+  const fecha = new Date().toLocaleDateString('es-AR', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    timeZone: 'America/Argentina/Buenos_Aires',
+  });
+
+  // 3. Construir mensaje con las estadísticas
+  let mensaje = `📊 *Reporte Diario - ${fecha}*\n\n`;
+
+  mensaje += `📈 *Resumen General:*\n`;
+  mensaje += `✅ Turnos completados: ${estadisticas.turnosCompletados}\n`;
+  mensaje += `❌ Turnos cancelados: ${estadisticas.turnosCancelados}\n`;
+  mensaje += `💰 Total generado: $${estadisticas.totalGenerado}\n\n`;
+
+  mensaje += `👨‍🦰 *Por Barbero:*\n`;
+  estadisticas.porBarbero.forEach((barbero) => {
+    mensaje += `• ${barbero.nombre}: $${barbero.generado} (${barbero.turnos} turnos)\n`;
+  });
+
+  mensaje += `\n🔗 Ver estadísticas detalladas:\n${enlaceEstadisticas}`;
+
+  // 4. Enviar usando el helper
+  return await _enviarWhatsApp(adminTelefono, mensaje);
 };

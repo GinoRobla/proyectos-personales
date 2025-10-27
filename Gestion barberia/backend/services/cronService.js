@@ -1,6 +1,8 @@
 import cron from 'node-cron';
 import Turno from '../models/Turno.js';
-import { enviarRecordatorioClienteWhatsApp } from './whatsappService.js';
+import Usuario from '../models/Usuario.js';
+import { enviarRecordatorioClienteWhatsApp, enviarReporteDiarioAdminWhatsApp } from './whatsappService.js';
+import { obtenerEstadisticasDiarias } from './estadisticasService.js';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -60,7 +62,7 @@ const completarTurnosFinalizados = async () => {
       const [horas, minutos] = turno.hora.split(':');
       const fechaTurno = new Date(turno.fecha);
       fechaTurno.setHours(parseInt(horas), parseInt(minutos));
-      
+
       const fechaFin = new Date(fechaTurno.getTime() + duracion * 60000);
 
       if (ahora >= fechaFin) {
@@ -75,16 +77,58 @@ const completarTurnosFinalizados = async () => {
   }
 };
 
+// Envía reporte diario al admin después del último turno
+const enviarReporteDiario = async () => {
+  try {
+    // 1. Obtener el admin (buscar el primer usuario con rol 'admin')
+    const admin = await Usuario.findOne({ rol: 'admin', activo: true });
+
+    if (!admin || !admin.telefono) {
+      console.log('ℹ️ No hay admin con teléfono configurado, no se envía reporte');
+      return;
+    }
+
+    // 2. Obtener estadísticas del día
+    const estadisticas = await obtenerEstadisticasDiarias();
+
+    // 3. Construir el enlace a las estadísticas del admin
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+    const enlaceEstadisticas = `${frontendUrl}/admin/estadisticas`;
+
+    // 4. Enviar el reporte por WhatsApp
+    await enviarReporteDiarioAdminWhatsApp(admin.telefono, estadisticas, enlaceEstadisticas);
+
+    console.log(`✅ Reporte diario enviado al admin: ${admin.nombre} ${admin.apellido}`);
+  } catch (error) {
+    console.error('❌ Error al enviar reporte diario:', error.message);
+  }
+};
+
 // Inicializa y programa las tareas automáticas.
 export const iniciarCronJobs = () => {
   console.log('⏰ Iniciando cron jobs...');
+
+  // Recordatorios 30 min antes (cada 5 minutos)
   cron.schedule('*/5 * * * *', verificarTurnosProximos);
+
+  // Completar turnos finalizados (cada 10 minutos)
   cron.schedule('*/10 * * * *', completarTurnosFinalizados);
-  console.log('✅ Cron jobs iniciados.');
+
+  // Reporte diario al admin (después del último turno)
+  // Lun-Vie: 20:30 (último turno es 19:15 + 45min = 20:00)
+  // Sábado: 18:30 (último turno es 17:00 + 60min = 18:00, con margen)
+  cron.schedule('30 20 * * 1-5', enviarReporteDiario); // Lunes a Viernes a las 20:30
+  cron.schedule('30 18 * * 6', enviarReporteDiario);   // Sábados a las 18:30
+
+  console.log('✅ Cron jobs iniciados:');
+  console.log('  - Recordatorios cada 5 minutos');
+  console.log('  - Completar turnos cada 10 minutos');
+  console.log('  - Reporte diario: Lun-Vie 20:30, Sáb 18:30');
 };
 
 export default {
   iniciarCronJobs,
   verificarTurnosProximos,
   completarTurnosFinalizados,
+  enviarReporteDiario,
 };

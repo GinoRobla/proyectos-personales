@@ -619,6 +619,96 @@ export const obtenerEstadisticasAdmin = async (filtros = {}) => {
 /**
  * OBTENER ESTADÍSTICAS DEL BARBERO AUTENTICADO (Panel del Barbero)
  */
+/**
+ * OBTENER ESTADÍSTICAS DEL DÍA (Para reporte diario del admin)
+ */
+export const obtenerEstadisticasDiarias = async (fecha = null) => {
+  try {
+    // 1. Definir la fecha (usa la fecha proporcionada o la de hoy)
+    const fechaObjetivo = fecha ? new Date(fecha) : new Date();
+
+    // 2. Crear el rango de fechas para el día (00:00 a 23:59)
+    const inicioDia = new Date(fechaObjetivo);
+    inicioDia.setHours(0, 0, 0, 0);
+
+    const finDia = new Date(fechaObjetivo);
+    finDia.setHours(23, 59, 59, 999);
+
+    const query = {
+      fecha: {
+        $gte: inicioDia,
+        $lte: finDia,
+      },
+    };
+
+    // 3. Contar turnos completados y cancelados
+    const turnosCompletados = await Turno.countDocuments({
+      ...query,
+      estado: 'completado',
+    });
+
+    const turnosCancelados = await Turno.countDocuments({
+      ...query,
+      estado: 'cancelado',
+    });
+
+    // 4. Calcular total generado por la barbería (solo completados)
+    const totalGenerado = await Turno.aggregate([
+      { $match: { ...query, estado: 'completado' } },
+      { $group: { _id: null, total: { $sum: '$precio' } } },
+    ]);
+
+    // 5. Calcular generado por cada barbero
+    const porBarbero = await Turno.aggregate([
+      {
+        $match: {
+          ...query,
+          estado: 'completado',
+          barbero: { $ne: null },
+        },
+      },
+      {
+        $group: {
+          _id: '$barbero',
+          generado: { $sum: '$precio' },
+          turnos: { $sum: 1 },
+        },
+      },
+      {
+        $lookup: {
+          from: 'barberos',
+          localField: '_id',
+          foreignField: '_id',
+          as: 'barberoInfo',
+        },
+      },
+      { $unwind: '$barberoInfo' },
+      { $sort: { generado: -1 } },
+    ]);
+
+    // 6. Formatear resultados
+    const porBarberoFormateado = porBarbero.map((item) => ({
+      id: item.barberoInfo._id,
+      nombre: `${item.barberoInfo.nombre} ${item.barberoInfo.apellido}`,
+      generado: item.generado,
+      turnos: item.turnos,
+    }));
+
+    return {
+      fecha: fechaObjetivo.toISOString().split('T')[0],
+      turnosCompletados,
+      turnosCancelados,
+      totalGenerado: totalGenerado[0]?.total || 0,
+      porBarbero: porBarberoFormateado,
+    };
+  } catch (error) {
+    throw new Error(`Error al obtener estadísticas diarias: ${error.message}`);
+  }
+};
+
+/**
+ * OBTENER ESTADÍSTICAS DEL BARBERO AUTENTICADO (Panel del Barbero)
+ */
 export const obtenerEstadisticasBarbero = async (barberoId, filtros = {}) => {
   try {
     const { mes, anio } = filtros;

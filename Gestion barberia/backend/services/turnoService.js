@@ -2,6 +2,7 @@ import Turno from '../models/Turno.js';
 import Cliente from '../models/Cliente.js';
 import Barbero from '../models/Barbero.js';
 import Servicio from '../models/Servicio.js';
+import { enviarCancelacionBarberoWhatsApp } from './whatsappService.js';
 
 /**
  * -------------------------------------------------------------------
@@ -362,21 +363,55 @@ export const actualizar = async (turnoId, datosNuevos) => {
  */
 export const cancelar = async (turnoId) => {
   try {
-    // 1. Buscar el turno
-    const turno = await Turno.findById(turnoId);
+    console.log(`[CANCELAR TURNO] Iniciando cancelación del turno: ${turnoId}`);
+
+    // 1. Buscar el turno con todos sus datos relacionados
+    const turno = await Turno.findById(turnoId)
+      .populate('cliente')
+      .populate('barbero')
+      .populate('servicio');
+
     if (!turno) {
       throw new Error('Turno no encontrado');
     }
 
+    console.log(`[CANCELAR TURNO] Turno encontrado:`, {
+      id: turno._id,
+      cliente: `${turno.cliente?.nombre} ${turno.cliente?.apellido}`,
+      barbero: `${turno.barbero?.nombre} ${turno.barbero?.apellido}`,
+      telefonoBarbero: turno.barbero?.telefono,
+      servicio: turno.servicio?.nombre,
+      estadoAnterior: turno.estado
+    });
+
     // 2. Cambiar estado y guardar
     turno.estado = 'cancelado';
     await turno.save();
+    console.log(`[CANCELAR TURNO] Estado cambiado a 'cancelado'`);
 
-    // 3. Devolver el turno actualizado con sus datos
-    await turno.populate(['cliente', 'barbero', 'servicio']);
-    
+    // 3. Enviar notificación al barbero (si tiene barbero asignado)
+    if (turno.barbero) {
+      console.log(`[CANCELAR TURNO] Barbero asignado detectado, enviando WhatsApp...`);
+      try {
+        const resultado = await enviarCancelacionBarberoWhatsApp(turno, turno.cliente, turno.barbero, turno.servicio);
+        if (resultado) {
+          console.log(`✅ [CANCELAR TURNO] WhatsApp enviado exitosamente al barbero: ${turno.barbero.nombre} ${turno.barbero.apellido} (${turno.barbero.telefono})`);
+        } else {
+          console.log(`⚠️ [CANCELAR TURNO] WhatsApp no se envió (verificar configuración Twilio o teléfono)`);
+        }
+      } catch (error) {
+        console.error(`❌ [CANCELAR TURNO] Error al enviar WhatsApp:`, error.message);
+        // No lanzamos el error aquí para que la cancelación se complete aunque falle el WhatsApp
+      }
+    } else {
+      console.log(`ℹ️ [CANCELAR TURNO] No hay barbero asignado, no se envía WhatsApp`);
+    }
+
+    // 4. Devolver el turno actualizado
+    console.log(`[CANCELAR TURNO] Cancelación completada exitosamente`);
     return turno;
   } catch (error) {
+    console.error(`❌ [CANCELAR TURNO] Error en el proceso:`, error.message);
     throw new Error(`Error al cancelar turno: ${error.message}`);
   }
 };
