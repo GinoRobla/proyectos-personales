@@ -22,7 +22,6 @@ import BarberoEstadisticas from './pages/barbero/BarberoEstadisticas';
 // Páginas protegidas - Admin
 import AdminDashboard from './pages/admin/Dashboard';
 import AdminTurnos from './pages/admin/Turnos';
-import AdminTurnosSinAsignar from './pages/admin/TurnosSinAsignar';
 import AdminBarberos from './pages/admin/Barberos';
 import AdminServicios from './pages/admin/Servicios';
 import AdminEstadisticas from './pages/admin/Estadisticas';
@@ -118,14 +117,6 @@ function App() {
               element={
                 <ProtectedRoute allowedRoles={['admin']}>
                   <AdminTurnos />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="admin/turnos-sin-asignar"
-              element={
-                <ProtectedRoute allowedRoles={['admin']}>
-                  <AdminTurnosSinAsignar />
                 </ProtectedRoute>
               }
             />

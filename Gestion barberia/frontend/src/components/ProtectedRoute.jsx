@@ -44,14 +44,14 @@ import { useAuth } from '../context/AuthContext';
  */
 const ProtectedRoute = ({ children, allowedRoles = [] }) => {
   // Obtener estado de autenticación del contexto
-  const { usuario, estaAutenticado, cargando } = useAuth();
+  const { usuario, estaAutenticado, estaCargando } = useAuth();
 
   // ============================================================================
   // PASO 1: Mostrar indicador de carga durante verificación
   // ============================================================================
   // Mientras se está verificando la autenticación, mostrar un spinner
   // para evitar redirecciones prematuras
-  if (cargando) {
+  if (estaCargando) {
     return (
       <div className="flex items-center justify-center" style={{ minHeight: '80vh' }}>
         <div className="spinner"></div>

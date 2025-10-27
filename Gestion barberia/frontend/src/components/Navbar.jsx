@@ -19,14 +19,6 @@ const Navbar = () => {
     navigate('/');
   };
 
-  const handleBack = () => {
-    navigate(-1);
-  };
-
-  const handleForward = () => {
-    navigate(1);
-  };
-
   const toggleMenu = () => {
     setMenuAbierto(!menuAbierto);
   };
@@ -38,16 +30,6 @@ const Navbar = () => {
   return (
     <nav className="navbar">
       <div className="navbar-content container">
-        {/* Flechas de navegación */}
-        <div className="navbar-nav-arrows">
-          <button onClick={handleBack} className="nav-arrow" title="Atrás">
-            ←
-          </button>
-          <button onClick={handleForward} className="nav-arrow" title="Adelante">
-            →
-          </button>
-        </div>
-
         {/* Logo */}
         <Link to="/" className="navbar-logo">
           Barbería GR
@@ -111,9 +93,6 @@ const Navbar = () => {
                 <div className="menu-items-group">
                   <Link to="/admin" className="menu-item">
                     Inicio
-                  </Link>
-                  <Link to="/admin/turnos-sin-asignar" className="menu-item">
-                    Turnos sin asignar
                   </Link>
                   <Link to="/admin/barberos" className="menu-item">
                     Barberos
@@ -191,9 +170,6 @@ const Navbar = () => {
                   <>
                     <Link to="/admin" className="menu-item" onClick={cerrarMenu}>
                       <span>Inicio</span>
-                    </Link>
-                    <Link to="/admin/turnos-sin-asignar" className="menu-item" onClick={cerrarMenu}>
-                      <span>Turnos sin asignar</span>
                     </Link>
                     <Link to="/admin/barberos" className="menu-item" onClick={cerrarMenu}>
                       <span>Barberos</span>

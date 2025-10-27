@@ -44,22 +44,39 @@ const LoginPage = () => {
     setEstaCargando(true);
 
     try {
+      console.log('[FRONTEND] Intentando login con:', datosFormulario.email);
       const resultado = await login(datosFormulario.email, datosFormulario.password);
+      console.log('[FRONTEND] Resultado del login:', resultado);
 
       if (resultado.success) {
-        toast.success('Sesión iniciada correctamente');
+        toast.success('¡Bienvenido! Sesión iniciada correctamente', 3000);
         // La redirección ahora se maneja en el useEffect
       } else {
-        toast.error(resultado.message || 'Error al iniciar sesión');
+        console.log('[FRONTEND] Error en login:', resultado.message);
+        // Los mensajes de error ahora vienen del backend mejorado
+        toast.error(resultado.message || 'Error al iniciar sesión', 4000);
         setEstaCargando(false);
       }
     } catch (error) {
-      const mensajeError = error.response?.data?.message || 'Error al conectar con el servidor';
-      toast.error(mensajeError);
+      console.error('[FRONTEND] Error capturado:', error);
+      // Mensajes de error específicos según el tipo de error
+      let mensajeError = 'Error al conectar con el servidor';
+
+      if (error.response?.data?.message) {
+        // Error del servidor (backend)
+        mensajeError = error.response.data.message;
+      } else if (error.message) {
+        // Error de la aplicación
+        mensajeError = error.message;
+      } else if (!navigator.onLine) {
+        // Sin conexión a internet
+        mensajeError = 'No tienes conexión a internet. Verifica tu conexión';
+      }
+
+      console.log('[FRONTEND] Mostrando error:', mensajeError);
+      toast.error(mensajeError, 4000);
       setEstaCargando(false);
     }
-    // No necesitamos el setTimeout, useEffect se encargará de la redirección
-    // No necesitamos resetear el estado de carga aquí si la redirección ocurre
   };
 
   // Renderizado (se reemplaza datosFormulario.email por values.email, etc.)

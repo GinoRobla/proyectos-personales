@@ -23,6 +23,8 @@ export const useToast = () => {
 export const ToastProvider = ({ children }) => {
   // Almacena la lista de notificaciones (toasts) que se están mostrando.
   const [toasts, setToasts] = useState([]);
+  // Contador para generar IDs únicos
+  const [toastIdCounter, setToastIdCounter] = useState(0);
 
   /**
    * Elimina una notificación de la pantalla usando su ID.
@@ -40,14 +42,19 @@ export const ToastProvider = ({ children }) => {
    * @param {number} duration - Cuánto tiempo (en ms) será visible.
    */
   const showToast = (message, type = 'info', duration = 3000) => {
-    const newToast = {
-      id: Date.now(), // Se usa el timestamp como un ID único y simple.
-      message,
-      type,
-      duration,
-    };
-    // Añade el nuevo toast a la lista existente de toasts.
-    setToasts(currentToasts => [...currentToasts, newToast]);
+    // Incrementa el contador y usa ese valor como ID único
+    setToastIdCounter(prevCounter => {
+      const newId = prevCounter + 1;
+      const newToast = {
+        id: `${Date.now()}-${newId}`, // Combina timestamp con contador para garantizar unicidad
+        message,
+        type,
+        duration,
+      };
+      // Añade el nuevo toast a la lista existente de toasts.
+      setToasts(currentToasts => [...currentToasts, newToast]);
+      return newId;
+    });
   };
 
   // Objeto con las funciones que se compartirán a través del contexto.

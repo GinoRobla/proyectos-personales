@@ -58,27 +58,34 @@ const ReservarTurnoPage = () => {
         cargarServiciosApi(true), // Solo activos
         cargarDiasApi(),
       ]);
-      
+
       if (serviciosRes.success) {
         setServicios(serviciosRes.data || []);
+      } else {
+        toast.error(serviciosRes.message || 'No se pudieron cargar los servicios disponibles', 4000);
       }
+
       if (diasRes.success) {
         setDiasDisponibles(diasRes.data || []);
+      } else {
+        toast.error(diasRes.message || 'No se pudieron cargar los días disponibles', 4000);
       }
-      // Los errores ya los maneja useApi con un toast
     };
     cargarDatosIniciales();
-  }, [cargarServiciosApi, cargarDiasApi]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Cargar barberos cuando se avanza al paso 2 (si no están cacheados)
   const cargarBarberos = useCallback(async () => {
     if (barberos.length === 0) {
-      const { success, data } = await cargarBarberosApi();
+      const { success, data, message } = await cargarBarberosApi();
       if (success) {
         setBarberos(data.filter(b => b.activo) || []);
+      } else {
+        toast.error(message || 'No se pudieron cargar los barberos disponibles', 4000);
       }
     }
-  }, [barberos.length, cargarBarberosApi]);
+  }, [barberos.length, cargarBarberosApi, toast]);
 
   // Cargar horarios cuando se selecciona una fecha
   const cargarHorarios = useCallback(async (fecha, servicio, barbero) => {
@@ -89,14 +96,18 @@ const ReservarTurnoPage = () => {
     if (barbero !== 'indistinto') {
       params.barberoId = barbero._id;
     }
-    
-    const { success, data } = await cargarHorariosApi(params);
+
+    const { success, data, message } = await cargarHorariosApi(params);
     if (success) {
       setHorariosDisponibles(data.horariosDisponibles || []);
+      if ((data.horariosDisponibles || []).length === 0) {
+        toast.info('No hay horarios disponibles para esta fecha. Intenta con otra', 4000);
+      }
     } else {
       setHorariosDisponibles([]); // Limpiar horarios si falla
+      toast.error(message || 'No se pudieron cargar los horarios disponibles', 4000);
     }
-  }, [cargarHorariosApi]);
+  }, [cargarHorariosApi, toast]);
 
 
   // --- MANEJADORES DE PASOS ---
@@ -131,9 +142,15 @@ const ReservarTurnoPage = () => {
   };
 
   const handleConfirmarReserva = async (datosCliente) => {
-    // Validación de teléfono para usuarios logueados
+    // Validaciones previas
     if (estaAutenticado && usuario && !usuario.telefono) {
-      toast.error('Por favor, completa tu teléfono en "Mi Perfil" antes de reservar.');
+      toast.error('Completa tu teléfono en "Mi Perfil" antes de reservar un turno', 4000);
+      navigate('/cliente/perfil');
+      return;
+    }
+
+    if (!servicioSeleccionado || !fechaSeleccionada || !horaSeleccionada) {
+      toast.error('Faltan datos para completar la reserva. Por favor verifica', 4000);
       return;
     }
 
@@ -155,17 +172,17 @@ const ReservarTurnoPage = () => {
     }
 
     if (response.success) {
-      toast.success(`¡Turno ${turnoEditarId ? 'actualizado' : 'reservado'} con éxito!`);
+      toast.success(`¡Turno ${turnoEditarId ? 'actualizado' : 'reservado'} exitosamente!`, 3000);
       setTimeout(() => {
         // Redirigir a "mis turnos" si está logueado, o a home si no
         navigate(estaAutenticado ? '/cliente/turnos' : '/');
       }, 1500);
+    } else {
+      // Mensajes de error específicos
+      const mensaje = response.message || `No se pudo ${turnoEditarId ? 'actualizar' : 'reservar'} el turno`;
+      toast.error(mensaje, 4000);
     }
-    // El error (ej: turno ya ocupado) lo maneja useApi
   };
-
-  // Volver al paso anterior
-  const handleVolver = () => (paso > 1) && setPaso(paso - 1);
 
   // --- RENDERIZADO DEL CONTENEDOR ---
 
@@ -232,11 +249,6 @@ const ReservarTurnoPage = () => {
               <div className={`paso ${paso >= 4 ? 'activo' : ''}`}>4</div>
             </div>
           </div>
-          
-          {/* Botón Volver (si no es el paso 1 ni el 5/éxito) */}
-          {paso > 1 && paso < 5 && (
-             <button onClick={handleVolver} className="btn-volver">← Volver</button>
-          )}
 
           {/* Resumen de selección (en pasos 3 y 4) */}
           {paso === 3 && servicioSeleccionado && (

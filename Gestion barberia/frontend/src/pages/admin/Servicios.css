@@ -1,4 +1,4 @@
-/* Admin Servicios - Modern Design */
+/* Admin Servicios - Modern Card Design */
 .admin-servicios {
   min-height: calc(100vh - 60px);
   background: #f5f7fa;
@@ -28,10 +28,15 @@
   border: none;
   color: white;
   font-weight: 600;
-  padding: 0.75rem 1.5rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
   border-radius: var(--radius-lg);
   transition: all 0.3s ease;
   box-shadow: 0 4px 15px rgba(59, 130, 246, 0.2);
+  width: auto;
+  min-width: 140px;
+  max-width: 180px;
+  white-space: nowrap;
 }
 
 .header-con-boton .btn-primary:hover {
@@ -40,190 +45,297 @@
   box-shadow: 0 6px 20px rgba(59, 130, 246, 0.3);
 }
 
-.form-crear {
-  margin-bottom: var(--spacing-lg);
-  background: white;
-  border-radius: var(--radius-lg);
-  padding: var(--spacing-lg);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-  border-left: 4px solid #3b82f6;
-}
-
-.form-crear h3 {
-  margin: 0 0 var(--spacing-lg) 0;
-  color: #1f2937;
-  font-size: 1.25rem;
-  font-weight: 700;
-}
-
+/* Servicios Grid */
 .servicios-lista {
   display: grid;
   grid-template-columns: 1fr;
-  gap: var(--spacing-lg);
+  gap: 1.5rem;
 }
 
+/* Tarjeta de Servicio - Diseño Completamente Nuevo */
 .servicio-card {
   background: white;
-  border-radius: var(--radius-lg);
-  padding: var(--spacing-lg);
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-  transition: all 0.3s ease;
-  border: 1px solid #e5e7eb;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  position: relative;
 }
 
-.servicio-card.inactivo {
-  opacity: 0.5;
-  background: #f9fafb;
+.servicio-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: #10b981;
+  transform: scaleX(0);
+  transition: transform 0.3s ease;
+}
+
+.servicio-card:hover::before {
+  transform: scaleX(1);
 }
 
 .servicio-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-  border-color: #3b82f6;
+  transform: translateY(-10px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+}
+
+.servicio-card.inactivo {
+  opacity: 0.6;
+  filter: grayscale(0.5);
 }
 
 .servicio-card.inactivo:hover {
-  opacity: 0.7;
+  opacity: 0.8;
 }
 
-.servicio-info {
+/* Header de la tarjeta */
+.servicio-card-header {
+  background: #f8fafc;
+  padding: 1.5rem;
   display: flex;
-  flex-direction: column;
-  gap: var(--spacing-md);
-}
-
-.servicio-header {
-  display: flex;
+  align-items: center;
   justify-content: space-between;
-  align-items: flex-start;
-  gap: var(--spacing-md);
-  margin-bottom: var(--spacing-sm);
+  position: relative;
+  border-bottom: 2px solid #e5e7eb;
 }
 
-.servicio-header h3 {
-  font-size: 1.25rem;
+.servicio-icon {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  background: #10b981;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+  border: 3px solid white;
+  transition: all 0.3s ease;
+}
+
+.servicio-icon svg {
+  width: 35px;
+  height: 35px;
+  stroke-width: 2.5;
+}
+
+.servicio-card:hover .servicio-icon {
+  transform: scale(1.1) rotate(-5deg);
+}
+
+.badge-status {
+  padding: 0.4rem 0.9rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.badge-activo {
+  background: #10b981;
+  color: white;
+}
+
+.badge-inactivo {
+  background: #ef4444;
+  color: white;
+}
+
+/* Body de la tarjeta */
+.servicio-card-body {
+  padding: 1.5rem;
+}
+
+.servicio-nombre {
+  font-size: 1.3rem;
   font-weight: 700;
   color: #1f2937;
-  margin: 0;
-  flex: 1;
+  margin: 0 0 0.75rem 0;
+  text-align: center;
 }
 
-.servicio-precio {
-  font-size: 1.5rem;
-  font-weight: 800;
+.servicio-descripcion {
+  font-size: 0.9rem;
+  color: #6b7280;
+  line-height: 1.6;
+  margin: 0 0 1rem 0;
+  text-align: center;
+  min-height: 3rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.servicio-info-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.info-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: #f8fafc;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+
+.info-item:hover {
+  background: #d1fae5;
+  transform: translateY(-3px);
+  box-shadow: 0 5px 15px rgba(16, 185, 129, 0.2);
+}
+
+.info-icon {
+  width: 24px;
+  height: 24px;
   color: #10b981;
   flex-shrink: 0;
 }
 
-.servicio-descripcion {
-  font-size: 0.9375rem;
-  color: #6b7280;
-  line-height: 1.6;
-  margin: 0;
-  padding: var(--spacing-sm) 0;
-}
-
-.servicio-detalles {
-  display: flex;
-  gap: var(--spacing-lg);
-  font-size: 0.875rem;
-  color: #6b7280;
-  padding: var(--spacing-sm) 0;
-  border-top: 1px solid #f0f0f0;
-  border-bottom: 1px solid #f0f0f0;
-}
-
-.servicio-detalles span {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.servicio-detalles .activo {
-  color: #10b981;
-  font-weight: 600;
-  background: rgba(16, 185, 129, 0.1);
-  padding: 0.25rem 0.75rem;
-  border-radius: 12px;
-}
-
-.servicio-detalles .inactivo {
-  color: #ef4444;
-  font-weight: 600;
-  background: rgba(239, 68, 68, 0.1);
-  padding: 0.25rem 0.75rem;
-  border-radius: 12px;
-}
-
-/* Formulario de edición */
-.servicio-form {
+.info-content {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-md);
-}
-
-.input-row {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: var(--spacing-md);
-}
-
-.servicio-acciones {
-  display: flex;
-  gap: var(--spacing-sm);
-  margin-top: var(--spacing-md);
-}
-
-.servicio-acciones .btn {
+  gap: 0.15rem;
   flex: 1;
+}
+
+.info-label {
+  font-size: 0.7rem;
+  color: #9ca3af;
   font-weight: 600;
-  border-radius: var(--radius-md);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.info-value {
+  font-size: 1rem;
+  color: #1f2937;
+  font-weight: 700;
+}
+
+/* Footer de la tarjeta - Botones de acción */
+.servicio-card-footer {
+  display: flex;
+  justify-content: space-around;
+  padding: 1rem 1.5rem;
+  background: #f9fafb;
+  border-top: 1px solid #e5e7eb;
+  gap: 0.75rem;
+}
+
+.btn-icon {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-icon svg {
+  width: 20px;
+  height: 20px;
+  position: relative;
+  z-index: 1;
+}
+
+.btn-icon::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
   transition: all 0.3s ease;
 }
 
-.servicio-acciones .btn-primary {
+.btn-icon:hover::before {
+  width: 100%;
+  height: 100%;
+}
+
+.btn-icon:hover {
+  transform: scale(1.15) rotate(5deg);
+}
+
+.btn-icon:active {
+  transform: scale(0.95);
+}
+
+.btn-icon:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Botón Editar */
+.btn-edit {
   background: #3b82f6;
-  border: none;
   color: white;
+  box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3);
 }
 
-.servicio-acciones .btn-primary:hover {
-  background: #2563eb;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+.btn-edit:hover {
+  box-shadow: 0 6px 15px rgba(59, 130, 246, 0.5);
 }
 
-.servicio-acciones .btn-outline {
-  background: white;
-  border: 2px solid #e0e0e0;
-  color: #6b7280;
+/* Botón Toggle On (Activar) */
+.btn-toggle-on {
+  background: #10b981;
+  color: white;
+  box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);
 }
 
-.servicio-acciones .btn-outline:hover {
-  border-color: #3b82f6;
-  color: #3b82f6;
-  background: #eff6ff;
+.btn-toggle-on:hover {
+  box-shadow: 0 6px 15px rgba(16, 185, 129, 0.5);
 }
 
-.servicio-acciones .btn-danger {
+/* Botón Toggle Off (Desactivar) */
+.btn-toggle-off {
+  background: #f59e0b;
+  color: white;
+  box-shadow: 0 4px 10px rgba(245, 158, 11, 0.3);
+}
+
+.btn-toggle-off:hover {
+  box-shadow: 0 6px 15px rgba(245, 158, 11, 0.5);
+}
+
+/* Botón Eliminar */
+.btn-delete {
   background: #ef4444;
-  border: none;
   color: white;
+  box-shadow: 0 4px 10px rgba(239, 68, 68, 0.3);
 }
 
-.servicio-acciones .btn-danger:hover {
-  background: #dc2626;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+.btn-delete:hover {
+  box-shadow: 0 6px 15px rgba(239, 68, 68, 0.5);
 }
 
 /* Loading */
 .loading {
   background: white;
-  border-radius: var(--radius-lg);
+  border-radius: 20px;
   padding: var(--spacing-xl) var(--spacing-lg);
   text-align: center;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
 }
 
 .loading p {
@@ -232,208 +344,203 @@
   font-size: 0.875rem;
 }
 
+/* Empty State */
+.empty-state {
+  background: white;
+  border-radius: 20px;
+  padding: 3rem 2rem;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.empty-state p {
+  font-size: 1.125rem;
+  color: #6b7280;
+  margin-bottom: 1.5rem;
+}
+
+/* Modal de Eliminación */
+.modal-content-eliminar {
+  background: white;
+  border-radius: var(--radius-lg);
+  width: 100%;
+  max-width: 400px;
+  box-shadow: var(--shadow-lg);
+}
+
+.servicio-nombre-eliminar {
+  font-weight: 700;
+  color: #1f2937;
+  font-size: 1.1rem;
+  margin: 0.5rem 0;
+}
+
+.advertencia {
+  color: #ef4444;
+  font-size: 0.875rem;
+  margin-top: 0.5rem;
+}
+
+/* Modal para formulario de creación - TODAS las pantallas */
+.modal-overlay-form {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  background: rgba(0, 0, 0, 0.6) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  z-index: 1000 !important;
+  padding: var(--spacing-md) !important;
+}
+
+.modal-content-form {
+  background: white !important;
+  border-radius: var(--radius-lg) !important;
+  width: 100% !important;
+  max-width: 500px !important;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3) !important;
+  max-height: 90vh !important;
+  overflow-y: auto !important;
+}
+
+.modal-header-form {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  padding: 1rem !important;
+  border-bottom: 1px solid #e0e0e0 !important;
+}
+
+.modal-header-form h3 {
+  margin: 0 !important;
+  color: #1f2937 !important;
+  font-size: 1rem !important;
+  font-weight: 700 !important;
+  flex: 1 !important;
+}
+
+.modal-close {
+  background: none !important;
+  border: none !important;
+  font-size: 1.2rem !important;
+  color: var(--text-gray) !important;
+  cursor: pointer !important;
+  padding: 0 !important;
+  width: 24px !important;
+  height: 24px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: var(--radius-md) !important;
+  transition: all 0.2s ease !important;
+  flex-shrink: 0 !important;
+  margin-left: 0.5rem !important;
+}
+
+.modal-close:hover {
+  background: #f0f0f0 !important;
+  color: var(--text-dark) !important;
+}
+
+.modal-body-form {
+  padding: 0.75rem 1rem 1rem 1rem !important;
+}
+
+.servicio-acciones {
+  display: flex !important;
+  gap: 0.5rem !important;
+  margin-top: var(--spacing-md) !important;
+  flex-wrap: wrap !important;
+}
+
+.servicio-acciones .btn {
+  flex: 1 !important;
+  font-weight: 600 !important;
+  border-radius: var(--radius-md) !important;
+  transition: all 0.3s ease !important;
+  min-width: 0 !important;
+  max-width: none !important;
+}
+
 /* Responsive */
 @media (min-width: 768px) {
   .admin-servicios h1 {
-    font-size: 2.25rem;
-  }
-
-  .input-row {
-    grid-template-columns: 1fr 1fr;
+    font-size: 2.5rem;
   }
 
   .servicios-lista {
     grid-template-columns: repeat(2, 1fr);
+    gap: 2rem;
   }
 
-  .servicio-acciones .btn {
-    flex: initial;
-    min-width: 120px;
+  .servicio-icon {
+    width: 80px;
+    height: 80px;
+  }
+
+  .servicio-icon svg {
+    width: 40px;
+    height: 40px;
+  }
+
+  .servicio-nombre {
+    font-size: 1.5rem;
+  }
+
+  .servicio-descripcion {
+    font-size: 0.9375rem;
+    min-height: 3.5rem;
+  }
+
+  .info-label {
+    font-size: 0.75rem;
+  }
+
+  .info-value {
+    font-size: 1.125rem;
+  }
+
+  .btn-icon {
+    width: 50px;
+    height: 50px;
+  }
+
+  .btn-icon svg {
+    width: 22px;
+    height: 22px;
   }
 }
 
 @media (min-width: 1024px) {
+  /* Header horizontal cuando aparece el sidebar */
+  .header-con-boton {
+    flex-wrap: nowrap;
+  }
+
+  .header-con-boton h1 {
+    width: auto;
+    text-align: left;
+  }
+
+  /* Con sidebar (admin), mantener 2 columnas para evitar tarjetas muy estrechas */
   .servicios-lista {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  /* Grid de info en 2 columnas cuando hay más espacio */
+  .servicio-info-grid {
+    grid-template-columns: 1fr 1fr;
   }
 }
 
-/* Laptop - Desde 1280px */
 @media (min-width: 1280px) {
   .servicios-lista {
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1.25rem;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2rem;
   }
-
-  .servicio-card {
-    padding: 1rem;
-  }
-
-  .servicio-header h3 {
-    font-size: 1rem;
-  }
-
-  .servicio-precio {
-    font-size: 1.25rem;
-  }
-
-  .servicio-descripcion {
-    font-size: 0.875rem;
-  }
-
-  .servicio-detalles {
-    font-size: 0.8rem;
-    gap: var(--spacing-md);
-  }
-
-  /* Modal para formulario de crear servicio */
-  .modal-content-form {
-    max-width: 420px !important;
-  }
-}
-
-/* Ajuste del header en mobile para alinear cruz */
-@media (max-width: 1279px) {
-  .modal-header-form {
-    padding: 1rem !important;
-  }
-
-  .modal-header-form h3 {
-    font-size: 1rem !important;
-    flex: 1 !important;
-    margin: 0 !important;
-  }
-
-  .modal-close {
-    width: 24px !important;
-    height: 24px !important;
-    font-size: 1.2rem !important;
-    flex-shrink: 0 !important;
-    margin-left: 0.5rem !important;
-    margin-right: 0 !important;
-    padding: 0 !important;
-    position: relative !important;
-    right: auto !important;
-    top: auto !important;
-  }
-
-  .modal-body-form {
-    padding: 0.75rem 1rem 1rem 1rem !important;
-  }
-
-  .modal-content-form {
-    padding: 0 !important;
-  }
-
-  /* Ajustar formulario */
-  .servicio-form .input-group {
-    margin-bottom: 0.75rem !important;
-  }
-
-  .servicio-form .input-label {
-    font-size: 0.875rem !important;
-    margin-bottom: 0.25rem !important;
-  }
-
-  .servicio-form .input,
-  .servicio-form textarea {
-    padding: 0.5rem !important;
-    font-size: 0.875rem !important;
-  }
-
-  .servicio-form textarea {
-    min-height: 60px !important;
-  }
-
-  .servicio-form .input-row {
-    gap: 0.75rem !important;
-  }
-
-  .servicio-acciones {
-    margin-top: 0.75rem !important;
-    gap: 0.5rem !important;
-  }
-
-  .servicio-acciones .btn {
-    padding: 0.5rem 1rem !important;
-    font-size: 0.875rem !important;
-  }
-
-  /* Ocultar flechitas de inputs number en mobile */
-  .servicio-form input[type="number"]::-webkit-inner-spin-button,
-  .servicio-form input[type="number"]::-webkit-outer-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
-  }
-
-  .servicio-form input[type="number"] {
-    -moz-appearance: textfield;
-  }
-}
-
-/* Modal para todas las pantallas */
-.modal-overlay-form {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.6);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  padding: var(--spacing-md);
-}
-
-.modal-content-form {
-  background: white;
-  border-radius: var(--radius-lg);
-  width: 100%;
-  max-width: 90%;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-  max-height: 90vh;
-  overflow-y: auto;
-}
-
-.modal-header-form {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: var(--spacing-lg);
-  border-bottom: 1px solid #e0e0e0;
-}
-
-.modal-header-form h3 {
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: var(--text-dark);
-  margin: 0;
-}
-
-.modal-close {
-  background: none;
-  border: none;
-  font-size: 1.5rem;
-  color: var(--text-gray);
-  cursor: pointer;
-  padding: 0;
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: var(--radius-md);
-  transition: all 0.2s ease;
-}
-
-.modal-close:hover {
-  background: #f0f0f0;
-  color: var(--text-dark);
-}
-
-.modal-body-form {
-  padding: var(--spacing-lg);
 }
 
 @media (min-width: 1440px) {
@@ -442,53 +549,30 @@
     padding: 2rem 3rem;
   }
 
-  .header h1 {
-    font-size: 2rem;
-  }
-
   .servicios-lista {
     grid-template-columns: repeat(3, 1fr);
-    gap: 1.5rem;
-  }
-
-  .servicio-card {
-    padding: 1.25rem;
-  }
-
-  .modal-content {
-    max-width: 650px;
   }
 }
 
-/* PC de Escritorio */
 @media (min-width: 1920px) {
   .admin-servicios .container {
     max-width: 1600px;
     padding: 2.5rem 4rem;
   }
 
-  .header h1 {
-    font-size: 2.5rem;
-  }
-
   .servicios-lista {
-    grid-template-columns: repeat(4, 1fr);
-    gap: 1.75rem;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2.5rem;
   }
 
-  .servicio-card {
-    padding: 1.5rem;
+  .servicio-card-body {
+    padding: 2rem;
   }
+}
 
-  .servicio-header h3 {
-    font-size: 1.1rem;
-  }
-
-  .servicio-precio {
-    font-size: 1.35rem;
-  }
-
-  .modal-content {
-    max-width: 800px;
-  }
+.servicio-acciones .btn,
+.servicio-acciones .btn-sm {
+  padding: 0.5rem 1rem !important;
+  font-size: 0.875rem !important;
+  min-height: auto !important;
 }

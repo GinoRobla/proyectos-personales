@@ -8,12 +8,13 @@
 
 /* Bienvenida */
 .bienvenida-card {
-  background: linear-gradient(135deg, var(--primary) 0%, #333 100%);
-  color: white;
+  background: white !important;
+  color: var(--text-dark) !important;
   border-radius: var(--radius-lg);
   padding: var(--spacing-xl);
   margin-bottom: var(--spacing-xl);
   box-shadow: var(--shadow-md);
+  text-align: center !important;
 }
 
 .bienvenida-card h1 {
@@ -125,21 +126,29 @@
 }
 
 .ver-todos-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--spacing-xs);
-  color: var(--primary);
-  font-size: 0.875rem;
-  font-weight: 600;
-  text-decoration: none;
-  padding: var(--spacing-sm) var(--spacing-md);
-  border-radius: var(--radius-md);
-  transition: all 0.2s ease;
+  background: var(--primary) !important;
+  color: white !important;
+  border: 2px solid var(--primary) !important;
+  padding: 0.75rem 1.5rem !important;
+  font-weight: 600 !important;
+  font-size: 0.875rem !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: auto !important;
+  max-width: 250px !important;
+  margin: 0 auto !important;
+  transition: all 0.3s ease !important;
+  border-radius: var(--radius-md) !important;
+  text-decoration: none !important;
+  gap: var(--spacing-xs) !important;
 }
 
 .ver-todos-btn:hover {
-  background: #f0f0f0;
-  text-decoration: none;
+  background: #333 !important;
+  border-color: #333 !important;
+  transform: scale(1.05) !important;
+  text-decoration: none !important;
 }
 
 /* Loading */
@@ -180,10 +189,15 @@
   font-size: 0.875rem;
 }
 
+.empty-state .btn {
+  max-width: 250px !important;
+  margin: 0 auto !important;
+}
+
 /* Lista de Turnos */
 .turnos-lista {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: 1fr !important;
   gap: var(--spacing-md);
 }
 
@@ -310,6 +324,55 @@
   text-align: center;
 }
 
+.info-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--spacing-md);
+}
+
+.info-grid .info-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md);
+  background: #f8f9fa;
+  border-radius: var(--radius-md);
+  border-left: 3px solid var(--primary);
+  transition: all 0.2s ease;
+}
+
+.info-grid .info-item:hover {
+  background: #e9ecef;
+  transform: translateX(5px);
+}
+
+.info-icon {
+  font-size: 1.5rem;
+  min-width: 40px;
+  text-align: center;
+}
+
+.info-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  flex: 1;
+}
+
+.info-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-gray);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.info-value {
+  font-size: 0.9rem;
+  color: var(--text-dark);
+  font-weight: 500;
+}
+
 .info-lista {
   display: flex;
   flex-direction: column;
@@ -360,6 +423,10 @@
     font-size: 1.5rem;
   }
 
+  .turnos-lista {
+    grid-template-columns: 1fr !important;
+  }
+
   .turno-info {
     grid-template-columns: repeat(2, 1fr);
   }
@@ -380,6 +447,30 @@
   all: unset;
 }
 
+.btn-cancelar-turno {
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: #dc3545;
+  color: white;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.btn-cancelar-turno:hover:not(:disabled) {
+  background: #c82333;
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-cancelar-turno:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 /* Mejor alineación en móvil */
 @media (max-width: 480px) {
   .seccion-header h2 {
@@ -398,6 +489,11 @@
 
   .ver-todos-btn {
     font-size: 0.8rem;
+  }
+
+  .btn-cancelar-turno {
+    font-size: 0.7rem;
+    padding: 0.4rem 0.6rem;
   }
 }
 
@@ -513,7 +609,53 @@
 
 @media (min-width: 1024px) {
   .cliente-dashboard .container {
-    max-width: 1200px;
+    max-width: 1400px !important;
+    padding: 2rem 3rem !important;
+    position: relative !important;
+  }
+
+  .bienvenida-card {
+    padding: 1.5rem !important;
+    text-align: center !important;
+    background: white !important;
+    color: var(--text-dark) !important;
+  }
+
+  .bienvenida-card h1 {
+    font-size: 1.75rem !important;
+  }
+
+
+  /* Botón de reservar en el empty state más chico */
+  .empty-state .btn {
+    padding: 0.5rem 1rem !important;
+    font-size: 0.875rem !important;
+    width: auto !important;
+    max-width: 200px !important;
+  }
+
+  /* Próximos turnos - contenedor más angosto y centrado */
+  .seccion {
+    max-width: 900px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+
+  /* Información de la barbería - mismo ancho que próximos turnos */
+  .info-barberia {
+    max-width: 900px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+
+  .turnos-lista {
+    grid-template-columns: 1fr !important;
+    gap: 1rem !important;
+  }
+
+  /* Modal de perfil más pequeño */
+  .modal-content-turno {
+    max-width: 450px !important;
   }
 
   .turno-info-compacto {
@@ -521,125 +663,48 @@
   }
 }
 
-/* Laptop y Desktop desde 1280px */
+/* Laptop y Desktop desde 1280px - Ya aplicado desde 1024px */
 @media (min-width: 1280px) {
-  .cliente-dashboard .container {
-    max-width: 1400px;
-    padding: 2rem 3rem;
-    position: relative;
-  }
-
-  .bienvenida-card {
-    padding: 1.5rem;
-    text-align: center;
-    background: white;
-    color: var(--text-dark);
-  }
-
-  .bienvenida-card h1 {
-    font-size: 1.75rem;
-  }
-
-  /* Botón Ver todos los turnos con estilo de botón */
-  .ver-todos-btn {
-    background: var(--primary) !important;
-    color: white !important;
-    border: 2px solid var(--primary) !important;
-    padding: 0.75rem 1.5rem !important;
-    font-weight: 600 !important;
-    font-size: 0.875rem !important;
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    width: auto !important;
-    max-width: 250px !important;
-    margin: 0 auto !important;
-    transition: all 0.3s ease !important;
-  }
-
-  .ver-todos-btn:hover {
-    background: #333 !important;
-    border-color: #333 !important;
-    transform: scale(1.05) !important;
-  }
-
-  /* Botón de reservar en el empty state más chico */
-  .empty-state .btn {
-    padding: 0.5rem 1rem;
-    font-size: 0.875rem;
-    width: auto;
-    max-width: 200px;
-  }
-
-  /* Próximos turnos - contenedor más angosto y centrado */
-  .seccion {
-    max-width: 900px;
-    margin-left: auto;
-    margin-right: auto;
-  }
-
-  /* Información de la barbería - mismo ancho que próximos turnos */
-  .info-barberia {
-    max-width: 900px;
-    margin-left: auto;
-    margin-right: auto;
-  }
-
-  .turnos-lista {
-    gap: 1rem;
-  }
-
-
-  /* Modal de perfil más pequeño */
-  .modal-content-turno {
-    max-width: 450px;
-  }
+  /* Todos los estilos ya se aplican desde 1024px */
 }
 
 /* PC de Escritorio grande */
 @media (min-width: 1920px) {
   .cliente-dashboard .container {
-    max-width: 1600px;
-    padding: 2.5rem 4rem;
+    max-width: 1600px !important;
+    padding: 2.5rem 4rem !important;
   }
 
   .bienvenida-card {
-    padding: 1.75rem;
-    text-align: center;
-    background: white;
-    color: var(--text-dark);
+    padding: 1.75rem !important;
   }
 
   .bienvenida-card h1 {
-    font-size: 2rem;
+    font-size: 2rem !important;
   }
 
   /* Botón de reservar en el empty state más chico */
   .empty-state .btn {
-    padding: 0.6rem 1.2rem;
-    font-size: 0.9rem;
-    width: auto;
-    max-width: 220px;
+    padding: 0.6rem 1.2rem !important;
+    font-size: 0.9rem !important;
+    max-width: 220px !important;
   }
 
   .seccion {
-    max-width: 1000px;
+    max-width: 1000px !important;
   }
 
   /* Información de la barbería - mismo ancho que próximos turnos */
   .info-barberia {
-    max-width: 1000px;
-    margin-left: auto;
-    margin-right: auto;
+    max-width: 1000px !important;
   }
 
   .turnos-lista {
-    gap: 1.25rem;
+    gap: 1.25rem !important;
   }
 
-
   .modal-content-turno {
-    max-width: 500px;
+    max-width: 500px !important;
   }
 }
 

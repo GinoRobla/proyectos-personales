@@ -22,10 +22,10 @@ export const useAuth = () => {
  */
 export const AuthProvider = ({ children }) => {
   // Almacena el objeto del usuario si está logueado (o null si no lo está).
-  const [user, setUser] = useState(null);
+  const [usuario, setUsuario] = useState(null);
 
   // Indica si se está verificando la sesión al cargar la página (true) o no (false).
-  const [isLoading, setIsLoading] = useState(true);
+  const [estaCargando, setEstaCargando] = useState(true);
 
   // Al cargar la aplicación por primera vez, verifica si ya hay una sesión guardada.
   useEffect(() => {
@@ -38,7 +38,7 @@ export const AuthProvider = ({ children }) => {
 
     // Si no hay token, el usuario no está logueado. Termina la carga.
     if (!token) {
-      setIsLoading(false);
+      setEstaCargando(false);
       return;
     }
 
@@ -46,14 +46,14 @@ export const AuthProvider = ({ children }) => {
       // Si hay token, consulta al backend para validarlo.
       const response = await authService.verificarToken();
       // Si el token es válido, guarda los datos del usuario en el estado.
-      setUser(response.data.usuario);
+      setUsuario(response.data.usuario);
     } catch (error) {
       // Si el token es inválido o expiró, limpia los datos guardados.
       localStorage.removeItem('token');
       localStorage.removeItem('usuario');
     } finally {
       // Pase lo que pase, marca la carga inicial como completada.
-      setIsLoading(false);
+      setEstaCargando(false);
     }
   };
 
@@ -67,7 +67,7 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem('token', token);
       localStorage.setItem('usuario', JSON.stringify(usuario));
       // Actualiza el estado de React con el usuario logueado.
-      setUser(usuario);
+      setUsuario(usuario);
       return { success: true, user: usuario };
     }
     // Si falla, devuelve el mensaje de error.
@@ -83,7 +83,7 @@ export const AuthProvider = ({ children }) => {
       // Inicia sesión y guarda los datos inmediatamente después del registro.
       localStorage.setItem('token', token);
       localStorage.setItem('usuario', JSON.stringify(usuario));
-      setUser(usuario);
+      setUsuario(usuario);
       return { success: true, user: usuario };
     }
     return { success: false, message: response.message };
@@ -95,7 +95,7 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('token');
     localStorage.removeItem('usuario');
     // Limpia el estado de React.
-    setUser(null);
+    setUsuario(null);
     // Redirige al inicio (esto refresca la página por completo).
     window.location.href = '/';
   };
@@ -105,7 +105,7 @@ export const AuthProvider = ({ children }) => {
     const response = await authService.actualizarPerfil(updatedData);
     if (response.success) {
       // Actualiza el estado y el localStorage con los nuevos datos del usuario.
-      setUser(response.data);
+      setUsuario(response.data);
       localStorage.setItem('usuario', JSON.stringify(response.data));
       return { success: true };
     }
@@ -114,20 +114,22 @@ export const AuthProvider = ({ children }) => {
 
   // Función para actualizar el estado del usuario localmente (sin llamar a la API).
   const updateUser = (newUserData) => {
-    setUser(newUserData);
+    setUsuario(newUserData);
     localStorage.setItem('usuario', JSON.stringify(newUserData));
   };
 
   // Objeto con todos los valores que se compartirán en el contexto.
   const contextValue = {
-    user,
-    isLoading,
-    isAuthenticated: !!user, // '!!user' convierte el objeto 'user' en un booleano (true si existe, false si es null).
+    usuario,
+    estaCargando,
+    estaAutenticado: !!usuario, // '!!usuario' convierte el objeto 'usuario' en un booleano (true si existe, false si es null).
     login,
-    register,
+    registro: register,
     logout,
-    updateProfile,
-    updateUser,
+    actualizarPerfil: updateProfile,
+    actualizarUsuario: updateUser,
+    updateProfile, // Mantener compatibilidad
+    updateUser, // Mantener compatibilidad
   };
 
   return (

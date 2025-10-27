@@ -1,354 +1,263 @@
-import { useState, useEffect } from 'react';
+// frontend/src/pages/admin/Perfil.jsx
+
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
-import perfilService from '../../services/perfilService';
+import authService from '../../services/authService';
+import useFormData from '../../hooks/useFormData'; // Asumiendo que existe
+import useApi from '../../hooks/useApi'; // Importar useApi
+import './Perfil.css'; // Importar el nuevo CSS
 
 const AdminPerfil = () => {
-  const { usuario, actualizarUsuario } = useAuth();
-  const { mostrarToast } = useToast();
+  const { usuario, actualizarUsuario: actualizarUsuarioContext } = useAuth();
+  const toast = useToast();
 
-  const [loading, setLoading] = useState(true);
-  const [guardando, setGuardando] = useState(false);
+  // Hooks de API
+  const { loading: loadingPerfil, request: cargarPerfilApi } = useApi(authService.obtenerPerfil);
+  const { loading: loadingGuardar, request: actualizarPerfilApi } = useApi(authService.actualizarPerfil);
+  const { loading: loadingPassword, request: cambiarPasswordApi } = useApi(authService.cambiarPassword);
 
-  // Estado para datos del perfil
-  const [perfil, setPerfil] = useState({
-    nombre: '',
-    apellido: '',
-    email: '',
-    telefono: '',
-    foto: '',
+  const isLoading = loadingPerfil; // Para el estado inicial de carga
+  const isSaving = loadingGuardar || loadingPassword; // Para el estado de guardado
+
+  // Hook para datos del perfil
+  const { values: perfil, handleChange, setValues: setPerfilValues } = useFormData({
+    nombre: '', apellido: '', email: '', telefono: '', foto: '',
   });
 
-  // Estado para cambio de contraseña
-  const [passwords, setPasswords] = useState({
-    passwordActual: '',
-    passwordNuevo: '',
-    passwordConfirmar: '',
+  // Hook para cambio de contraseña
+  const { values: passwords, handleChange: handlePasswordChange, resetForm: resetPasswordForm } = useFormData({
+    passwordActual: '', passwordNuevo: '', passwordConfirmar: '',
   });
+
+  // Cargar perfil inicial
+  const cargarPerfil = useCallback(async () => {
+    const { success, data, message } = await cargarPerfilApi();
+    if (success && data) {
+      setPerfilValues({
+        nombre: data.nombre || '',
+        apellido: data.apellido || '',
+        email: data.email || '',
+        telefono: data.telefono || '',
+        foto: data.foto || '',
+      });
+    } else {
+      toast.error(message || 'Error al cargar tu perfil', 4000);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     cargarPerfil();
-  }, []);
+  }, [cargarPerfil]);
 
-  const cargarPerfil = async () => {
-    try {
-      setLoading(true);
-      const response = await perfilService.obtenerMiPerfil();
-      setPerfil({
-        nombre: response.data.nombre,
-        apellido: response.data.apellido,
-        email: response.data.email,
-        telefono: response.data.telefono,
-        foto: response.data.foto || '',
-      });
-    } catch (error) {
-      console.error('Error al cargar perfil:', error);
-      mostrarToast('Error al cargar el perfil', 'error');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleChange = (e) => {
-    setPerfil({
-      ...perfil,
-      [e.target.name]: e.target.value,
-    });
-  };
-
-  const handlePasswordChange = (e) => {
-    setPasswords({
-      ...passwords,
-      [e.target.name]: e.target.value,
-    });
-  };
-
+  // Manejar envío del formulario
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!perfil.nombre || !perfil.apellido || !perfil.email || !perfil.telefono) {
-      mostrarToast('Por favor completa todos los campos obligatorios', 'error');
+    // Validaciones básicas
+    if (!perfil.nombre.trim() || !perfil.apellido.trim()) {
+      toast.error('Nombre y apellido son obligatorios', 4000);
       return;
     }
 
-    // Validar contraseñas si se están cambiando
+    if (!perfil.email.trim()) {
+      toast.error('El email es obligatorio', 4000);
+      return;
+    }
+
+    // Validar formato de email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(perfil.email)) {
+      toast.error('Por favor ingresa un email válido', 4000);
+      return;
+    }
+
+    if (!perfil.telefono.trim()) {
+      toast.error('El teléfono es obligatorio', 4000);
+      return;
+    }
+
+    // Validaciones de contraseña si se intenta cambiar
     if (passwords.passwordActual || passwords.passwordNuevo || passwords.passwordConfirmar) {
       if (!passwords.passwordActual || !passwords.passwordNuevo || !passwords.passwordConfirmar) {
-        mostrarToast('Para cambiar la contraseña, completa todos los campos de contraseña', 'error');
+        toast.error('Para cambiar la contraseña, completa todos los campos de contraseña', 4000);
         return;
       }
-
       if (passwords.passwordNuevo !== passwords.passwordConfirmar) {
-        mostrarToast('Las contraseñas nuevas no coinciden', 'error');
+        toast.error('Las contraseñas nuevas no coinciden. Por favor verifica', 4000);
         return;
       }
-
       if (passwords.passwordNuevo.length < 6) {
-        mostrarToast('La contraseña debe tener al menos 6 caracteres', 'error');
+        toast.error('La nueva contraseña debe tener al menos 6 caracteres', 4000);
         return;
       }
     }
 
-    try {
-      setGuardando(true);
+    let perfilActualizadoExitoso = false;
+    let passwordCambiadoExitoso = false;
 
-      // Actualizar perfil
-      const response = await perfilService.actualizarMiPerfil(perfil);
-      actualizarUsuario(response.data);
+    // Actualizar perfil
+    const responsePerfil = await actualizarPerfilApi(perfil);
+    if (responsePerfil.success && responsePerfil.data) {
+      actualizarUsuarioContext(responsePerfil.data); // Actualizar contexto global
+      perfilActualizadoExitoso = true;
+    } else {
+      toast.error(responsePerfil.message || 'No se pudo actualizar el perfil', 4000);
+    }
 
-      // Cambiar contraseña si se proporcionaron los datos
-      if (passwords.passwordActual && passwords.passwordNuevo) {
-        await perfilService.cambiarPassword(passwords.passwordActual, passwords.passwordNuevo);
-        setPasswords({
-          passwordActual: '',
-          passwordNuevo: '',
-          passwordConfirmar: '',
-        });
-        mostrarToast('Perfil y contraseña actualizados correctamente', 'success');
+    // Cambiar contraseña si se proporcionaron datos
+    if (passwords.passwordActual && passwords.passwordNuevo) {
+      const responsePassword = await cambiarPasswordApi(passwords.passwordActual, passwords.passwordNuevo);
+      if (responsePassword.success) {
+        resetPasswordForm();
+        passwordCambiadoExitoso = true;
       } else {
-        mostrarToast('Perfil actualizado correctamente', 'success');
+        toast.error(responsePassword.message || 'No se pudo cambiar la contraseña', 4000);
       }
-    } catch (error) {
-      console.error('Error al actualizar:', error);
-      mostrarToast(
-        error.response?.data?.message || 'Error al actualizar el perfil',
-        'error'
-      );
-    } finally {
-      setGuardando(false);
+    }
+
+    // Mostrar mensajes de éxito combinados o individuales
+    if (perfilActualizadoExitoso && passwordCambiadoExitoso) {
+      toast.success('Perfil y contraseña actualizados correctamente', 3000);
+    } else if (perfilActualizadoExitoso) {
+      toast.success('Perfil actualizado correctamente', 3000);
+    } else if (passwordCambiadoExitoso) {
+      toast.success('Contraseña cambiada correctamente', 3000);
     }
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
-      <div style={{ padding: '2rem', textAlign: 'center' }}>
-        <p>Cargando perfil...</p>
+      <div className="admin-perfil-page">
+        <div className="container perfil-loading">
+          <p>Cargando perfil...</p>
+          {/* Podrías agregar un spinner aquí */}
+        </div>
       </div>
     );
   }
 
   return (
-    <div style={{ padding: '2rem', maxWidth: '800px', margin: '0 auto' }}>
-      <h1 style={{ marginBottom: '2rem', fontSize: '1.75rem', fontWeight: '600' }}>
-        Mi Perfil
-      </h1>
+    <div className="admin-perfil-page">
+      <div className="container">
+        <h1>Mi Perfil</h1>
 
-      {/* Todo junto en una sola card */}
-      <div style={{
-        background: 'white',
-        borderRadius: '8px',
-        padding: '2rem',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-      }}>
-        <form onSubmit={handleSubmit}>
-          {/* Información Personal */}
-          <h2 style={{ fontSize: '1.25rem', fontWeight: '600', marginBottom: '1.5rem' }}>
-            Información Personal
-          </h2>
-
-          <div style={{ display: 'grid', gap: '1.5rem', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))' }}>
-            <div>
-              <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
-                Nombre *
-              </label>
-              <input
-                type="text"
-                name="nombre"
-                value={perfil.nombre}
-                onChange={handleChange}
-                required
-                style={{
-                  width: '100%',
-                  padding: '0.75rem',
-                  border: '1px solid #ddd',
-                  borderRadius: '6px',
-                  fontSize: '1rem'
-                }}
-              />
+        <div className="perfil-card-admin">
+          <form onSubmit={handleSubmit}>
+            {/* Información Personal */}
+            <h2 className="perfil-section-title">Información Personal</h2>
+            <div className="perfil-grid">
+              <div className="input-group">
+                <label className="input-label">Nombre *</label>
+                <input
+                  type="text"
+                  name="nombre"
+                  value={perfil.nombre}
+                  onChange={handleChange}
+                  required
+                  className="input"
+                />
+              </div>
+              <div className="input-group">
+                <label className="input-label">Apellido *</label>
+                <input
+                  type="text"
+                  name="apellido"
+                  value={perfil.apellido}
+                  onChange={handleChange}
+                  required
+                  className="input"
+                />
+              </div>
+              <div className="input-group">
+                <label className="input-label">Email *</label>
+                <input
+                  type="email"
+                  name="email"
+                  value={perfil.email}
+                  onChange={handleChange}
+                  required
+                  className="input"
+                />
+              </div>
+              <div className="input-group">
+                <label className="input-label">Teléfono *</label>
+                <input
+                  type="tel"
+                  name="telefono"
+                  value={perfil.telefono}
+                  onChange={handleChange}
+                  required
+                  className="input"
+                />
+              </div>
+              {/* Podrías añadir input para Foto aquí si lo implementas */}
             </div>
 
-            <div>
-              <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
-                Apellido *
-              </label>
-              <input
-                type="text"
-                name="apellido"
-                value={perfil.apellido}
-                onChange={handleChange}
-                required
-                style={{
-                  width: '100%',
-                  padding: '0.75rem',
-                  border: '1px solid #ddd',
-                  borderRadius: '6px',
-                  fontSize: '1rem'
-                }}
-              />
+            <div className="perfil-divider"></div>
+
+            {/* Cambio de Contraseña */}
+            <h2 className="perfil-section-title">Cambiar Contraseña</h2>
+            <p className="password-hint">
+              Deja estos campos en blanco si no deseas cambiar tu contraseña.
+            </p>
+            <div className="perfil-grid">
+              <div className="input-group">
+                <label className="input-label">Contraseña Actual</label>
+                <input
+                  type="password"
+                  name="passwordActual"
+                  value={passwords.passwordActual}
+                  onChange={handlePasswordChange}
+                  className="input"
+                  autoComplete="current-password"
+                />
+              </div>
+              <div className="input-group">
+                <label className="input-label">Nueva Contraseña</label>
+                <input
+                  type="password"
+                  name="passwordNuevo"
+                  value={passwords.passwordNuevo}
+                  onChange={handlePasswordChange}
+                  minLength={6}
+                  className="input"
+                  autoComplete="new-password"
+                />
+              </div>
+              <div className="input-group">
+                <label className="input-label">Confirmar Nueva Contraseña</label>
+                <input
+                  type="password"
+                  name="passwordConfirmar"
+                  value={passwords.passwordConfirmar}
+                  onChange={handlePasswordChange}
+                  minLength={6}
+                  className="input"
+                  autoComplete="new-password"
+                />
+              </div>
             </div>
 
-            <div>
-              <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
-                Email *
-              </label>
-              <input
-                type="email"
-                name="email"
-                value={perfil.email}
-                onChange={handleChange}
-                required
-                style={{
-                  width: '100%',
-                  padding: '0.75rem',
-                  border: '1px solid #ddd',
-                  borderRadius: '6px',
-                  fontSize: '1rem'
-                }}
-              />
-            </div>
-
-            <div>
-              <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
-                Teléfono *
-              </label>
-              <input
-                type="tel"
-                name="telefono"
-                value={perfil.telefono}
-                onChange={handleChange}
-                required
-                style={{
-                  width: '100%',
-                  padding: '0.75rem',
-                  border: '1px solid #ddd',
-                  borderRadius: '6px',
-                  fontSize: '1rem'
-                }}
-              />
-            </div>
-          </div>
-
-          {/* Divisor */}
-          <div style={{
-            margin: '2rem 0',
-            borderTop: '1px solid #e9ecef'
-          }}></div>
-
-          {/* Cambio de Contraseña */}
-          <h2 style={{ fontSize: '1.25rem', fontWeight: '600', marginBottom: '0.5rem' }}>
-            Cambiar Contraseña
-          </h2>
-          <p style={{ fontSize: '0.875rem', color: '#6c757d', marginBottom: '1.5rem' }}>
-            Deja estos campos en blanco si no deseas cambiar tu contraseña
-          </p>
-
-          <div style={{ display: 'grid', gap: '1.5rem', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))' }}>
-            <div>
-              <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
-                Contraseña Actual
-              </label>
-              <input
-                type="password"
-                name="passwordActual"
-                value={passwords.passwordActual}
-                onChange={handlePasswordChange}
-                style={{
-                  width: '100%',
-                  padding: '0.75rem',
-                  border: '1px solid #ddd',
-                  borderRadius: '6px',
-                  fontSize: '1rem'
-                }}
-              />
-            </div>
-
-            <div>
-              <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
-                Nueva Contraseña
-              </label>
-              <input
-                type="password"
-                name="passwordNuevo"
-                value={passwords.passwordNuevo}
-                onChange={handlePasswordChange}
-                minLength={6}
-                style={{
-                  width: '100%',
-                  padding: '0.75rem',
-                  border: '1px solid #ddd',
-                  borderRadius: '6px',
-                  fontSize: '1rem'
-                }}
-              />
-            </div>
-
-            <div>
-              <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
-                Confirmar Nueva Contraseña
-              </label>
-              <input
-                type="password"
-                name="passwordConfirmar"
-                value={passwords.passwordConfirmar}
-                onChange={handlePasswordChange}
-                minLength={6}
-                style={{
-                  width: '100%',
-                  padding: '0.75rem',
-                  border: '1px solid #ddd',
-                  borderRadius: '6px',
-                  fontSize: '1rem'
-                }}
-              />
-            </div>
-          </div>
-
-          {/* Botones */}
-          <div style={{ marginTop: '2rem', display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
-            <button
-              type="submit"
-              disabled={guardando}
-              style={{
-                padding: '0.75rem 2rem',
-                background: '#007bff',
-                color: 'white',
-                border: 'none',
-                borderRadius: '6px',
-                fontSize: '1rem',
-                fontWeight: '500',
-                cursor: guardando ? 'not-allowed' : 'pointer',
-                opacity: guardando ? 0.6 : 1
-              }}
-            >
-              {guardando ? 'Guardando...' : 'Guardar Cambios'}
-            </button>
-
-            {(passwords.passwordActual || passwords.passwordNuevo || passwords.passwordConfirmar) && (
-              <button
-                type="button"
-                onClick={() => {
-                  setPasswords({
-                    passwordActual: '',
-                    passwordNuevo: '',
-                    passwordConfirmar: '',
-                  });
-                }}
-                style={{
-                  padding: '0.75rem 2rem',
-                  background: '#6c757d',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '6px',
-                  fontSize: '1rem',
-                  fontWeight: '500',
-                  cursor: 'pointer'
-                }}
-              >
-                Limpiar Contraseñas
+            {/* Botones */}
+            <div className="perfil-actions">
+              <button type="submit" disabled={isSaving} className="btn btn-primary">
+                {isSaving ? 'Guardando...' : 'Guardar Cambios'}
               </button>
-            )}
-          </div>
-        </form>
+              {(passwords.passwordActual || passwords.passwordNuevo || passwords.passwordConfirmar) && (
+                <button
+                  type="button"
+                  onClick={resetPasswordForm}
+                  className="btn btn-limpiar"
+                  disabled={isSaving}
+                >
+                  Limpiar Contraseñas
+                </button>
+              )}
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   );

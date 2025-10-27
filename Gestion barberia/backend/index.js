@@ -33,9 +33,25 @@ const PORT = process.env.PORT || 3000;
 // ============================================================================
 
 // 1. Configura CORS: Permite que el frontend (en otra URL) se conecte a esta API
+const allowedOrigins = [
+  process.env.FRONTEND_URL,
+  'http://localhost:5173',
+  'http://localhost:5174'
+].filter(Boolean);
+
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+    origin: (origin, callback) => {
+      // Permitir peticiones sin origin (como Postman, curl, etc)
+      if (!origin) return callback(null, true);
+
+      if (allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error('No permitido por CORS'));
+      }
+    },
+    credentials: true
   })
 );
 

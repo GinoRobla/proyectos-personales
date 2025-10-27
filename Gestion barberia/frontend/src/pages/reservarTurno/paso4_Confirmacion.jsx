@@ -12,7 +12,7 @@ const Paso4_Confirmacion = ({
   turnoEditarId,
 }) => {
   const { estaAutenticado } = useAuth();
-  
+
   // Hook para el formulario de cliente no autenticado
   const { values: datosCliente, handleChange: handleChangeDatosCliente } = useFormData({
     nombre: '', apellido: '', email: '', telefono: ''

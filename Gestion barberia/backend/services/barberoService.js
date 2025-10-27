@@ -34,7 +34,6 @@ export const crear = async (datosBarbero) => {
     throw new Error('El email ya está en uso');
   }
 
-  const nuevoBarbero = new Barbero({ nombre, apellido, email, telefono, foto, horarioLaboral });
   const nuevoUsuario = new Usuario({
     nombre,
     apellido,
@@ -45,7 +44,18 @@ export const crear = async (datosBarbero) => {
     activo: true,
   });
 
-  await Promise.all([nuevoBarbero.save(), nuevoUsuario.save()]);
+  await nuevoUsuario.save();
+
+  const nuevoBarbero = new Barbero({
+    usuario: nuevoUsuario._id,
+    nombre,
+    apellido,
+    email,
+    telefono,
+    foto
+  });
+
+  await nuevoBarbero.save();
   return nuevoBarbero;
 };
 
@@ -74,6 +84,10 @@ export const actualizar = async (barberoId, datos) => {
     if (datos.apellido) usuario.apellido = datos.apellido;
     if (datos.telefono) usuario.telefono = datos.telefono;
     if (datos.activo !== undefined) usuario.activo = datos.activo;
+    // Actualizar contraseña si se proporciona
+    if (datos.password) {
+      usuario.password = datos.password;
+    }
   }
 
   // Actualizar campos del barbero

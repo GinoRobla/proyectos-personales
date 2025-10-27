@@ -60,6 +60,23 @@ body {
   overflow-x: hidden;
 }
 
+/* Layout principal con flex para footer sticky */
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-layout {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.main-content {
+  flex: 1;
+}
+
 /* Mobile-first: diseño optimizado para móvil por defecto */
 .container {
   width: 100%;
@@ -333,7 +350,7 @@ body {
 }
 
 /* Layout con sidebar para admin - SOLO para pantallas grandes */
-@media (min-width: 1280px) {
+@media (min-width: 1024px) {
   .main-content.with-sidebar {
     margin-left: 250px;
   }

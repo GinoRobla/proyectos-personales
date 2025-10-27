@@ -73,14 +73,8 @@ export const turnoService = {
     return respuesta.data;
   },
 
-  obtenerDisponibilidadBarberos: async (idsTurnos) => {
-    // Llama a: GET /turnos/disponibilidad-barberos?turnos=id1,id2
-    const respuesta = await api.get('/turnos/disponibilidad-barberos', {
-      params: {
-        turnos: idsTurnos.join(','), // Envía los IDs como string separado por comas
-      },
-    });
-    return respuesta.data;
-  },
-  
+  // ELIMINADO: obtenerDisponibilidadBarberos - Ya no se usa porque los barberos se asignan automáticamente
+
 };
+
+export default turnoService;

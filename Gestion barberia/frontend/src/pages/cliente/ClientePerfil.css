@@ -5,6 +5,11 @@
   background: var(--bg-light);
 }
 
+.perfil-page .container {
+  max-width: 600px !important;
+  margin: 0 auto !important;
+}
+
 .perfil-page h1 {
   font-size: 1.75rem;
   margin-bottom: var(--spacing-lg);
@@ -144,17 +149,23 @@
 
 /* Perfil Acciones */
 .perfil-acciones {
-  display: flex;
-  gap: var(--spacing-sm);
-  margin-top: var(--spacing-md);
+  display: flex !important;
+  gap: var(--spacing-sm) !important;
+  margin-top: var(--spacing-md) !important;
+  flex-wrap: wrap !important;
 }
 
 .perfil-acciones .btn {
-  flex: 1;
+  flex: 0 0 auto !important;
+  min-width: auto !important;
+  max-width: fit-content !important;
+  width: auto !important;
+  padding: 0.5rem 1rem !important;
+  font-size: 0.875rem !important;
 }
 
-/* Responsive */
-@media (max-width: 768px) {
+/* Responsive Mobile */
+@media (max-width: 767px) {
   .perfil-page {
     padding: var(--spacing-md) 0;
   }
@@ -165,7 +176,7 @@
   }
 
   .perfil-card {
-    padding: var(--spacing-md);
+    padding: var(--spacing-md) !important;
   }
 
   .perfil-header {
@@ -190,29 +201,24 @@
   }
 
   .perfil-acciones {
-    flex-direction: column;
+    flex-direction: row !important;
+    flex-wrap: wrap !important;
+    gap: 0.5rem !important;
   }
 
   .perfil-acciones .btn {
-    width: 100%;
+    flex: 0 0 auto !important;
+    width: auto !important;
+    max-width: fit-content !important;
+    padding: 0.4rem 0.75rem !important;
+    font-size: 0.75rem !important;
+    white-space: nowrap !important;
   }
 }
 
-/* Laptop y Desktop desde 1280px */
-@media (min-width: 1280px) {
-  .perfil-page .container {
-    max-width: 600px;
-    margin: 0 auto;
-  }
-
+/* Tablet y Desktop - Mismo padding desde 768px */
+@media (min-width: 768px) {
   .perfil-card {
-    padding: 2rem;
-  }
-}
-
-/* PC de Escritorio grande */
-@media (min-width: 1920px) {
-  .perfil-page .container {
-    max-width: 650px;
+    padding: 2rem !important;
   }
 }

@@ -27,6 +27,5 @@ router.get('/:id', obtenerTurnoPorId);
 router.post('/', crearTurno);
 router.put('/:id', actualizarTurno);
 router.patch('/:id/cancelar', cancelarTurno);
-router.get('/disponibilidad-barberos', [proteger, admin], obtenerDisponibilidadBarberos);
 
 export default router;

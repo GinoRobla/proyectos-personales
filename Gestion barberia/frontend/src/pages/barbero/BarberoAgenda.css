@@ -12,7 +12,7 @@
 }
 
 .page-header h1 {
-  font-size: 1.75rem;
+  font-size: 2.5rem !important;
   font-weight: 700;
   color: var(--text-dark);
   margin-bottom: var(--spacing-xs);
@@ -33,6 +33,9 @@
   border-radius: var(--radius-md);
   margin-bottom: var(--spacing-md);
   box-shadow: var(--shadow-sm);
+  max-width: 400px !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
 }
 
 .btn-nav {
@@ -40,8 +43,8 @@
   color: white;
   border: none;
   border-radius: var(--radius-md);
-  width: 40px;
-  height: 40px;
+  width: 48px !important;
+  height: 48px !important;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -64,7 +67,7 @@
 }
 
 .fecha-texto {
-  font-size: 0.875rem;
+  font-size: 1rem !important;
   font-weight: 600;
   color: var(--text-dark);
   text-transform: capitalize;
@@ -93,6 +96,9 @@
   justify-content: space-between;
   gap: var(--spacing-md);
   margin-bottom: var(--spacing-lg);
+  max-width: 400px !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
 }
 
 .input-fecha {
@@ -137,6 +143,8 @@
   margin-bottom: var(--spacing-lg);
   padding-bottom: var(--spacing-sm);
   -webkit-overflow-scrolling: touch;
+  justify-content: center !important;
+  overflow-x: visible !important;
 }
 
 .filtro-btn {
@@ -211,8 +219,11 @@
 .turnos-timeline {
   display: grid;
   grid-template-columns: 1fr;
-  gap: var(--spacing-md);
+  gap: 1.5rem !important;
   margin-bottom: var(--spacing-lg);
+  max-width: 700px !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
 }
 
 .turno-item {
@@ -420,38 +431,8 @@
   font-weight: 500;
 }
 
-/* Tablets y Desktop */
+/* Tablets y Desktop - Solo responsive para tarjetas */
 @media (min-width: 768px) {
-  .page-header h1 {
-    font-size: 2rem;
-  }
-
-  .fecha-selector {
-    max-width: 500px;
-    margin-left: auto;
-    margin-right: auto;
-  }
-
-  .fecha-texto {
-    font-size: 1rem;
-  }
-
-  .btn-nav {
-    width: 48px;
-    height: 48px;
-  }
-
-  .fecha-manual {
-    max-width: 300px;
-    margin-left: auto;
-    margin-right: auto;
-  }
-
-  .filtros-container {
-    justify-content: center;
-    overflow-x: visible;
-  }
-
   .turnos-timeline {
     grid-template-columns: repeat(2, 1fr);
   }
@@ -468,100 +449,32 @@
   }
 
   .turno-hora .hora {
-    font-size: 1.5rem;
+    font-size: 1.5rem !important;
   }
 }
 
 @media (min-width: 1024px) {
-  .barbero-agenda .container {
-    max-width: 1200px;
-  }
-
   .turnos-timeline {
     grid-template-columns: 1fr;
   }
 
   .turno-item {
     flex-direction: row;
+    padding: 2rem !important;
   }
 
   .turno-hora {
     flex-direction: column;
-    min-width: 80px;
+    min-width: 120px !important;
   }
 }
 
-/* Laptop - Desde 1280px */
-@media (min-width: 1280px) {
-  /* Filtro de fecha más chiquito */
-  .fecha-selector {
-    max-width: 400px !important;
-    margin-left: auto !important;
-    margin-right: auto !important;
-  }
 
-  .fecha-manual-container {
-    max-width: 400px !important;
-    margin-left: auto !important;
-    margin-right: auto !important;
-  }
 
-  /* Tarjetas de turnos más chiquitas */
-  .turnos-timeline {
-    max-width: 700px !important;
-    margin-left: auto !important;
-    margin-right: auto !important;
-  }
-}
-
-/* Laptop */
-@media (min-width: 1440px) {
-  .barbero-agenda .container {
-    max-width: 1400px;
-    padding: 2rem 3rem;
-  }
-
-  .agenda-header h1 {
-    font-size: 2rem;
-  }
-
-  .turno-item {
-    padding: 1.5rem;
-  }
-
-  .turno-hora {
-    min-width: 100px;
-  }
-
-  .fecha-navegacion {
-    padding: 1.5rem;
-  }
-}
-
-/* PC de Escritorio */
-@media (min-width: 1920px) {
-  .barbero-agenda .container {
-    max-width: 1600px;
-    padding: 2.5rem 4rem;
-  }
-
-  .agenda-header h1 {
-    font-size: 2.5rem;
-  }
-
-  .turno-item {
-    padding: 2rem;
-  }
-
-  .turno-hora {
-    min-width: 120px;
-  }
-
-  .fecha-navegacion {
-    padding: 2rem;
-  }
-
-  .turnos-timeline {
-    gap: 1.5rem;
-  }
-}
+.turno-agenda-item { display: flex; align-items: center; gap: 1rem; padding: 0.8rem; background: white; border-radius: 6px; margin-bottom: 0.5rem; border: 1px solid #eee; }
+.turno-agenda-hora { font-weight: bold; font-size: 1rem; color: var(--primary); min-width: 60px; text-align: center; }
+.turno-agenda-info { flex-grow: 1; display: flex; flex-direction: column; gap: 0.2rem; }
+.turno-agenda-servicio { font-weight: 600; font-size: 0.9rem; }
+.turno-agenda-cliente { font-size: 0.8rem; color: #555; }
+.estado-badge { /* Asegúrate que los estilos del badge funcionen aquí */ }
+      

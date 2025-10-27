@@ -1,73 +1,98 @@
 import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { Link } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
+import { useToast } from '../../context/ToastContext';
 import turnoService from '../../services/turnoService';
-import useModal from '../hooks/useModal'; // Importar hook
-import { formatearFechaCorta, formatearFechaLarga } from '../utils/dateUtils'; // Importar utils
+import useModal from '../../hooks/useModal';
+import useApi from '../../hooks/useApi';
+import { formatearFechaCorta } from '../../utils/dateUtils';
 import './ClienteDashboard.css';
 
 const ClienteDashboard = () => {
   const { usuario } = useAuth();
-  const navigate = useNavigate();
+  const toast = useToast();
   const [proximosTurnos, setProximosTurnos] = useState([]);
+  const [historialTurnos, setHistorialTurnos] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadingHistorial, setLoadingHistorial] = useState(true);
   const [error, setError] = useState('');
-  const [turnoSeleccionado, setTurnoSeleccionado] = useState(null);
   const [turnoCancelarId, setTurnoCancelarId] = useState(null);
 
   // Hooks para modales
-  const { isOpen: detalleModalOpen, openModal: openDetalleModal, closeModal: closeDetalleModal } = useModal();
   const { isOpen: cancelarModalOpen, openModal: openCancelarModal, closeModal: closeCancelarModal } = useModal();
+
+  // Hook de API para cancelar
+  const { loading: loadingCancelar, request: cancelarTurnoApi } = useApi(turnoService.cancelarTurno);
+
+  // Scroll al inicio cuando se monta el componente
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   useEffect(() => {
     cargarProximosTurnos();
+    cargarHistorialTurnos();
   }, []);
 
   const cargarProximosTurnos = async () => {
-    // ... (lógica de carga sin cambios)
     try {
       setLoading(true);
-      const response = await turnoService.obtenerMisTurnos({ pagina: 1, limite: 3, estado: 'reservado' });
-      const turnosOrdenados = (response.datos || response.turnos || []).sort((a, b) => {
-          const fechaHoraA = new Date(`${a.fecha.split('T')[0]}T${a.hora}`);
-          const fechaHoraB = new Date(`${b.fecha.split('T')[0]}T${b.hora}`);
-          return fechaHoraA - fechaHoraB;
-      });
-      setProximosTurnos(turnosOrdenados);
+      const response = await turnoService.obtenerMisTurnos({ pagina: 1, limite: 50, estado: 'reservado' });
+      const ahora = new Date();
+
+      // Filtrar solo turnos futuros y ordenar por fecha/hora
+      const turnosFuturos = (response.datos || response.turnos || [])
+        .map(turno => ({
+          ...turno,
+          fechaHora: new Date(`${turno.fecha.split('T')[0]}T${turno.hora}`)
+        }))
+        .filter(turno => turno.fechaHora >= ahora)
+        .sort((a, b) => a.fechaHora - b.fechaHora)
+        .slice(0, 3); // Tomar solo los 3 más próximos
+
+      setProximosTurnos(turnosFuturos);
     } catch (err) { setError('Error al cargar próximos turnos'); }
     finally { setLoading(false); }
   };
 
+  const cargarHistorialTurnos = async () => {
+    try {
+      setLoadingHistorial(true);
+      const response = await turnoService.obtenerMisTurnos({ pagina: 1, limite: 4, estado: 'completado,cancelado' });
+      const turnosOrdenados = (response.datos || response.turnos || []).sort((a, b) => {
+          const fechaHoraA = new Date(`${a.fecha.split('T')[0]}T${a.hora}`);
+          const fechaHoraB = new Date(`${b.fecha.split('T')[0]}T${b.hora}`);
+          return fechaHoraB - fechaHoraA; // Orden descendente (más reciente primero)
+      });
+      setHistorialTurnos(turnosOrdenados);
+    } catch (err) {
+      console.error('Error al cargar historial:', err);
+    }
+    finally { setLoadingHistorial(false); }
+  };
+
   const abrirModalCancelar = (turnoId) => {
     setTurnoCancelarId(turnoId);
-    openCancelarModal(); // Usar hook
+    openCancelarModal();
   };
 
   const cerrarModalCancelar = () => {
-    closeCancelarModal(); // Usar hook
+    closeCancelarModal();
     setTurnoCancelarId(null);
   };
 
   const handleCancelarTurno = async () => {
     if (!turnoCancelarId) return;
-    try {
-      await turnoService.cancelarTurno(turnoCancelarId);
+
+    const { success, message } = await cancelarTurnoApi(turnoCancelarId);
+
+    if (success) {
+      toast.success('Turno cancelado correctamente', 3000);
       cerrarModalCancelar();
-      closeDetalleModal(); // Cerrar también el de detalles si estaba abierto
       cargarProximosTurnos();
-    } catch (err) {
-      alert('Error al cancelar el turno'); // Podrías usar useToast aquí
+    } else {
+      toast.error(message || 'No se pudo cancelar tu turno. Intenta de nuevo', 4000);
     }
-  };
-
-  const verDetalles = (turno) => {
-    setTurnoSeleccionado(turno);
-    openDetalleModal(); // Usar hook
-  };
-
-  const cerrarModalDetalles = () => {
-    closeDetalleModal(); // Usar hook
-    setTurnoSeleccionado(null);
   };
 
   // Renderizado (usando las funciones de dateUtils y los hooks de modal)
@@ -99,8 +124,14 @@ const ClienteDashboard = () => {
                 {proximosTurnos.map((turno) => (
                   <div key={turno._id} className="turno-card-simple">
                     <div className="turno-hora">{turno.hora}</div>
-                    <div className="turno-fecha">{formatearFechaCorta(turno.fecha)}</div> {/* Usar dateUtils */}
-                    <button onClick={() => verDetalles(turno)} className="btn-ver-detalles">Ver detalles</button>
+                    <div className="turno-fecha">{formatearFechaCorta(turno.fecha)}</div>
+                    <button
+                      onClick={() => abrirModalCancelar(turno._id)}
+                      className="btn-cancelar-turno"
+                      disabled={loadingCancelar}
+                    >
+                      Cancelar Turno
+                    </button>
                   </div>
                 ))}
               </div>
@@ -109,76 +140,69 @@ const ClienteDashboard = () => {
           )}
         </div>
 
-        {/* ... (Info Barbería sin cambios) ... */}
-        <div className="info-barberia">
-          <h3>Información de la Barbería</h3>
-          {/* ... */}
+        {/* Historial de Turnos */}
+        <div className="seccion">
+          <div className="seccion-header">
+            <h2>Historial de Turnos</h2>
+          </div>
+          {loadingHistorial ? (
+            <div className="loading"><div className="spinner"></div><p>Cargando...</p></div>
+          ) : historialTurnos.length === 0 ? (
+            <div className="empty-state">
+              <h3>No tienes turnos en tu historial</h3>
+              <p>Tus turnos completados o cancelados aparecerán aquí</p>
+            </div>
+          ) : (
+            <>
+              <div className="turnos-lista">
+                {historialTurnos.map((turno) => (
+                  <div key={turno._id} className="turno-card-simple">
+                    <div className="turno-hora">{turno.hora}</div>
+                    <div className="turno-fecha">{formatearFechaCorta(turno.fecha)}</div>
+                    <div className={`estado-badge estado-${turno.estado}`}>
+                      {turno.estado === 'completado' ? 'Completado' : 'Cancelado'}
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="seccion-footer">
+                <Link to="/cliente/turnos" className="ver-todos-btn">Ver todos →</Link>
+              </div>
+            </>
+          )}
         </div>
+
       </div>
 
-      {/* Modal Detalles (controlado por useModal) */}
-      {detalleModalOpen && turnoSeleccionado && (
-        <div className="modal-overlay" onClick={cerrarModalDetalles}>
-          <div className="modal-content-turno" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h2>Detalles del Turno</h2>
-              <button className="modal-close" onClick={cerrarModalDetalles}>✕</button>
-            </div>
-            <div className="modal-body">
-              <div className="detalle-grupo"><label>Fecha</label><span>{formatearFechaLarga(turnoSeleccionado.fecha)}</span></div> {/* Usar dateUtils */}
-              <div className="detalle-grupo"><label>Hora</label><span>{turnoSeleccionado.hora}</span></div>
-              {/* ... resto de detalles ... */}
-               <div className="detalle-grupo">
-                <label>Servicio</label>
-                <span>{turnoSeleccionado.servicio?.nombre}</span>
-              </div>
-              <div className="detalle-grupo">
-                <label>Barbero</label>
-                <span>{turnoSeleccionado.barbero ? `${turnoSeleccionado.barbero.nombre} ${turnoSeleccionado.barbero.apellido}` : 'Por asignar'}</span>
-              </div>
-               <div className="detalle-grupo">
-                <label>Precio</label>
-                <span className="precio">${turnoSeleccionado.servicio?.precioBase}</span>
-              </div>
-              <div className="detalle-grupo">
-                <label>Estado</label>
-                 <span className={`estado-badge estado-${turnoSeleccionado.estado}`}>
-                  {turnoSeleccionado.estado === 'reservado' ? 'Reservado' :
-                   turnoSeleccionado.estado === 'completado' ? 'Completado' :
-                   turnoSeleccionado.estado === 'cancelado' ? 'Cancelado' : turnoSeleccionado.estado}
-                </span>
-              </div>
-            </div>
-            <div className="modal-footer">
-              {turnoSeleccionado.estado === 'reservado' && (
-                <>
-                  <button onClick={() => { cerrarModalDetalles(); navigate(`/reservar?editar=${turnoSeleccionado._id}`); }} className="btn btn-outline btn-sm">Editar</button>
-                  <button onClick={() => abrirModalCancelar(turnoSeleccionado._id)} className="btn btn-danger btn-sm">Cancelar</button>
-                </>
-              )}
-               <button onClick={cerrarModalDetalles} className="btn btn-secondary btn-sm">Cerrar</button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Modal Cancelar (controlado por useModal) */}
+      {/* Modal Cancelar Turno */}
       {cancelarModalOpen && (
         <div className="modal-overlay" onClick={cerrarModalCancelar}>
-           <div className="modal-content-confirmar" onClick={(e) => e.stopPropagation()}>
-             <div className="modal-header">
-               <h2>Confirmar Cancelación</h2>
-               <button className="modal-close" onClick={cerrarModalCancelar}>✕</button>
-             </div>
-             <div className="modal-body">
-               <p>¿Seguro deseas cancelar este turno?</p>
-               <p className="advertencia">Esta acción no se puede deshacer.</p>
-             </div>
-             <div className="modal-footer">
-               <button onClick={cerrarModalCancelar} className="btn btn-outline btn-sm">No, mantener</button>
-               <button onClick={handleCancelarTurno} className="btn btn-danger btn-sm">Sí, cancelar</button>
-             </div>
-           </div>
+          <div className="modal-content-confirmar" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Confirmar Cancelación</h2>
+              <button className="modal-close" onClick={cerrarModalCancelar}>✕</button>
+            </div>
+            <div className="modal-body">
+              <p>¿Estás seguro de que deseas cancelar este turno?</p>
+              <p className="advertencia">Esta acción no se puede deshacer.</p>
+            </div>
+            <div className="modal-footer">
+              <button
+                onClick={cerrarModalCancelar}
+                className="btn btn-outline btn-sm"
+                disabled={loadingCancelar}
+              >
+                No, mantener
+              </button>
+              <button
+                onClick={handleCancelarTurno}
+                className="btn btn-danger btn-sm"
+                disabled={loadingCancelar}
+              >
+                {loadingCancelar ? 'Cancelando...' : 'Sí, cancelar'}
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

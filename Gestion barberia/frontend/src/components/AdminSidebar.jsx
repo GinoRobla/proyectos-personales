@@ -14,7 +14,6 @@ const AdminSidebar = () => {
 
   const menuItems = [
     { path: '/admin', label: 'Inicio' },
-    { path: '/admin/turnos-sin-asignar', label: 'Turnos sin asignar' },
     { path: '/admin/barberos', label: 'Barberos' },
     { path: '/admin/servicios', label: 'Servicios' },
     { path: '/admin/estadisticas', label: 'Estadísticas' },

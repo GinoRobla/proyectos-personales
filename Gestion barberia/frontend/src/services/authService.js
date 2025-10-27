@@ -61,3 +61,5 @@ export const authService = {
     return respuesta.data;
   },
 };
+
+export default authService;

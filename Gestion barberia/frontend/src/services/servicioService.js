@@ -8,11 +8,13 @@ import api from './api';
 export const servicioService = {
 
   // Obtiene la lista de servicios (por defecto, solo los activos)
-  obtenerServicios: async (soloActivos = true) => {
-    // Llama a: GET /servicios?activo=true (o false)
-    const respuesta = await api.get('/servicios', {
-      params: { activo: soloActivos },
-    });
+  obtenerServicios: async (soloActivos) => {
+    // Llama a: GET /servicios?activo=true (o sin filtro si no se especifica)
+    const params = {};
+    if (soloActivos !== undefined) {
+      params.activo = soloActivos;
+    }
+    const respuesta = await api.get('/servicios', { params });
     return respuesta.data;
   },
 
@@ -44,3 +46,5 @@ export const servicioService = {
     return respuesta.data;
   },
 };
+
+export default servicioService;

@@ -44,15 +44,23 @@ const RegisterPage = () => {
     e.preventDefault();
     setLoading(true);
 
-    // Validaciones
+    // Validaciones del frontend
     if (formData.password !== formData.confirmPassword) {
-      toast.error('Las contraseñas no coinciden');
+      toast.error('Las contraseñas no coinciden. Por favor verifica', 4000);
       setLoading(false);
       return;
     }
 
     if (formData.password.length < 6) {
-      toast.error('La contraseña debe tener al menos 6 caracteres');
+      toast.error('La contraseña debe tener al menos 6 caracteres', 4000);
+      setLoading(false);
+      return;
+    }
+
+    // Validación de email básica
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      toast.error('Por favor ingresa un email válido', 4000);
       setLoading(false);
       return;
     }
@@ -67,14 +75,27 @@ const RegisterPage = () => {
       });
 
       if (result.success) {
-        toast.success('¡Cuenta creada! Redirigiendo...');
+        toast.success('¡Cuenta creada exitosamente! Bienvenido a Barbería GR', 3000);
         // La redirección se maneja en el useEffect
       } else {
-        toast.error(result.message || 'Error al registrarse');
+        // Los mensajes específicos vienen del backend mejorado
+        toast.error(result.message || 'Error al registrarse. Intenta de nuevo', 4000);
         setLoading(false); // Detener carga solo si hubo error
       }
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Error de conexión al registrarse');
+      // Manejo de errores específicos
+      let mensajeError = 'Error de conexión al registrarse';
+
+      if (err.response?.data?.message) {
+        // Error del backend (email duplicado, validación, etc.)
+        mensajeError = err.response.data.message;
+      } else if (err.message) {
+        mensajeError = err.message;
+      } else if (!navigator.onLine) {
+        mensajeError = 'No tienes conexión a internet. Verifica tu conexión';
+      }
+
+      toast.error(mensajeError, 4000);
       setLoading(false);
     }
     // No es necesario setLoading(false) aquí si hay éxito, porque la redirección ocurrirá

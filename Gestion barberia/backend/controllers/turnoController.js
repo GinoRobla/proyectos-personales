@@ -210,23 +210,7 @@ export const obtenerDiasDisponibles = (req, res) => {
     }
 };
 
-export const obtenerDisponibilidadBarberos = async (req, res) => {
-  try {
-    const { turnos } = req.query;
-    if (!turnos) {
-      return res.status(400).json({ success: false, message: 'Se requiere una lista de IDs de turnos' });
-    }
-    
-    const idsTurnos = turnos.split(',');
-    
-    const disponibilidad = await turnoService.obtenerDisponibilidadParaTurnos(idsTurnos);
-    
-    res.status(200).json({ success: true, data: disponibilidad });
-  } catch (error) {
-    console.error('Error al obtener disponibilidad de barberos:', error);
-    res.status(500).json({ success: false, message: error.message });
-  }
-};
+// ELIMINADO: obtenerDisponibilidadBarberos - Ya no se usa porque los barberos se asignan automáticamente
 
 export default {
   obtenerTurnos,
@@ -237,5 +221,4 @@ export default {
   cancelarTurno,
   obtenerHorariosDisponibles,
   obtenerDiasDisponibles,
-  obtenerDisponibilidadBarberos,
 };

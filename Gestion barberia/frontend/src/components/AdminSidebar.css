@@ -1,11 +1,11 @@
-/* Admin Sidebar - Oculto en móvil, visible solo en 1280px+ */
+/* Admin Sidebar - Oculto en móvil, visible desde 1024px+ */
 
 .admin-sidebar {
   display: none;
 }
 
-/* Laptop y Desktop desde 1280px */
-@media (min-width: 1280px) {
+/* Laptop y Desktop desde 1024px */
+@media (min-width: 1024px) {
   .admin-sidebar {
     display: flex;
     flex-direction: column;

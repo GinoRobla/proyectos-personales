@@ -55,3 +55,5 @@ export const estadisticasService = {
     return respuesta.data;
   },
 };
+
+export default estadisticasService;

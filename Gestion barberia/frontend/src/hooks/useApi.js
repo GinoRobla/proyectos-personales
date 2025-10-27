@@ -37,7 +37,12 @@ export const useApi = (apiCall) => {
       const response = await apiCall(...args);
 
       // --- NORMALIZACIÓN DE RESPUESTA ---
-      // Busca datos en response.data, response.datos, o la respuesta misma.
+      // Si la respuesta tiene paginación, devolver TODO (datos + paginación)
+      if (response.paginacion) {
+        return { success: true, data: response };
+      }
+
+      // Si no tiene paginación, busca datos en response.data, response.datos, o la respuesta misma.
       const data = response.data || response.datos || response.turnos || response;
 
       return { success: true, data: data };

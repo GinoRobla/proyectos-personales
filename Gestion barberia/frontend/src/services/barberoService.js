@@ -61,5 +61,4 @@ export const barberoService = {
   },
 };
 
-// Exporta el servicio para que pueda ser usado en otros archivos
 export default barberoService;

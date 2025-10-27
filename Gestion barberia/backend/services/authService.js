@@ -26,12 +26,22 @@ export const registrar = async (datosUsuario) => {
   const { nombre, apellido, email, password, telefono, rol = 'cliente', foto } = datosUsuario;
 
   if (!nombre || !apellido || !email || !password || !telefono) {
-    throw new Error('Faltan campos obligatorios');
+    throw new Error('Por favor completa todos los campos: nombre, apellido, email, teléfono y contraseña');
+  }
+
+  // Validar formato de email
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    throw new Error('El formato del email no es válido');
+  }
+
+  // Validar longitud mínima de contraseña
+  if (password.length < 6) {
+    throw new Error('La contraseña debe tener al menos 6 caracteres');
   }
 
   const usuarioExistente = await Usuario.findOne({ email });
   if (usuarioExistente) {
-    throw new Error('El email ya está registrado');
+    throw new Error('Este email ya está registrado. Intenta con otro o inicia sesión');
   }
 
   const nuevoUsuario = new Usuario({
@@ -54,22 +64,37 @@ export const registrar = async (datosUsuario) => {
 
 // Autentica a un usuario y devuelve sus datos con un token JWT.
 export const login = async (email, password) => {
+  console.log('[LOGIN] Intento de login con email:', email);
+
   if (!email || !password) {
+    console.log('[LOGIN] Error: Email o contraseña vacíos');
     throw new Error('Email y contraseña son obligatorios');
   }
 
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    console.log('[LOGIN] Error: Formato de email inválido');
     throw new Error('Formato de email inválido');
   }
 
   const usuario = await Usuario.findOne({ email }).select('+password');
+  console.log('[LOGIN] Usuario encontrado:', usuario ? `ID: ${usuario._id}, Rol: ${usuario.rol}, Activo: ${usuario.activo}` : 'No encontrado');
 
-  if (!usuario || !(await usuario.compararPassword(password))) {
-    throw new Error('Credenciales incorrectas');
+  if (!usuario) {
+    console.log('[LOGIN] Error: Usuario no encontrado en la base de datos');
+    throw new Error('El email ingresado no está registrado. Verifica o crea una cuenta');
+  }
+
+  const passwordValida = await usuario.compararPassword(password);
+  console.log('[LOGIN] Contraseña válida:', passwordValida);
+
+  if (!passwordValida) {
+    console.log('[LOGIN] Error: Contraseña incorrecta');
+    throw new Error('Contraseña incorrecta. Por favor verifica e intenta de nuevo');
   }
 
   if (!usuario.activo) {
-    throw new Error('Usuario desactivado. Contacte al administrador');
+    console.log('[LOGIN] Error: Usuario desactivado');
+    throw new Error('Tu cuenta está desactivada. Contacta al administrador');
   }
 
   usuario.ultimoLogin = new Date();
@@ -78,6 +103,7 @@ export const login = async (email, password) => {
   const token = generarToken(usuario._id, usuario.rol);
   const usuarioInfo = usuario.toJSON();
 
+  console.log('[LOGIN] Login exitoso para usuario:', usuario.email, 'Rol:', usuario.rol);
   return { usuario: usuarioInfo, token };
 };
 
@@ -127,13 +153,21 @@ export const actualizarPerfil = async (usuarioId, datos) => {
 // Cambia la contraseña de un usuario de forma segura.
 export const cambiarPassword = async (usuarioId, passActual, passNueva) => {
   if (!passActual || !passNueva) {
-    throw new Error('Las contraseñas actual y nueva son obligatorias');
+    throw new Error('Debes ingresar la contraseña actual y la nueva contraseña');
+  }
+
+  if (passNueva.length < 6) {
+    throw new Error('La nueva contraseña debe tener al menos 6 caracteres');
   }
 
   const usuario = await Usuario.findById(usuarioId).select('+password');
 
-  if (!usuario || !(await usuario.compararPassword(passActual))) {
-    throw new Error('La contraseña actual es incorrecta');
+  if (!usuario) {
+    throw new Error('Usuario no encontrado');
+  }
+
+  if (!(await usuario.compararPassword(passActual))) {
+    throw new Error('La contraseña actual es incorrecta. Verifica e intenta de nuevo');
   }
 
   usuario.password = passNueva;

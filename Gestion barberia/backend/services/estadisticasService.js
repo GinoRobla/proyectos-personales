@@ -630,9 +630,10 @@ export const obtenerEstadisticasBarbero = async (barberoId, filtros = {}) => {
     }
 
     // 2. Obtener rango del mes actual (usando el helper)
+    const rangoMes = _obtenerQueryRangoMes(mes, anio);
     const queryMes = {
       barbero: barberoId, // Clave: filtrar siempre por el ID del barbero
-      ..._obtenerQueryRangoMes(mes, anio).fecha, // Añade $gte y $lte
+      ...rangoMes, // Añade fecha: { $gte, $lte }
     };
 
     // 3. Calcular Indicadores del Mes

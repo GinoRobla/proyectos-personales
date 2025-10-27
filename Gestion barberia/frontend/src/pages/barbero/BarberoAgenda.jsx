@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
+import { useToast } from '../../context/ToastContext';
 import turnoService from '../../services/turnoService';
-import { formatearFechaLarga, formatearHora, obtenerFechaLocalISO } from '../utils/dateUtils'; // Importar
+import { formatearFechaLarga, formatearHora, obtenerFechaLocalISO } from '../../utils/dateUtils'; // Importar
 import './BarberoAgenda.css';
 
 const BarberoAgenda = () => {
+  const toast = useToast();
   const [turnos, setTurnos] = useState([]);
   const [fechaSeleccionada, setFechaSeleccionada] = useState(obtenerFechaLocalISO()); // Usar util
   const [loading, setLoading] = useState(true);
@@ -11,18 +13,28 @@ const BarberoAgenda = () => {
 
   useEffect(() => {
     cargarTurnos();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fechaSeleccionada]);
 
   const cargarTurnos = async () => {
     try {
       setLoading(true);
       setError('');
+      // NO filtrar por estado - queremos mostrar TODOS (reservado, completado, cancelado)
       const params = { fecha: fechaSeleccionada };
       const response = await turnoService.obtenerMisTurnos(params);
-      // Ordenar por hora
-      const turnosOrdenados = (response.datos || []).sort((a, b) => a.hora.localeCompare(b.hora));
+      console.log('[DEBUG BarberoAgenda] Response:', response);
+      // Ordenar por hora - manejar ambas estructuras de respuesta
+      const turnosArray = response.datos || response.turnos || [];
+      const turnosOrdenados = turnosArray.sort((a, b) => a.hora.localeCompare(b.hora));
+      console.log('[DEBUG BarberoAgenda] Turnos ordenados:', turnosOrdenados);
       setTurnos(turnosOrdenados);
-    } catch (err) { setError('Error al cargar turnos'); }
+    } catch (err) {
+      const mensajeError = 'No se pudieron cargar los turnos. Intenta de nuevo';
+      setError(mensajeError);
+      toast.error(mensajeError, 4000);
+      console.error('[DEBUG BarberoAgenda] Error:', err);
+    }
     finally { setLoading(false); }
   };
 
@@ -31,16 +43,30 @@ const BarberoAgenda = () => {
   // --- NAVEGACIÓN ENTRE DÍAS ---
   const cambiarDia = (offset) => {
     const [year, month, day] = fechaSeleccionada.split('-').map(Number);
-    // Usar UTC para evitar problemas de zona horaria al sumar/restar días
-    const fecha = new Date(Date.UTC(year, month - 1, day));
-    fecha.setUTCDate(fecha.getUTCDate() + offset);
-    setFechaSeleccionada(obtenerFechaLocalISO(fecha)); // Usar util
+    // Crear fecha en zona local para evitar problemas de conversión UTC
+    const fecha = new Date(year, month - 1, day);
+    fecha.setDate(fecha.getDate() + offset);
+    const nuevaFecha = obtenerFechaLocalISO(fecha);
+    console.log('[DEBUG cambiarDia] Fecha actual:', fechaSeleccionada, 'Offset:', offset, 'Nueva fecha:', nuevaFecha);
+    setFechaSeleccionada(nuevaFecha);
   };
   const handleDiaAnterior = () => cambiarDia(-1);
-  const handleDiaSiguiente = () => cambiarDia(1);
+  const handleDiaSiguiente = () => {
+    console.log('[DEBUG handleDiaSiguiente] Intentando ir al día siguiente desde:', fechaSeleccionada);
+    cambiarDia(1);
+  };
   const handleHoy = () => setFechaSeleccionada(obtenerFechaLocalISO()); // Usar util
 
   const esHoy = () => fechaSeleccionada === obtenerFechaLocalISO(); // Usar util
+
+  const getEstadoTexto = (estado) => {
+    switch (estado) {
+      case 'reservado': return 'Reservado';
+      case 'completado': return 'Completado';
+      case 'cancelado': return 'Cancelado';
+      default: return estado;
+    }
+  };
 
   // Renderizado (usando dateUtils)
   return (
@@ -74,21 +100,13 @@ const BarberoAgenda = () => {
                     <div className="turno-agenda-servicio">{turno.servicio?.nombre}</div>
                     <div className="turno-agenda-cliente">{turno.cliente?.nombre} {turno.cliente?.apellido} ({turno.cliente?.telefono})</div>
                   </div>
-                   <span className={`estado-badge estado-${turno.estado}`}>{turno.estado}</span>
+                   <span className={`estado-badge estado-${turno.estado}`}>{getEstadoTexto(turno.estado)}</span>
                </div>
              ))}
            </div>
          )}
       </div>
-      {/* Añadir estilos para .turno-agenda-item y sus hijos */}
-      <style>{`
-        .turno-agenda-item { display: flex; align-items: center; gap: 1rem; padding: 0.8rem; background: white; border-radius: 6px; margin-bottom: 0.5rem; border: 1px solid #eee; }
-        .turno-agenda-hora { font-weight: bold; font-size: 1rem; color: var(--primary); min-width: 60px; text-align: center; }
-        .turno-agenda-info { flex-grow: 1; display: flex; flex-direction: column; gap: 0.2rem; }
-        .turno-agenda-servicio { font-weight: 600; font-size: 0.9rem; }
-        .turno-agenda-cliente { font-size: 0.8rem; color: #555; }
-        .estado-badge { /* Asegúrate que los estilos del badge funcionen aquí */ }
-      `}</style>
+      
     </div>
   );
 };

@@ -1,46 +1,142 @@
-import { useState, useEffect } from 'react';
-import { useAuth } from '../../context/AuthContext';
+// frontend/src/pages/barbero/BarberoEstadisticas.jsx
+
+import { useState, useEffect, useCallback } from 'react';
+// import { useAuth } from '../../context/AuthContext'; // No se usa directamente aquí
 import { useToast } from '../../context/ToastContext';
 import estadisticasService from '../../services/estadisticasService';
-import barberoService from '../../services/barberoService';
-import { formatearMoneda } from '../utils/formatters'; // Importar formatter
-import './BarberoEstadisticas.css';
+import barberoService from '../../services/barberoService'; // Necesario para actualizar objetivo
+import { formatearMoneda } from '../../utils/formatters'; // Asumiendo formatters.js existe
+import useApi from '../../hooks/useApi'; // Importar useApi
+import './BarberoEstadisticas.css'; // Importar CSS
 
 const BarberoEstadisticas = () => {
-    // ... (estados y lógica sin cambios significativos)
-     const { usuario } = useAuth();
-     const toast = useToast();
-     const [loading, setLoading] = useState(true);
-     const [estadisticas, setEstadisticas] = useState(null);
-     const [mesSeleccionado, setMesSeleccionado] = useState(new Date().getMonth() + 1);
-     const [anioSeleccionado, setAnioSeleccionado] = useState(new Date().getFullYear());
-     const [editandoObjetivo, setEditandoObjetivo] = useState(false);
-     const [nuevoObjetivo, setNuevoObjetivo] = useState(0);
-     const [guardandoObjetivo, setGuardandoObjetivo] = useState(false);
+    const toast = useToast();
+    const [estadisticas, setEstadisticas] = useState(null);
+    const [mesSeleccionado, setMesSeleccionado] = useState(new Date().getMonth() + 1);
+    const [anioSeleccionado, setAnioSeleccionado] = useState(new Date().getFullYear());
+    const [editandoObjetivo, setEditandoObjetivo] = useState(false);
+    const [nuevoObjetivo, setNuevoObjetivo] = useState(0);
 
-    useEffect(() => { cargarEstadisticas(); }, [mesSeleccionado, anioSeleccionado]);
+    // Hooks de API
+    const { loading: loadingStats, request: cargarStatsApi } = useApi(estadisticasService.obtenerMisEstadisticas);
+    // Asumiendo que actualizarBarbero puede actualizar el objetivo
+    const { loading: guardandoObjetivo, request: guardarObjetivoApi } = useApi(barberoService.actualizarBarbero);
 
-    const cargarEstadisticas = async () => { /* ... (sin cambios) */ };
-    const handleGuardarObjetivo = async () => { /* ... (sin cambios) */ };
+    const isLoading = loadingStats; // Solo carga inicial
 
-    const meses = [ /* ... (sin cambios) */ ];
+    // Cargar estadísticas
+    const cargarEstadisticas = useCallback(async () => {
+        const { success, data } = await cargarStatsApi(mesSeleccionado, anioSeleccionado);
+        if (success) {
+            setEstadisticas(data);
+            setNuevoObjetivo(data?.barbero?.objetivoMensual || 0); // Inicializar input con valor actual
+        } else {
+            setEstadisticas(null); // Limpiar si hay error
+        }
+        // Error manejado por useApi
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [mesSeleccionado, anioSeleccionado]);
 
-    // ... (manejo de loading/error sin cambios)
+    useEffect(() => {
+        cargarEstadisticas();
+    }, [cargarEstadisticas]);
 
-     if (loading) return <div>Cargando...</div>;
-     if (!estadisticas) return <div>Error al cargar.</div>;
+    // Guardar objetivo
+    const handleGuardarObjetivo = async () => {
+        if (!estadisticas?.barbero?.id) return; // Necesitamos el ID del barbero
 
-    const { indicadoresPrincipales, serviciosMasRealizados } = estadisticas;
+        const objetivoNumerico = parseFloat(nuevoObjetivo);
+        if (isNaN(objetivoNumerico) || objetivoNumerico < 0) {
+            toast.error('Ingresa un objetivo válido (número mayor o igual a 0)');
+            return;
+        }
 
-    // Renderizado (usando formatearMoneda importado)
+        // Llamada a la API para actualizar el barbero con el nuevo objetivo
+        const { success } = await guardarObjetivoApi(estadisticas.barbero.id, {
+            objetivoMensual: objetivoNumerico
+        });
+
+        if (success) {
+            toast.success('Objetivo mensual actualizado');
+            setEditandoObjetivo(false);
+            // Recargar estadísticas para reflejar el cambio si es necesario
+            // o actualizar localmente si la API no devuelve el barbero actualizado
+            setEstadisticas(prev => ({
+                ...prev,
+                barbero: { ...prev.barbero, objetivoMensual: objetivoNumerico },
+                indicadoresPrincipales: {
+                    ...prev.indicadoresPrincipales,
+                    objetivoMensual: objetivoNumerico,
+                    // Recalcular porcentaje y diferencia si es necesario aquí
+                     porcentajeObjetivo: objetivoNumerico > 0 ? Math.round((prev.indicadoresPrincipales.ingresosMensuales / objetivoNumerico) * 100) : 0,
+                     diferenciaMeta: prev.indicadoresPrincipales.ingresosMensuales - objetivoNumerico,
+                }
+            }));
+        }
+        // Error manejado por useApi
+    };
+
+    const meses = [
+        'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+        'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+    ];
+
+    // Renderizado Condicional
+    if (isLoading) {
+        return (
+            <div className="barbero-estadisticas-page">
+                <div className="container" style={{ textAlign: 'center', padding: '2rem' }}> {/* Estilo temporal */}
+                    Cargando estadísticas...
+                    {/* Podrías poner un spinner */}
+                </div>
+            </div>
+        );
+    }
+
+    if (!estadisticas) {
+        return (
+            <div className="barbero-estadisticas-page">
+                <div className="container" style={{ textAlign: 'center', padding: '2rem' }}> {/* Estilo temporal */}
+                    Error al cargar estadísticas. Intenta de nuevo.
+                </div>
+            </div>
+        );
+    }
+
+
+    const { indicadoresPrincipales, serviciosMasRealizados, evolucionIngresos } = estadisticas;
+
+    // Debug: ver qué datos llegan
+    console.log('Estadísticas completas:', JSON.stringify(estadisticas, null, 2));
+    console.log('Evolución por día:', evolucionIngresos?.porDia);
+    console.log('Evolución por semana:', evolucionIngresos?.porSemana);
+    console.log('¿Tiene datos por día?', evolucionIngresos?.porDia?.length > 0);
+    console.log('¿Tiene datos por semana?', evolucionIngresos?.porSemana?.length > 0);
+
     return (
-        <div className="barbero-estadisticas-page"> {/* Clase CSS específica */}
+        <div className="barbero-estadisticas-page">
             <div className="container">
-                {/* ... (Header y selector de mes/año sin cambios) ... */}
+                {/* Header y selector de mes/año */}
                  <div className="page-header">
                    <h1>Mis Estadísticas</h1>
                    {/* Selector Mes/Año */}
-                   <div> {/* ... */} </div>
+                   <div className="periodo-selector">
+                        <select
+                        value={mesSeleccionado}
+                        onChange={(e) => setMesSeleccionado(parseInt(e.target.value))}
+                        disabled={isLoading || guardandoObjetivo}
+                        >
+                        {meses.map((mes, index) => (
+                            <option key={index} value={index + 1}>{mes}</option>
+                        ))}
+                        </select>
+                        <input
+                        type="number"
+                        value={anioSeleccionado}
+                        onChange={(e) => setAnioSeleccionado(parseInt(e.target.value))}
+                        disabled={isLoading || guardandoObjetivo}
+                        />
+                   </div>
                  </div>
 
                 {/* Indicadores */}
@@ -49,8 +145,7 @@ const BarberoEstadisticas = () => {
                         <h3>Ingresos Mes</h3>
                         <div className="stat-value primary">{formatearMoneda(indicadoresPrincipales.ingresosMensuales)}</div>
                     </div>
-                    {/* ... otros indicadores ... */}
-                    <div className="stat-card">
+                     <div className="stat-card">
                         <h3>Ingresos Semana</h3>
                         <div className="stat-value secondary">{formatearMoneda(indicadoresPrincipales.ingresosSemanales)}</div>
                     </div>
@@ -62,33 +157,122 @@ const BarberoEstadisticas = () => {
 
                 {/* Objetivo Mensual */}
                 <div className="objetivo-card">
-                    {/* ... (lógica y UI de objetivo sin cambios, ya usa formatearMoneda) ... */}
                      <div className="objetivo-header">
                         <h3>Objetivo Mensual</h3>
-                        {!editandoObjetivo && <button onClick={() => setEditandoObjetivo(true)}>Fijar</button>}
+                        {!editandoObjetivo ? (
+                            <button onClick={() => setEditandoObjetivo(true)} disabled={isLoading}>Fijar</button>
+                         ) : (
+                             <button onClick={() => setEditandoObjetivo(false)} className="cancelar" disabled={guardandoObjetivo}>Cancelar</button>
+                         )}
                      </div>
-                     {editandoObjetivo /* ... Formulario ... */}
-                     <div className="objetivo-progreso">
-                        {/* ... Barra de progreso ... */}
-                         <div className="progreso-texto">
-                           <span>{formatearMoneda(indicadoresPrincipales.ingresosMensuales)} / {formatearMoneda(indicadoresPrincipales.objetivoMensual)}</span>
-                           <span>{indicadoresPrincipales.porcentajeObjetivo}%</span>
+                     {editandoObjetivo ? (
+                        <div className="objetivo-editar-container">
+                             <input
+                                type="number"
+                                value={nuevoObjetivo}
+                                onChange={(e) => setNuevoObjetivo(e.target.value)}
+                                className="objetivo-input"
+                                placeholder="Ej: 50000"
+                                min="0"
+                                disabled={guardandoObjetivo}
+                             />
+                             <div className="objetivo-botones">
+                                <button onClick={handleGuardarObjetivo} className="btn btn-sm btn-guardar-objetivo" disabled={guardandoObjetivo}>
+                                    {guardandoObjetivo ? 'Guardando...' : 'Guardar'}
+                                </button>
+                             </div>
+                        </div>
+                     ) : (
+                         <div className="objetivo-progreso">
+                             <div className="progreso-texto">
+                               <span>{formatearMoneda(indicadoresPrincipales.ingresosMensuales)} / {formatearMoneda(indicadoresPrincipales.objetivoMensual)}</span>
+                               <span>{indicadoresPrincipales.porcentajeObjetivo}%</span>
+                             </div>
+                             <div className="progreso-barra">
+                                {/* Asegura que el width no exceda 100% */}
+                                <div style={{ width: `${Math.min(indicadoresPrincipales.porcentajeObjetivo, 100)}%` }}></div>
+                             </div>
+                             {indicadoresPrincipales.objetivoMensual > 0 && (
+                                <p className={`diferencia ${indicadoresPrincipales.diferenciaMeta >= 0 ? 'positiva' : 'negativa'}`}>
+                                    {indicadoresPrincipales.diferenciaMeta >= 0 ? '+' : ''}{formatearMoneda(indicadoresPrincipales.diferenciaMeta)}
+                                </p>
+                             )}
                          </div>
-                         <div className="progreso-barra">
-                            <div style={{ width: `${Math.min(indicadoresPrincipales.porcentajeObjetivo, 100)}%` }}></div>
-                         </div>
-                         <p className={`diferencia ${indicadoresPrincipales.diferenciaMeta >= 0 ? 'positiva' : 'negativa'}`}>
-                            {indicadoresPrincipales.diferenciaMeta >= 0 ? `+${formatearMoneda(indicadoresPrincipales.diferenciaMeta)}` : `-${formatearMoneda(Math.abs(indicadoresPrincipales.diferenciaMeta))}`}
-                         </p>
-                     </div>
+                     )}
+                </div>
+
+                {/* Evolución de Ingresos por Día */}
+                <div className="evolucion-card">
+                  <h3>Evolución de Ingresos Diarios</h3>
+                  {evolucionIngresos?.porDia?.length > 0 ? (
+                    <div className="evolucion-lista">
+                      {evolucionIngresos.porDia.map((item, index) => (
+                        <div key={index} className="evolucion-item">
+                          <div className="evolucion-fecha">Día {item.dia}</div>
+                          <div className="evolucion-barra-container">
+                            <div
+                              className="evolucion-barra"
+                              style={{
+                                width: `${Math.min((item.ingresos / Math.max(...evolucionIngresos.porDia.map(d => d.ingresos))) * 100, 100)}%`
+                              }}
+                            ></div>
+                          </div>
+                          <div className="evolucion-valor">
+                            {formatearMoneda(item.ingresos)}
+                            <span className="evolucion-turnos">({item.turnos} turnos)</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="empty-state-small">
+                      <p>No hay ingresos registrados para este mes</p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Evolución de Ingresos por Semana */}
+                <div className="evolucion-card">
+                  <h3>Evolución de Ingresos Semanales (Últimas 4 semanas)</h3>
+                  {evolucionIngresos?.porSemana?.length > 0 ? (
+                    <div className="evolucion-lista">
+                      {evolucionIngresos.porSemana.map((item, index) => (
+                        <div key={index} className="evolucion-item">
+                          <div className="evolucion-fecha">Semana {item.semana}</div>
+                          <div className="evolucion-barra-container">
+                            <div
+                              className="evolucion-barra"
+                              style={{
+                                width: `${Math.min((item.ingresos / Math.max(...evolucionIngresos.porSemana.map(s => s.ingresos))) * 100, 100)}%`
+                              }}
+                            ></div>
+                          </div>
+                          <div className="evolucion-valor">
+                            {formatearMoneda(item.ingresos)}
+                            <span className="evolucion-turnos">({item.turnos} turnos)</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="empty-state-small">
+                      <p>No hay ingresos registrados en las últimas 4 semanas</p>
+                    </div>
+                  )}
                 </div>
 
                 {/* Servicios Más Realizados */}
-                {serviciosMasRealizados?.length > 0 && (
-                  <div className="servicios-tabla-card">
-                    <h3>Servicios Más Realizados</h3>
+                <div className="servicios-tabla-card">
+                  <h3>Servicios Más Realizados</h3>
+                  {serviciosMasRealizados?.length > 0 ? (
                     <table>
-                      <thead><tr><th>Servicio</th><th>Cantidad</th><th>Ingresos</th></tr></thead>
+                      <thead>
+                        <tr>
+                            <th>Servicio</th>
+                            <th>Cantidad</th>
+                            <th>Ingresos</th>
+                        </tr>
+                      </thead>
                       <tbody>
                         {serviciosMasRealizados.map((item, index) => (
                           <tr key={index}>
@@ -99,37 +283,13 @@ const BarberoEstadisticas = () => {
                         ))}
                       </tbody>
                     </table>
-                  </div>
-                )}
+                  ) : (
+                    <div className="empty-state-small">
+                      <p>No hay servicios realizados en este período</p>
+                    </div>
+                  )}
+                </div>
             </div>
-             {/* Añadir estilos necesarios en BarberoEstadisticas.css */}
-             <style>{`
-                .barbero-estadisticas-page { /*...*/ }
-                .page-header { /*...*/ }
-                .stats-grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); margin-bottom: 2rem; }
-                .stat-card { background: white; padding: 1rem; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-                .stat-card h3 { font-size: 0.8rem; color: #555; margin-bottom: 0.5rem; text-transform: uppercase; }
-                .stat-value { font-size: 1.8rem; font-weight: bold; }
-                .stat-value.primary { color: #28a745; }
-                .stat-value.secondary { color: #17a2b8; }
-                .stat-value.info { color: #007bff; }
-                .objetivo-card { background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 2rem; }
-                .objetivo-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
-                .objetivo-header h3 { font-size: 1.1rem; margin: 0; }
-                .objetivo-progreso { /*...*/ }
-                .progreso-texto { display: flex; justify-content: space-between; font-size: 0.9rem; margin-bottom: 0.5rem; }
-                .progreso-barra { height: 10px; background: #e9ecef; border-radius: 5px; overflow: hidden; }
-                .progreso-barra div { height: 100%; background: #28a745; }
-                .diferencia { text-align: right; margin-top: 0.5rem; font-size: 0.9rem; }
-                .diferencia.positiva { color: #28a745; }
-                .diferencia.negativa { color: #dc3545; }
-                .servicios-tabla-card { background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-                .servicios-tabla-card h3 { font-size: 1.1rem; margin-bottom: 1rem; }
-                .servicios-tabla-card table { width: 100%; border-collapse: collapse; }
-                .servicios-tabla-card th, .servicios-tabla-card td { padding: 0.75rem; text-align: left; border-bottom: 1px solid #eee; font-size: 0.9rem; }
-                .servicios-tabla-card th { font-weight: bold; color: #555; }
-                .servicios-tabla-card td:last-child, .servicios-tabla-card th:last-child { text-align: right; }
-             `}</style>
         </div>
     );
 };

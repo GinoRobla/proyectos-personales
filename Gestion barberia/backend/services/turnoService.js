@@ -17,11 +17,15 @@ import Servicio from '../models/Servicio.js';
 const _crearRangoFechaDia = (fechaString) => {
   // Parsea el string (ej: "2025-10-20")
   const [año, mes, dia] = fechaString.split('T')[0].split('-').map(Number);
-  
+
   // Crea el inicio del día en UTC (ej: 20-10-2025 00:00:00Z)
   const inicioDia = new Date(Date.UTC(año, mes - 1, dia, 0, 0, 0, 0));
   // Crea el fin del día en UTC (ej: 20-10-2025 23:59:59Z)
   const finDia = new Date(Date.UTC(año, mes - 1, dia, 23, 59, 59, 999));
+
+  console.log('[DEBUG _crearRangoFechaDia] Input:', fechaString);
+  console.log('[DEBUG _crearRangoFechaDia] Parsed:', { año, mes, dia });
+  console.log('[DEBUG _crearRangoFechaDia] Range:', { inicioDia, finDia });
 
   // Devuelve el objeto de filtro para Mongoose
   return { $gte: inicioDia, $lte: finDia };
@@ -68,17 +72,46 @@ export const obtenerTodos = async (filtros = {}, paginacion = {}) => {
       };
     }
 
+    console.log('[DEBUG obtenerTodos] Filtros recibidos:', filtros);
+    console.log('[DEBUG obtenerTodos] Query construido:', JSON.stringify(query, null, 2));
+
     // 2. Contar total de documentos (para la paginación)
     const totalTurnos = await Turno.countDocuments(query);
 
-    // 3. Obtener turnos con paginación y datos relacionados (populate)
-    const turnos = await Turno.find(query)
+    // 3. Obtener TODOS los turnos sin paginación primero (para ordenar correctamente)
+    const todosTurnos = await Turno.find(query)
       .populate('cliente') // Trae los datos del Cliente
       .populate('barbero') // Trae los datos del Barbero
-      .populate('servicio') // Trae los datos del Servicio
-      .sort({ fecha: -1, hora: -1 }) // Ordenar por más recientes
-      .skip(skip) // Saltar N registros
-      .limit(limite); // Devolver M registros
+      .populate('servicio'); // Trae los datos del Servicio
+
+    // 4. Ordenar en memoria: reservado > completado > cancelado, luego por fecha desc, luego por hora desc
+    const ordenEstado = { 'reservado': 1, 'completado': 2, 'cancelado': 3 };
+    todosTurnos.sort((a, b) => {
+      const estadoA = ordenEstado[a.estado] || 999;
+      const estadoB = ordenEstado[b.estado] || 999;
+
+      // Primero por estado
+      if (estadoA !== estadoB) return estadoA - estadoB;
+
+      // Si tienen el mismo estado, ordenar por fecha descendente (más reciente primero)
+      const fechaComp = new Date(b.fecha) - new Date(a.fecha);
+      if (fechaComp !== 0) return fechaComp;
+
+      // Si tienen la misma fecha, ordenar por hora descendente
+      return b.hora.localeCompare(a.hora);
+    });
+
+    // 5. Aplicar paginación DESPUÉS de ordenar
+    const turnos = todosTurnos.slice(skip, skip + limite);
+
+    console.log('[DEBUG obtenerTodos] Turnos encontrados:', turnos.length);
+    if (turnos.length > 0) {
+      console.log('[DEBUG obtenerTodos] Primer turno:', {
+        fecha: turnos[0].fecha,
+        hora: turnos[0].hora,
+        estado: turnos[0].estado
+      });
+    }
 
     return {
       turnos,
@@ -133,17 +166,85 @@ export const crear = async (datosDeTurno) => {
     const fechaInicioDia = new Date(Date.UTC(año, mes - 1, dia, 0, 0, 0, 0));
     const fechaFinDia = new Date(Date.UTC(año, mes - 1, dia, 23, 59, 59, 999));
 
-    // 3. Verificar disponibilidad (si se eligió un barbero)
-    if (barberoId) {
-      const barbero = await Barbero.findById(barberoId);
+    // 3. Asignar barbero (si no se especificó, buscar el más disponible)
+    let barberoAsignado = barberoId;
+
+    if (!barberoAsignado) {
+      // Buscar todos los barberos activos
+      const barberosActivos = await Barbero.find({ activo: true });
+
+      if (barberosActivos.length === 0) {
+        throw new Error('No hay barberos disponibles en este momento');
+      }
+
+      // Para cada barbero, contar turnos del día y verificar si está ocupado en ese horario
+      const barberosConInfo = await Promise.all(
+        barberosActivos.map(async (barbero) => {
+          // Verificar si tiene turno en ese horario específico
+          const tieneOcupado = await Turno.findOne({
+            barbero: barbero._id,
+            fecha: { $gte: fechaInicioDia, $lte: fechaFinDia },
+            hora,
+            estado: 'reservado',
+          });
+
+          // Contar cuántos turnos tiene ese día
+          const cantidadTurnos = await Turno.countDocuments({
+            barbero: barbero._id,
+            fecha: { $gte: fechaInicioDia, $lte: fechaFinDia },
+            estado: 'reservado',
+          });
+
+          return {
+            id: barbero._id,
+            nombre: `${barbero.nombre} ${barbero.apellido}`,
+            ocupado: !!tieneOcupado,
+            cantidadTurnos,
+          };
+        })
+      );
+
+      // Filtrar solo barberos disponibles en ese horario
+      const barberosDisponibles = barberosConInfo.filter((b) => !b.ocupado);
+
+      if (barberosDisponibles.length === 0) {
+        throw new Error('No hay barberos disponibles para ese horario');
+      }
+
+      // Encontrar el mínimo de turnos
+      const minTurnos = Math.min(...barberosDisponibles.map((b) => b.cantidadTurnos));
+
+      // Filtrar barberos que tienen el mínimo de turnos
+      const barberosConMenosTurnos = barberosDisponibles.filter(
+        (b) => b.cantidadTurnos === minTurnos
+      );
+
+      // Si hay empate, elegir uno aleatorio
+      const barberoElegido =
+        barberosConMenosTurnos[Math.floor(Math.random() * barberosConMenosTurnos.length)];
+
+      barberoAsignado = barberoElegido.id;
+
+      console.log('[DEBUG asignación automática]', {
+        barberos: barberosConInfo.map((b) => ({
+          nombre: b.nombre,
+          turnos: b.cantidadTurnos,
+          ocupado: b.ocupado,
+        })),
+        elegido: barberoElegido.nombre,
+        razon: `Menos turnos (${minTurnos})`,
+      });
+    } else {
+      // 4. Verificar disponibilidad del barbero específico
+      const barbero = await Barbero.findById(barberoAsignado);
       if (!barbero) throw new Error('Barbero no encontrado');
 
       // Busca un turno en ese día, a esa hora, con ese barbero
       const turnoYaExiste = await Turno.findOne({
-        barbero: barberoId,
-        fecha: { $gte: fechaInicioDia, $lte: fechaFinDia }, // Busca en todo el día
+        barbero: barberoAsignado,
+        fecha: { $gte: fechaInicioDia, $lte: fechaFinDia },
         hora,
-        estado: 'reservado', // Solo turnos activos
+        estado: 'reservado',
       });
 
       if (turnoYaExiste) {
@@ -172,7 +273,7 @@ export const crear = async (datosDeTurno) => {
     // 5. Crear el turno (reservado automáticamente)
     const nuevoTurno = new Turno({
       cliente: clienteDelTurno._id,
-      barbero: barberoId || null, // null si no se especificó
+      barbero: barberoAsignado, // Siempre tiene un barbero asignado
       servicio: servicioId,
       fecha: fechaInicioDia, // [FIX] Guarda la fecha como UTC a las 00:00
       hora,
@@ -181,6 +282,8 @@ export const crear = async (datosDeTurno) => {
       notasCliente: notasCliente || '',
       estado: 'reservado',
     });
+
+    console.log('[DEBUG crear] Turno creado con barbero:', barberoAsignado);
 
     await nuevoTurno.save();
 
@@ -334,35 +437,57 @@ export const obtenerHorariosDisponibles = async (fecha, barberoId = null) => {
       throw new Error('La fecha es requerida');
     }
 
-    // Horarios fijos de la barbería
-    const horariosBase = [
+    // Parsear la fecha una sola vez (usar fecha local)
+    const [anio, mes, dia] = fecha.split('-').map(Number);
+    const fechaSeleccionadaLocal = new Date(anio, mes - 1, dia);
+    const diaSemana = fechaSeleccionadaLocal.getDay(); // 0=Domingo, 6=Sábado
+
+    // Lunes a Viernes: 9:00 a 20:00 (último turno 19:15 para terminar a 20:00)
+    const horariosLunesViernes = [
       '09:00', '09:45', '10:30', '11:15', '12:00', '12:45',
-      '13:30', '14:15', '15:00', '15:45', '16:30', '17:15', // Último turno empieza 17:15
-    ];  
+      '13:30', '14:15', '15:00', '15:45', '16:30', '17:15',
+      '18:00', '18:45', '19:15',
+    ];
+
+    // Sábados: 8:00 a 18:00 (último turno 17:00 para terminar a 18:00)
+    const horariosSabado = [
+      '08:00', '08:45', '09:30', '10:15', '11:00', '11:45',
+      '12:30', '13:15', '14:00', '14:45', '15:30', '16:15',
+      '17:00',
+    ];
+
+    const horariosBase = diaSemana === 6 ? horariosSabado : horariosLunesViernes;
+
+    console.log(`[DEBUG] Fecha: ${fecha}, Día de semana: ${diaSemana} (${diaSemana === 6 ? 'SÁBADO' : 'Lun-Vie'}), Horarios base: ${horariosBase.length}`);
 
     const rangoDia = _crearRangoFechaDia(fecha);
     const queryOcupados = { fecha: rangoDia, estado: 'reservado' };
 
     let horariosFiltrados = [...horariosBase];
 
-    // **NUEVO**: Filtrar horarios pasados si la fecha es hoy
-    const hoy = new Date();
-    const fechaSeleccionadaDate = new Date(fecha + 'T00:00:00'); // Asumir UTC
-    
-    // Comparamos solo día, mes y año
-    if (fechaSeleccionadaDate.getUTCFullYear() === hoy.getUTCFullYear() &&
-        fechaSeleccionadaDate.getUTCMonth() === hoy.getUTCMonth() &&
-        fechaSeleccionadaDate.getUTCDate() === hoy.getUTCDate()) {
-      
-      const horaActual = hoy.getHours();
-      const minutoActual = hoy.getMinutes();
+    // Filtrar horarios pasados si la fecha es hoy
+    const ahora = new Date();
+
+    // Comparar fechas en zona local (solo día, mes y año)
+    const hoyLocal = new Date(ahora.getFullYear(), ahora.getMonth(), ahora.getDate());
+    const esMismoDia = fechaSeleccionadaLocal.getTime() === hoyLocal.getTime();
+
+    if (esMismoDia) {
+      // Usar hora LOCAL para filtrar horarios pasados
+      const horaActual = ahora.getHours();
+      const minutoActual = ahora.getMinutes();
+
+      console.log(`[DEBUG] Es hoy! Hora actual: ${horaActual}:${minutoActual}`);
 
       horariosFiltrados = horariosBase.filter(hora => {
         const [horaNum, minutoNum] = hora.split(':').map(Number);
+        // Solo permitir horarios futuros (no iguales, solo mayores)
         if (horaNum < horaActual) return false;
         if (horaNum === horaActual && minutoNum <= minutoActual) return false;
         return true;
       });
+
+      console.log(`[DEBUG] Horarios después de filtrar pasados: ${horariosFiltrados.length}`);
     }
 
     // La lógica de disponibilidad sigue igual, pero parte de `horariosFiltrados`
@@ -370,12 +495,21 @@ export const obtenerHorariosDisponibles = async (fecha, barberoId = null) => {
       queryOcupados.barbero = barberoId;
       const turnosOcupados = await Turno.find(queryOcupados);
       const horasOcupadas = new Set(turnosOcupados.map((turno) => turno.hora));
-      return horariosFiltrados.filter((h) => !horasOcupadas.has(h));
+      const resultado = horariosFiltrados.filter((h) => !horasOcupadas.has(h));
+      console.log(`[DEBUG] Horarios disponibles finales (con barbero): ${resultado.length}`);
+      return resultado;
     } else {
       const barberosActivos = await Barbero.countDocuments({ activo: true });
-      if (barberosActivos === 0) return [];
+      console.log(`[DEBUG] Barberos activos: ${barberosActivos}`);
+
+      if (barberosActivos === 0) {
+        console.log('[DEBUG] No hay barberos activos, retornando array vacío');
+        return [];
+      }
 
       const turnosOcupados = await Turno.find(queryOcupados);
+      console.log(`[DEBUG] Turnos ocupados encontrados: ${turnosOcupados.length}`);
+
       const conteoPorHora = {};
       turnosOcupados.forEach((turno) => {
         if (turno.barbero) {
@@ -383,10 +517,13 @@ export const obtenerHorariosDisponibles = async (fecha, barberoId = null) => {
         }
       });
 
-      return horariosFiltrados.filter((horario) => {
+      const resultado = horariosFiltrados.filter((horario) => {
         const ocupados = conteoPorHora[horario] || 0;
         return ocupados < barberosActivos;
       });
+
+      console.log(`[DEBUG] Horarios disponibles finales (sin barbero específico): ${resultado.length}`);
+      return resultado;
     }
   } catch (error) {
     throw new Error(`Error al obtener horarios disponibles: ${error.message}`);
