@@ -10,8 +10,9 @@ const Paso4_Confirmacion = ({
   onConfirmarReserva,
   loading,
   turnoEditarId,
+  configuracionSenas,
 }) => {
-  const { estaAutenticado } = useAuth();
+  const { estaAutenticado, usuario } = useAuth();
 
   // Hook para el formulario de cliente no autenticado
   const { values: datosCliente, handleChange: handleChangeDatosCliente } = useFormData({
@@ -26,6 +27,17 @@ const Paso4_Confirmacion = ({
   };
 
   const { servicio, barbero, fecha, hora } = resumen;
+
+  // Calcular si requiere seña y el monto
+  const requiereSena = configuracionSenas?.senasActivas &&
+    (configuracionSenas.politicaSenas === 'todos' ||
+     (configuracionSenas.politicaSenas === 'nuevos_clientes' && (!estaAutenticado || usuario?.esNuevoCliente)) ||
+     (configuracionSenas.politicaSenas === 'servicios_premium' && configuracionSenas.serviciosPremiumIds?.includes(servicio?._id)));
+
+  const porcentajeSena = configuracionSenas?.porcentajeSena || 0;
+  const precioTotal = servicio?.precioBase || 0;
+  const montoSena = requiereSena ? Math.round(precioTotal * (porcentajeSena / 100)) : 0;
+  const montoRestante = precioTotal - montoSena;
 
   return (
     <div className="paso-contenido">
@@ -56,8 +68,34 @@ const Paso4_Confirmacion = ({
         </div>
         <div className="resumen-item total">
           <span className="label">Total:</span>
-          <span className="valor">${servicio?.precioBase}</span>
+          <span className="valor">${precioTotal}</span>
         </div>
+
+        {/* Información de seña */}
+        {requiereSena && (
+          <>
+            <div className="separador-sena"></div>
+            <div className="info-sena">
+              <div className="icono-info">ℹ️</div>
+              <div className="texto-info">
+                <p className="titulo-sena">Este turno requiere seña del {porcentajeSena}%</p>
+                <div className="desglose-pago">
+                  <div className="monto-linea">
+                    <span>Seña a abonar ahora:</span>
+                    <span className="monto-destacado">${montoSena}</span>
+                  </div>
+                  <div className="monto-linea">
+                    <span>Restante a abonar en el local:</span>
+                    <span>${montoRestante}</span>
+                  </div>
+                </div>
+                <p className="nota-sena">
+                  💳 Serás redirigido a MercadoPago para completar el pago de forma segura.
+                </p>
+              </div>
+            </div>
+          </>
+        )}
       </div>
 
       {/* Formulario de confirmación */}

@@ -10,22 +10,38 @@ import {
   crearTurno,
   actualizarTurno,
   cancelarTurno,
+  cancelarTurnoPublico,
   obtenerHorariosDisponibles,
   obtenerDiasDisponibles,
   obtenerMisTurnos,
 } from '../controllers/turnoController.js';
 import { paginacion } from '../middlewares/paginacionMiddleware.js';
-import { autenticar } from '../middlewares/authMiddleware.js';
+import { autenticar, autorizar } from '../middlewares/authMiddleware.js';
+import { validar } from '../middlewares/validationMiddleware.js';
+import {
+  validarCrearTurno,
+  validarActualizarTurno,
+  validarCancelarTurno,
+  validarObtenerTurnoPorId,
+  validarListarTurnos,
+  validarHorariosDisponibles,
+} from '../validators/turnoValidators.js';
 
 const router = express.Router();
 
-router.get('/horarios-disponibles', obtenerHorariosDisponibles);
+// Rutas públicas (consulta de disponibilidad)
+router.get('/horarios-disponibles', validarHorariosDisponibles, validar, obtenerHorariosDisponibles);
 router.get('/dias-disponibles', obtenerDiasDisponibles);
+router.get('/cancelar-publico/:id', cancelarTurnoPublico);
+
+// Rutas protegidas (requieren autenticación)
 router.get('/mis-turnos', autenticar, paginacion, obtenerMisTurnos);
-router.get('/', paginacion, obtenerTurnos);
-router.get('/:id', obtenerTurnoPorId);
-router.post('/', autenticar, crearTurno); // Requiere autenticación
-router.put('/:id', actualizarTurno);
-router.patch('/:id/cancelar', cancelarTurno);
+router.post('/', autenticar, validarCrearTurno, validar, crearTurno);
+router.patch('/:id/cancelar', autenticar, validarCancelarTurno, validar, cancelarTurno);
+
+// Rutas administrativas (admin y barbero pueden ver todos los turnos)
+router.get('/', autenticar, autorizar('admin', 'barbero'), validarListarTurnos, validar, paginacion, obtenerTurnos);
+router.get('/:id', autenticar, autorizar('admin', 'barbero'), validarObtenerTurnoPorId, validar, obtenerTurnoPorId);
+router.put('/:id', autenticar, autorizar('admin', 'barbero'), validarActualizarTurno, validar, actualizarTurno);
 
 export default router;

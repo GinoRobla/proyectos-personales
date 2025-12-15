@@ -7,6 +7,14 @@ import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import ReservarTurnoPage from './pages/ReservarTurnoPage';
+import SolicitarRecuperacion from './pages/SolicitarRecuperacion';
+import ResetearContrasena from './pages/ResetearContrasena';
+import GoogleAuthSuccess from './pages/GoogleAuthSuccess';
+
+// Páginas de resultado de pago
+import PagoSuccess from './pages/pago/PagoSuccess';
+import PagoFailure from './pages/pago/PagoFailure';
+import PagoPending from './pages/pago/PagoPending';
 
 // Páginas protegidas - Cliente
 import ClienteDashboard from './pages/cliente/ClienteDashboard';
@@ -26,6 +34,10 @@ import AdminBarberos from './pages/admin/Barberos';
 import AdminServicios from './pages/admin/Servicios';
 import AdminEstadisticas from './pages/admin/Estadisticas';
 import AdminPerfil from './pages/admin/Perfil';
+import GestionDisponibilidad from './pages/admin/GestionDisponibilidad';
+import ConfiguracionNegocio from './pages/admin/ConfiguracionNegocio';
+import ConfiguracionSenas from './pages/admin/ConfiguracionSenas';
+import GestionPagos from './pages/admin/GestionPagos';
 
 // Componentes
 import ProtectedRoute from './components/ProtectedRoute';
@@ -42,6 +54,14 @@ function App() {
             <Route index element={<LoginPage />} />
             <Route path="registro" element={<RegisterPage />} />
             <Route path="reservar" element={<ReservarTurnoPage />} />
+            <Route path="solicitar-recuperacion" element={<SolicitarRecuperacion />} />
+            <Route path="resetear-contrasena" element={<ResetearContrasena />} />
+            <Route path="auth/google/success" element={<GoogleAuthSuccess />} />
+
+            {/* Rutas de resultado de pago */}
+            <Route path="pago/success" element={<PagoSuccess />} />
+            <Route path="pago/failure" element={<PagoFailure />} />
+            <Route path="pago/pending" element={<PagoPending />} />
 
             {/* Rutas protegidas - Cliente */}
             <Route
@@ -149,6 +169,38 @@ function App() {
               element={
                 <ProtectedRoute allowedRoles={['admin']}>
                   <AdminPerfil />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="admin/disponibilidad"
+              element={
+                <ProtectedRoute allowedRoles={['admin']}>
+                  <GestionDisponibilidad />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="admin/configuracion"
+              element={
+                <ProtectedRoute allowedRoles={['admin']}>
+                  <ConfiguracionNegocio />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="admin/configuracion-senas"
+              element={
+                <ProtectedRoute allowedRoles={['admin']}>
+                  <ConfiguracionSenas />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="admin/pagos"
+              element={
+                <ProtectedRoute allowedRoles={['admin']}>
+                  <GestionPagos />
                 </ProtectedRoute>
               }
             />

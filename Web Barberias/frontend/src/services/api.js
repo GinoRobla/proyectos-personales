@@ -4,7 +4,9 @@ import axios from 'axios';
 
 // Lee la URL de tu backend desde las variables de entorno (.env)
 // Si no está definida (ej. en desarrollo), usa la URL local por defecto.
-const URL_BASE_API = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+const URL_BASE_API = import.meta.env.VITE_API_URL
+  ? `${import.meta.env.VITE_API_URL}/api`
+  : 'http://localhost:3000/api';
 
 // --- 2. Creación de la Instancia de Axios ---
 

@@ -4,6 +4,7 @@
  */
 
 import * as servicioAutenticacion from '../services/authService.js';
+import * as perfilService from '../services/perfilService.js';
 
 /**
  * Registra un nuevo usuario en el sistema
@@ -73,7 +74,7 @@ export const iniciarSesion = async (req, res) => {
  */
 export const obtenerPerfilUsuario = async (req, res) => {
   try {
-    const usuario = await servicioAutenticacion.obtenerUsuarioPorId(req.usuario._id);
+    const usuario = await perfilService.obtenerPerfil(req.usuario._id);
 
     res.status(200).json({
       success: true,

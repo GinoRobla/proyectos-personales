@@ -90,7 +90,7 @@
   transform: translateY(-7px) rotate(-45deg);
 }
 
-/* Overlay */
+/* Overlay - Solo visible en móvil/tablet */
 .menu-overlay {
   position: fixed;
   top: 0;
@@ -108,6 +108,15 @@
   }
   to {
     opacity: 1;
+  }
+}
+
+/* Ocultar overlay en desktop (1024px+) donde se usa menú horizontal/sidebar */
+@media (min-width: 1024px) {
+  .menu-overlay {
+    display: none !important;
+    pointer-events: none !important;
+    visibility: hidden !important;
   }
 }
 

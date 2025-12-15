@@ -24,7 +24,9 @@ export const autenticar = async (req, res, next) => {
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const usuario = await Usuario.findById(decoded.id).select('-password');
+    // Soportar tanto 'id' como 'usuarioId' para compatibilidad
+    const usuarioId = decoded.id || decoded.usuarioId;
+    const usuario = await Usuario.findById(usuarioId).select('-password');
 
     if (!usuario) {
       return res.status(401).json({

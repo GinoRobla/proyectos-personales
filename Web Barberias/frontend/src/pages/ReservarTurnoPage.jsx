@@ -7,6 +7,7 @@ import { useToast } from '../context/ToastContext';
 import barberoService from '../services/barberoService';
 import servicioService from '../services/servicioService';
 import { turnoService } from '../services/turnoService';
+import { configuracionService } from '../services/configuracionService';
 import useApi from '../hooks/useApi';
 
 // Importar los nuevos componentes de pasos
@@ -36,6 +37,7 @@ const ReservarTurnoPage = () => {
   const [barberos, setBarberos] = useState([]);
   const [diasDisponibles, setDiasDisponibles] = useState([]);
   const [horariosDisponibles, setHorariosDisponibles] = useState([]);
+  const [configuracionSenas, setConfiguracionSenas] = useState(null);
   
   // --- HOOKS DE API ---
   const { loading: loadingServicios, request: cargarServiciosApi } = useApi(servicioService.obtenerServicios);
@@ -54,9 +56,10 @@ const ReservarTurnoPage = () => {
   useEffect(() => {
     const cargarDatosIniciales = async () => {
       // Ejecutar en paralelo
-      const [serviciosRes, diasRes] = await Promise.all([
+      const [serviciosRes, diasRes, configuracionRes] = await Promise.all([
         cargarServiciosApi(true), // Solo activos
         cargarDiasApi(),
+        configuracionService.obtenerConfiguracion(),
       ]);
 
       if (serviciosRes.success) {
@@ -69,6 +72,10 @@ const ReservarTurnoPage = () => {
         setDiasDisponibles(diasRes.data || []);
       } else {
         toast.error(diasRes.message || 'No se pudieron cargar los días disponibles', 4000);
+      }
+
+      if (configuracionRes.success) {
+        setConfiguracionSenas(configuracionRes.data);
       }
     };
     cargarDatosIniciales();
@@ -172,15 +179,37 @@ const ReservarTurnoPage = () => {
     }
 
     if (response.success) {
-      toast.success(`¡Turno ${turnoEditarId ? 'actualizado' : 'reservado'} exitosamente!`, 3000);
-      setTimeout(() => {
-        // Redirigir a "mis turnos" si está logueado, o a home si no
-        navigate(estaAutenticado ? '/cliente/turnos' : '/');
-      }, 1500);
+      // Verificar si requiere pago de seña
+      const { requiereSena, urlPago } = response.data;
+
+      if (requiereSena && urlPago) {
+        // Si requiere seña, redirigir a MercadoPago
+        toast.info('Redirigiendo a MercadoPago para completar el pago de la seña...', 3000);
+        setTimeout(() => {
+          // Redirigir a la URL de pago de MercadoPago
+          window.location.href = urlPago;
+        }, 1500);
+      } else {
+        // Si no requiere seña, comportamiento normal
+        toast.success(`¡Turno ${turnoEditarId ? 'actualizado' : 'reservado'} exitosamente!`, 3000);
+        setTimeout(() => {
+          // Redirigir a "mis turnos" si está logueado, o a home si no
+          navigate(estaAutenticado ? '/cliente/turnos' : '/');
+        }, 1500);
+      }
     } else {
       // Mensajes de error específicos
       const mensaje = response.message || `No se pudo ${turnoEditarId ? 'actualizar' : 'reservar'} el turno`;
-      toast.error(mensaje, 4000);
+
+      // Detectar si el error es por teléfono no verificado
+      if (mensaje.includes('TELEFONO_NO_VERIFICADO')) {
+        toast.error('Debes verificar tu número de teléfono antes de reservar un turno', 5000);
+        setTimeout(() => {
+          navigate('/cliente/perfil');
+        }, 1500);
+      } else {
+        toast.error(mensaje, 4000);
+      }
     }
   };
 
@@ -228,6 +257,7 @@ const ReservarTurnoPage = () => {
             onConfirmarReserva={handleConfirmarReserva}
             loading={isConfirmando}
             turnoEditarId={turnoEditarId}
+            configuracionSenas={configuracionSenas}
           />
         );
       default:

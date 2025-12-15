@@ -36,6 +36,9 @@ const usuarioSchema = new mongoose.Schema(
     activo: { type: Boolean, default: true },
     ultimoLogin: { type: Date },
     barberoAsociado: { type: mongoose.Schema.Types.ObjectId, ref: 'Barbero' },
+    // Campos para OAuth (Google, Facebook, etc.)
+    proveedor: { type: String, enum: ['local', 'google', 'facebook'], default: 'local' },
+    googleId: { type: String, sparse: true, unique: true },
   },
   { timestamps: true }
 );
@@ -55,6 +58,10 @@ usuarioSchema.pre('save', async function (next) {
 
 // Método para comparar contraseñas
 usuarioSchema.methods.compararPassword = async function (passwordIngresado) {
+  // Validar que la contraseña almacenada existe
+  if (!this.password) {
+    throw new Error('Usuario sin contraseña configurada. Contacta al administrador.');
+  }
   return await bcrypt.compare(passwordIngresado, this.password);
 };
 

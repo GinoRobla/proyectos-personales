@@ -1,7 +1,22 @@
+// ============================================================================
+// CONFIGURACIÓN DE VARIABLES DE ENTORNO (DEBE SER LO PRIMERO)
+// ============================================================================
+import dotenv from 'dotenv';
+dotenv.config();
+
+// Validar variables de entorno requeridas
+import { validateEnv } from './config/validateEnv.js';
+validateEnv();
+
 // --- Importaciones de Módulos ---
 import express from 'express';
 import cors from 'cors';
-import dotenv from 'dotenv';
+import helmet from 'helmet';
+import mongoSanitize from 'express-mongo-sanitize';
+import compression from 'compression';
+import { limiterGlobal } from './config/rateLimiter.js';
+// Passport se carga dinámicamente después para que dotenv esté configurado
+let passport;
 
 // --- Importaciones Locales ---
 import conectarBaseDeDatos from './config/conexion.js';
@@ -14,13 +29,14 @@ import barberoRoutes from './routes/barberoRoutes.js';
 import servicioRoutes from './routes/servicioRoutes.js';
 import turnoRoutes from './routes/turnoRoutes.js';
 import estadisticasRoutes from './routes/estadisticasRoutes.js';
+import disponibilidadRoutes from './routes/disponibilidadRoutes.js';
+import configuracionRoutes from './routes/configuracionRoutes.js';
+import pagoRoutes from './routes/pagoRoutes.js';
+import verificacionRoutes from './routes/verificacionRoutes.js';
 
 // ============================================================================
 // CONFIGURACIÓN INICIAL
 // ============================================================================
-
-// Carga las variables de entorno del archivo .env (ej: claves de API, URL de DB)
-dotenv.config();
 
 // Inicializa la aplicación de Express
 const app = express();
@@ -32,7 +48,32 @@ const PORT = process.env.PORT || 3000;
 // MIDDLEWARES (Se ejecutan en orden antes de las rutas)
 // ============================================================================
 
-// 1. Configura CORS: Permite que el frontend (en otra URL) se conecte a esta API
+// 1. Helmet: Configura headers de seguridad HTTP
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      scriptSrc: ["'self'"],
+      imgSrc: ["'self'", "data:", "https:"],
+    },
+  },
+  crossOriginEmbedderPolicy: false, // Para permitir recursos externos
+}));
+
+// 2. Compresión GZIP para respuestas
+app.use(compression({
+  threshold: 0, // Comprimir desde 0 bytes (por defecto es 1024)
+  level: 6 // Nivel de compresión (1-9, por defecto es 6)
+}));
+
+// 3. Sanitización contra NoSQL injection
+app.use(mongoSanitize());
+
+// 4. Rate Limiting Global: Máximo 100 requests por IP cada 15 minutos
+app.use('/api', limiterGlobal);
+
+// 5. Configura CORS: Permite que el frontend (en otra URL) se conecte a esta API
 const allowedOrigins = [
   process.env.FRONTEND_URL,
   'http://localhost:5173',
@@ -55,11 +96,13 @@ app.use(
   })
 );
 
-// 2. JSON Parser: Permite a Express entender el body de las peticiones JSON
-app.use(express.json());
+// 6. JSON Parser: Permite a Express entender el body de las peticiones JSON
+app.use(express.json({ limit: '10mb' })); // Límite de 10MB para evitar ataques de payload grande
 
-// 3. URL Encoded: Permite a Express entender datos de formularios HTML
-app.use(express.urlencoded({ extended: true }));
+// 7. URL Encoded: Permite a Express entender datos de formularios HTML
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// 8. Inicializar Passport para OAuth (se configura dinámicamente en iniciarServidor)
 
 // ============================================================================
 // RUTAS DE LA API (ENDPOINTS)
@@ -71,6 +114,10 @@ app.use('/api/barberos', barberoRoutes); // /api/barberos/
 app.use('/api/servicios', servicioRoutes); // /api/servicios/
 app.use('/api/turnos', turnoRoutes); // /api/turnos/, /api/turnos/disponibles
 app.use('/api/estadisticas', estadisticasRoutes); // /api/estadisticas/general
+app.use('/api/disponibilidad', disponibilidadRoutes); // /api/disponibilidad/general, /api/disponibilidad/barbero, /api/disponibilidad/bloqueos
+app.use('/api/configuracion', configuracionRoutes); // /api/configuracion
+app.use('/api/pagos', pagoRoutes); // /api/pagos (sistema de señas)
+app.use('/api/verificacion', verificacionRoutes); // /api/verificacion (verificación de teléfono)
 
 // ============================================================================
 // RUTAS ESPECIALES (Verificación)
@@ -87,6 +134,10 @@ app.get('/', (req, res) => {
       '/api/servicios',
       '/api/turnos',
       '/api/estadisticas',
+      '/api/disponibilidad',
+      '/api/configuracion',
+      '/api/pagos',
+      '/api/verificacion',
     ],
     healthCheck: '/api/health',
   });
@@ -142,6 +193,13 @@ app.use((error, req, res, next) => {
 // Función principal que inicia todo en orden
 const iniciarServidor = async () => {
   try {
+    // 0. Cargar Passport dinámicamente (después de que dotenv esté configurado)
+    console.log('🔄 Configurando Passport (Google OAuth)...');
+    const passportModule = await import('./config/passport.js');
+    passport = passportModule.default;
+    app.use(passport.initialize());
+    console.log('✅ Passport configurado correctamente');
+
     // 1. Conectar a la Base de Datos
     console.log('🔄 Conectando a MongoDB...');
     await conectarBaseDeDatos();
@@ -150,9 +208,9 @@ const iniciarServidor = async () => {
     console.log('🔄 Verificando configuración de WhatsApp (Twilio)...');
     await verificarWhatsApp();
 
-    // 3. Iniciar tareas programadas (ej: recordatorios)
-    console.log('🔄 Iniciando tareas automáticas (Cron Jobs)...');
-    iniciarCronJobs();
+    // 3. Iniciar tareas programadas consolidadas (cron jobs)
+    console.log('🔄 Iniciando tareas automáticas (Cron Jobs consolidados)...');
+    await iniciarCronJobs();
 
     // 4. Iniciar el servidor HTTP
     console.log('🔄 Iniciando servidor Express...');

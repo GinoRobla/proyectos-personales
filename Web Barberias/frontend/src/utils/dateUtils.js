@@ -62,3 +62,22 @@ export const obtenerFechaLocalISO = (date = new Date()) => {
   const day = String(date.getDate()).padStart(2, '0');
   return `${year}-${month}-${day}`;
 };
+
+/**
+ * Formatea una fecha ajustando por zona horaria para evitar desfases.
+ * Útil cuando se recibe una fecha del backend y se quiere mostrar sin cambios de día.
+ * @param {string | Date} fecha - La fecha a formatear.
+ * @returns {string} - Fecha formateada (ej: "13/11/2025").
+ */
+export const formatearFechaConAjuste = (fecha) => {
+  const date = new Date(fecha);
+  // Ajustar por zona horaria para obtener la fecha local correcta
+  const offsetMs = date.getTimezoneOffset() * 60 * 1000;
+  const dateLocal = new Date(date.getTime() + offsetMs);
+
+  const dia = String(dateLocal.getDate()).padStart(2, '0');
+  const mes = String(dateLocal.getMonth() + 1).padStart(2, '0');
+  const anio = dateLocal.getFullYear();
+
+  return `${dia}/${mes}/${anio}`;
+};

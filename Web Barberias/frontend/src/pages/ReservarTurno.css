@@ -445,6 +445,11 @@
   margin-top: var(--spacing-md);
   padding-top: var(--spacing-lg);
   border-top: 2px solid var(--primary);
+  border-bottom: none;
+}
+
+.resumen-item:nth-child(2) {
+  border-bottom: none;
 }
 
 .resumen-item.total .label,
@@ -650,7 +655,11 @@
   }
 
   .resumen-item {
-    padding: 0.4rem 0 !important;
+    padding: var(--spacing-sm) 0 !important;
+  }
+
+  .resumen-item .label,
+  .resumen-item .valor {
     font-size: 0.85rem !important;
   }
 
@@ -800,4 +809,110 @@
     grid-template-columns: repeat(6, 1fr);
     gap: 1rem;
   }
+}
+
+/* Estilos para información de seña */
+.separador-sena {
+  height: 1px;
+  background: #e0e0e0;
+  margin: 1.5rem 0 1rem 0;
+}
+
+.info-sena {
+  display: flex;
+  gap: 1rem;
+  background: #f0f8ff;
+  border: 2px solid #3b82f6;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-top: 1rem;
+}
+
+.icono-info {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.texto-info {
+  flex: 1;
+}
+
+.titulo-sena {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0 0 0.75rem 0;
+}
+
+.desglose-pago {
+  background: white;
+  border-radius: 6px;
+  padding: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.monto-linea {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0;
+  font-size: 0.9rem;
+}
+
+.monto-linea:first-child {
+  border-bottom: 1px solid #e5e7eb;
+  padding-bottom: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.monto-destacado {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #059669;
+}
+
+.nota-sena {
+  font-size: 0.85rem;
+  color: #4b5563;
+  margin: 0;
+  line-height: 1.5;
+}
+
+@media (max-width: 768px) {
+  .info-sena {
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0.875rem;
+  }
+
+  .icono-info {
+    text-align: center;
+    font-size: 2rem;
+  }
+
+  .titulo-sena {
+    font-size: 0.95rem;
+    text-align: center;
+  }
+
+  .monto-linea {
+    font-size: 0.85rem;
+  }
+
+  .monto-destacado {
+    font-size: 1.1rem;
+  }
+
+  .nota-sena {
+    font-size: 0.8rem;
+    text-align: center;
+  }
+}
+
+/* Centrar botón de confirmar reserva */
+.paso-contenido form .btn-primary {
+  width: 100%;
+  max-width: 300px;
+  margin: 1.5rem auto 0 auto;
+  display: block;
 }

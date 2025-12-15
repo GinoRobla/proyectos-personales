@@ -42,7 +42,7 @@ const normalizarTelefono = (telefono) => {
  * (Helper) Función central para enviar mensajes de WhatsApp.
  * Maneja la validación, normalización y el bloque try/catch.
  */
-const _enviarWhatsApp = async (telefonoDestino, mensaje) => {
+export const _enviarWhatsApp = async (telefonoDestino, mensaje) => {
   // 1. Verifica si el número de Twilio está configurado
   if (!process.env.TWILIO_WHATSAPP_FROM) {
     console.log('ℹ️ WhatsApp no configurado, saltando envío.');
@@ -108,12 +108,12 @@ export const verificarConfiguracion = async () => {
  * Enviar recordatorio 30 minutos antes al CLIENTE
  */
 export const enviarRecordatorioClienteWhatsApp = async (turno, clienteData, barbero, servicio) => {
-  // 1. Formatear la fecha
+  // 1. Formatear la fecha (usar UTC para evitar problema de timezone)
   const fecha = new Date(turno.fecha).toLocaleDateString('es-AR', {
     weekday: 'long',
     day: 'numeric',
     month: 'long',
-    timeZone: 'America/Argentina/Buenos_Aires',
+    timeZone: 'UTC',
   });
 
   // 2. Construir el mensaje
@@ -140,12 +140,12 @@ export const enviarCancelacionBarberoWhatsApp = async (turno, clienteData, barbe
     return false;
   }
 
-  // 2. Formatear la fecha
+  // 2. Formatear la fecha (usar UTC para evitar problema de timezone)
   const fecha = new Date(turno.fecha).toLocaleDateString('es-AR', {
     weekday: 'long',
     day: 'numeric',
     month: 'long',
-    timeZone: 'America/Argentina/Buenos_Aires',
+    timeZone: 'UTC',
   });
 
   // 3. Construir el mensaje
@@ -201,21 +201,42 @@ export const enviarReporteDiarioAdminWhatsApp = async (adminTelefono, estadistic
 };
 
 /**
- * 4️⃣ Enviar mensaje de bienvenida/confirmación a un cliente nuevo
- * @param {string} clienteTelefono - Teléfono del cliente
- * @param {string} clienteNombre - Nombre del cliente
- * @returns {Promise<boolean>} - true si se envió, false si no
+ * Enviar recordatorio de pago pendiente al CLIENTE
+ * Se envía cuando el turno está pendiente y faltan pocos minutos para que expire
  */
-export const enviarMensajeBienvenida = async (clienteTelefono, clienteNombre) => {
-  const businessName = process.env.BUSINESS_NAME || 'Barbería GR';
+export const enviarRecordatorioPagoPendiente = async (turno, clienteData, barbero, servicio) => {
+  // 1. Calcular minutos restantes hasta la expiración
+  const ahora = new Date();
+  const minutosRestantes = Math.floor((new Date(turno.fechaExpiracion) - ahora) / 60000);
 
-  const mensaje =
-    `¡Hola ${clienteNombre}! 👋\n\n` +
-    `Bienvenido a *${businessName}*.\n\n` +
-    `Tu número de teléfono ha sido registrado correctamente. ` +
-    `Recibirás recordatorios por WhatsApp 30 minutos antes de tus turnos.\n\n` +
-    `Si tienes alguna consulta, no dudes en contactarnos.\n\n` +
-    `¡Gracias por elegirnos! 💈`;
+  // 2. Formatear la fecha del turno (usar UTC para evitar problema de timezone)
+  const fecha = new Date(turno.fecha).toLocaleDateString('es-AR', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    timeZone: 'UTC',
+  });
 
-  return await _enviarWhatsApp(clienteTelefono, mensaje);
+  // 3. Crear link de cancelación (endpoint público del backend)
+  const backendUrl = process.env.BACKEND_URL || 'http://localhost:3000';
+  const urlCancelar = `${backendUrl}/api/turnos/cancelar-publico/${turno._id}`;
+
+  // 4. Construir el mensaje
+  const mensaje = `⚠️ *¡Pago pendiente!*\n\n` +
+    `Hola ${clienteData.nombre}, tu turno está reservado pero aún no completaste el pago de la seña.\n\n` +
+    `📋 *Detalles del turno:*\n` +
+    `✂️ Servicio: ${servicio.nombre}\n` +
+    `👨‍🦰 Barbero: ${barbero ? `${barbero.nombre} ${barbero.apellido}` : 'Por asignar'}\n` +
+    `📅 Fecha: ${fecha}\n` +
+    `🕐 Hora: ${turno.hora}\n` +
+    `💰 Seña: $${turno.pago?.monto || 0}\n\n` +
+    `⏰ *Tiempo restante: ${minutosRestantes} minutos*\n\n` +
+    `Si no completás el pago en ${minutosRestantes} minutos, el turno se cancelará automáticamente.\n\n` +
+    `🔗 *Completá tu pago:*\n${turno.pago?.urlPago || 'Contactanos para obtener el link'}\n\n` +
+    `❌ *¿No podés asistir? Cancelá tu turno:*\n` +
+    `${urlCancelar}\n\n` +
+    `¡Gracias por tu comprensión! 💈`;
+
+  // 5. Enviar usando el helper
+  return await _enviarWhatsApp(clienteData?.telefono, mensaje);
 };

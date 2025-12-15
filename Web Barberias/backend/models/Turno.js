@@ -18,7 +18,7 @@ const turnoSchema = new mongoose.Schema(
     },
     estado: {
       type: String,
-      enum: ['reservado', 'completado', 'cancelado'],
+      enum: ['pendiente', 'reservado', 'completado', 'cancelado'],
       default: 'reservado',
     },
     precio: {
@@ -27,6 +27,36 @@ const turnoSchema = new mongoose.Schema(
       min: [0, 'El precio no puede ser negativo'],
     },
     recordatorioEnviado: { type: Boolean, default: false },
+    recordatorioPagoEnviado: { type: Boolean, default: false },
+
+    // Campos para sistema de señas
+    requiereSena: {
+      type: Boolean,
+      default: false,
+      description: 'Indica si este turno requiere pago de seña',
+    },
+    pago: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Pago',
+      default: null,
+      description: 'Referencia al pago/seña asociado',
+    },
+    senaPagada: {
+      type: Boolean,
+      default: false,
+      description: 'Indica si la seña fue pagada exitosamente',
+    },
+    estadoPago: {
+      type: String,
+      enum: ['sin_sena', 'pendiente', 'pagada', 'aplicada', 'retenida'],
+      default: 'sin_sena',
+      description: 'Estado del pago: sin_sena (no requiere), pendiente (esperando pago), pagada (seña pagada), aplicada (descontada al completar), retenida (cliente no asistió)',
+    },
+    fechaExpiracion: {
+      type: Date,
+      default: null,
+      description: 'Fecha de expiración para turnos pendientes (si no pagan a tiempo, se cancelan)',
+    },
   },
   { timestamps: true, versionKey: false }
 );
@@ -41,7 +71,7 @@ turnoSchema.index(
   { barbero: 1, fecha: 1, hora: 1 },
   {
     unique: true,
-    partialFilterExpression: { estado: 'reservado', barbero: { $ne: null } },
+    partialFilterExpression: { estado: { $in: ['pendiente', 'reservado'] }, barbero: { $ne: null } },
   }
 );
 

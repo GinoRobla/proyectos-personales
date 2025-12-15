@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken';
 import Usuario from '../models/Usuario.js';
 import Barbero from '../models/Barbero.js';
+import Cliente from '../models/Cliente.js';
 import dotenv from 'dotenv';
 import { validarTelefonoArgentino } from '../utils/phoneValidator.js';
 
@@ -63,6 +64,18 @@ export const registrar = async (datosUsuario) => {
 
   await nuevoUsuario.save();
 
+  // Si el rol es 'cliente', crear automáticamente el perfil de Cliente
+  if (rol === 'cliente') {
+    const nuevoCliente = new Cliente({
+      usuario: nuevoUsuario._id,
+      nombre,
+      apellido,
+      email,
+      telefono: resultadoTelefono.numeroNormalizado,
+    });
+    await nuevoCliente.save();
+  }
+
   const token = generarToken(nuevoUsuario._id, nuevoUsuario.rol);
   const usuario = nuevoUsuario.toJSON();
 
@@ -106,6 +119,24 @@ export const login = async (email, password) => {
 
   usuario.ultimoLogin = new Date();
   await usuario.save();
+
+  // Verificar si el usuario tiene un Cliente asociado (si su rol es cliente)
+  if (usuario.rol === 'cliente') {
+    const clienteExistente = await Cliente.findOne({ usuario: usuario._id });
+
+    if (!clienteExistente) {
+      // Crear el Cliente si no existe
+      console.log('[LOGIN] 🆕 Creando perfil de Cliente para usuario existente:', usuario.email);
+      await Cliente.create({
+        usuario: usuario._id,
+        nombre: usuario.nombre,
+        apellido: usuario.apellido,
+        email: usuario.email,
+        telefono: usuario.telefono,
+      });
+      console.log('[LOGIN] ✅ Cliente creado exitosamente');
+    }
+  }
 
   const token = generarToken(usuario._id, usuario.rol);
   const usuarioInfo = usuario.toJSON();
@@ -201,4 +232,101 @@ export const asociarBarbero = async (usuarioId, barberoId) => {
   await usuario.save();
 
   return usuario;
+};
+
+// ============================================================================
+// RECUPERACIÓN DE CONTRASEÑA
+// ============================================================================
+
+import TokenRecuperacion from '../models/TokenRecuperacion.js';
+import { enviarEmailRecuperacion, enviarEmailConfirmacionCambio } from './emailService.js';
+
+/**
+ * Solicita recuperación de contraseña (envía email)
+ */
+export const solicitarRecuperacionPassword = async (email) => {
+  // Buscar usuario por email
+  const usuario = await Usuario.findOne({ email: email.toLowerCase() });
+
+  // Si no existe, NO revelar esta información (seguridad)
+  if (!usuario) {
+    console.log(`⚠️ Intento de recuperación para email no registrado: ${email}`);
+    return; // Salir silenciosamente
+  }
+
+  // Generar token único
+  const token = TokenRecuperacion.generarToken();
+
+  // Crear registro en DB (expira en 1 hora)
+  await TokenRecuperacion.create({
+    usuario: usuario._id,
+    token,
+    expiracion: new Date(Date.now() + 60 * 60 * 1000), // 1 hora
+    usado: false
+  });
+
+  // Enviar email con el token
+  await enviarEmailRecuperacion(usuario.email, usuario.nombre, token);
+
+  console.log(`✅ Email de recuperación enviado a: ${usuario.email}`);
+};
+
+/**
+ * Valida si un token de recuperación es válido
+ */
+export const validarTokenRecuperacion = async (token) => {
+  const tokenDoc = await TokenRecuperacion.findOne({
+    token,
+    usado: false
+  });
+
+  if (!tokenDoc) {
+    return false;
+  }
+
+  if (tokenDoc.estaExpirado()) {
+    return false;
+  }
+
+  return true;
+};
+
+/**
+ * Resetea la contraseña usando el token
+ */
+export const resetearPassword = async (token, nuevaPassword) => {
+  // Validar nueva contraseña
+  if (!nuevaPassword || nuevaPassword.length < 8) {
+    throw new Error('La nueva contraseña debe tener al menos 8 caracteres');
+  }
+
+  // Buscar token válido
+  const tokenDoc = await TokenRecuperacion.findOne({
+    token,
+    usado: false
+  }).populate('usuario');
+
+  if (!tokenDoc) {
+    throw new Error('Token inválido o ya utilizado');
+  }
+
+  if (tokenDoc.estaExpirado()) {
+    throw new Error('El token ha expirado. Solicita una nueva recuperación');
+  }
+
+  // Actualizar contraseña del usuario
+  const usuario = tokenDoc.usuario;
+  usuario.password = nuevaPassword;
+  await usuario.save();
+
+  // Marcar token como usado
+  tokenDoc.usado = true;
+  await tokenDoc.save();
+
+  // Enviar email de confirmación
+  await enviarEmailConfirmacionCambio(usuario.email, usuario.nombre);
+
+  console.log(`✅ Contraseña reseteada para: ${usuario.email}`);
+
+  return { message: 'Contraseña actualizada exitosamente' };
 };

@@ -19,12 +19,6 @@ const servicioSchema = new mongoose.Schema(
       required: [true, 'El precio base es obligatorio'],
       min: [0, 'El precio no puede ser negativo'],
     },
-    duracion: {
-      type: Number,
-      required: [true, 'La duración es obligatoria'],
-      min: [15, 'La duración mínima es 15 minutos'],
-      max: [240, 'La duración máxima es 240 minutos'],
-    },
     activo: { type: Boolean, default: true },
   },
   { timestamps: true, versionKey: false }

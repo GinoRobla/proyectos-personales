@@ -722,16 +722,15 @@
 }
 
 .btn-cancelar-turno-tabla {
-  padding: 0.3rem 0.5rem;
-  background: #dc3545;
+  background-color: #ef4444;
   color: white;
   border: none;
-  border-radius: var(--radius-md);
-  font-size: 0.6rem;
-  font-weight: 600;
+  padding: 0.4rem 0.75rem;
+  border-radius: 6px;
   cursor: pointer;
-  transition: all 0.2s ease;
-  white-space: nowrap;
+  font-size: 0.7rem;
+  font-weight: 500;
+  transition: background-color 0.2s;
 }
 
 .btn-cancelar-turno-tabla:hover:not(:disabled) {
@@ -1002,5 +1001,59 @@
 
   .modal-content-turno {
     max-width: 500px;
+  }
+}
+
+/* ========== ESTILOS PARA SISTEMA DE PAGOS ========== */
+
+/* Badge de Pago */
+.pago-badge {
+  display: inline-block;
+  padding: 0.25rem 0.5rem !important;
+  border-radius: 20px;
+  color: white;
+  font-size: 0.65rem !important;
+  font-weight: 600;
+  text-align: center;
+  white-space: nowrap;
+  line-height: 1.1 !important;
+}
+
+.pago-badge.no-requiere {
+  background-color: #6c757d;
+  opacity: 0.7;
+}
+
+/* Botón de Pagar */
+.btn-pagar {
+  display: inline-block;
+  padding: 0.3rem 0.5rem;
+  background: #28a745;
+  color: white;
+  text-decoration: none;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  font-size: 0.6rem;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  box-shadow: 0 2px 6px rgba(40, 167, 69, 0.25);
+}
+
+.btn-pagar:hover {
+  background: #218838;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(40, 167, 69, 0.35);
+}
+
+/* Responsive para columna de pago */
+@media (max-width: 768px) {
+  .pago-badge {
+    font-size: 0.65rem;
+    padding: 0.25rem 0.5rem;
+  }
+
+  .btn-pagar {
+    padding: 0.25rem 0.4rem;
+    font-size: 0.55rem;
   }
 }

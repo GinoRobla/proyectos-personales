@@ -1,7 +1,6 @@
 // frontend/src/hooks/useApi.js (REFACTORIZADO)
 
 import { useState } from 'react';
-import { useToast } from '../context/ToastContext';
 
 /**
  * ============================================================================
@@ -10,8 +9,7 @@ import { useToast } from '../context/ToastContext';
  *
  * Hook centralizado para manejar llamadas a la API (servicios).
  * Encapsula automáticamente los estados de carga (loading), error,
- * y muestra notificaciones (toasts) de error.
- * Además, normaliza la respuesta del backend.
+ * y normaliza la respuesta del backend.
  *
  */
 
@@ -22,7 +20,6 @@ import { useToast } from '../context/ToastContext';
 export const useApi = (apiCall) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const toast = useToast();
 
   /**
    * Ejecuta la llamada a la API.
@@ -49,12 +46,19 @@ export const useApi = (apiCall) => {
 
     } catch (err) {
       // --- MANEJO DE ERROR CENTRALIZADO ---
+
+      // Si es un error 401, NO lo manejamos aquí - dejamos que el interceptor de axios lo redirija al login
+      if (err.response?.status === 401) {
+        throw err; // Re-lanzar el error para que el interceptor lo maneje
+      }
+
       const errorMessage = err.response?.data?.message || err.message || 'Ocurrió un error inesperado';
-      
+
       setError(errorMessage);
-      toast.error(errorMessage); // Muestra el toast de error automáticamente
-      
-      return { success: false, data: null };
+      // No mostramos el toast aquí, dejamos que el componente lo maneje
+      // toast.error(errorMessage);
+
+      return { success: false, data: null, message: errorMessage };
 
     } finally {
       setLoading(false);

@@ -16,6 +16,10 @@ const AdminSidebar = () => {
     { path: '/admin', label: 'Inicio' },
     { path: '/admin/barberos', label: 'Barberos' },
     { path: '/admin/servicios', label: 'Servicios' },
+    { path: '/admin/disponibilidad', label: 'Disponibilidad' },
+    { path: '/admin/configuracion', label: 'Configuración' },
+    { path: '/admin/configuracion-senas', label: 'Señas y Pagos' },
+    { path: '/admin/pagos', label: 'Gestión de Pagos' },
     { path: '/admin/estadisticas', label: 'Estadísticas' },
     { path: '/admin/perfil', label: 'Mi Perfil' },
   ];

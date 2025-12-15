@@ -42,6 +42,7 @@ export const barberoService = {
   // Crea un nuevo barbero (solo Admin)
   crearBarbero: async (datosBarbero) => {
     // Llama a: POST /barberos
+    // No capturamos el error aquí, dejamos que useApi lo maneje
     const respuesta = await api.post('/barberos', datosBarbero);
     return respuesta.data;
   },
@@ -49,6 +50,7 @@ export const barberoService = {
   // Actualiza un barbero existente (solo Admin)
   actualizarBarbero: async (idBarbero, datosActualizados) => {
     // Llama a: PUT /barberos/ID_DEL_BARBERO
+    // No capturamos el error aquí, dejamos que useApi lo maneje
     const respuesta = await api.put(`/barberos/${idBarbero}`, datosActualizados);
     return respuesta.data;
   },

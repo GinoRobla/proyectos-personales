@@ -436,6 +436,12 @@
 .turno-card-simple {
   display: flex;
   align-items: center;
+  background: #f9fafb !important;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 0.75rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 .turno-card-simple .turno-fecha {
@@ -448,12 +454,12 @@
 }
 
 .btn-cancelar-turno {
-  padding: var(--spacing-sm) var(--spacing-md);
+  padding: 0.4rem 0.75rem !important;
   background: #dc3545;
   color: white;
   border: none;
   border-radius: var(--radius-md);
-  font-size: 0.75rem;
+  font-size: 0.7rem !important;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;

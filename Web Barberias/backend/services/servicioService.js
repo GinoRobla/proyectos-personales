@@ -51,11 +51,11 @@ export const obtenerPorId = async (servicioId) => {
  */
 export const crear = async (datosDelServicio) => {
   try {
-    const { nombre, descripcion, duracion, precioBase, imagen } = datosDelServicio;
+    const { nombre, descripcion, precioBase, imagen } = datosDelServicio;
 
     // 1. Valida que los campos principales existan
     // (precioBase === undefined) se usa por si el precio es 0, que es un valor válido
-    if (!nombre || !descripcion || !duracion || precioBase === undefined) {
+    if (!nombre || !descripcion || precioBase === undefined) {
       throw new Error('Faltan campos obligatorios');
     }
 
@@ -70,7 +70,6 @@ export const crear = async (datosDelServicio) => {
     const nuevoServicio = await Servicio.create({
       nombre,
       descripcion,
-      duracion,
       precioBase,
       imagen,
     });
@@ -93,7 +92,7 @@ export const actualizar = async (servicioId, datosNuevos) => {
       throw new Error('Servicio no encontrado');
     }
 
-    const { nombre, descripcion, duracion, precioBase, imagen, activo } = datosNuevos;
+    const { nombre, descripcion, precioBase, imagen, activo } = datosNuevos;
 
     // 2. Valida si se cambió el nombre, que no esté repetido
     if (nombre && nombre !== servicio.nombre) {
@@ -106,7 +105,6 @@ export const actualizar = async (servicioId, datosNuevos) => {
     // 3. Actualiza solo los campos que vinieron en 'datosNuevos'
     if (nombre) servicio.nombre = nombre;
     if (descripcion) servicio.descripcion = descripcion;
-    if (duracion) servicio.duracion = duracion;
     if (precioBase !== undefined) servicio.precioBase = precioBase;
     if (imagen) servicio.imagen = imagen;
     if (activo !== undefined) servicio.activo = activo;

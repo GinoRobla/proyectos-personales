@@ -24,8 +24,27 @@ export const obtenerPerfil = async (usuarioId) => {
       throw new Error('Usuario no encontrado');
     }
 
-    // Devuelve el usuario encontrado
-    return usuario;
+    // Convertir a objeto plano para poder agregar campos
+    const usuarioObj = usuario.toObject();
+
+    // Si es cliente, buscar el campo telefonoVerificado en Cliente
+    if (usuario.rol === 'cliente') {
+      const cliente = await Cliente.findOne({ usuario: usuarioId });
+      if (cliente) {
+        usuarioObj.telefonoVerificado = cliente.telefonoVerificado || false;
+      }
+    }
+
+    // Si es barbero, buscar el campo telefonoVerificado en Barbero
+    if (usuario.rol === 'barbero') {
+      const barbero = await Barbero.findOne({ usuario: usuarioId });
+      if (barbero) {
+        usuarioObj.telefonoVerificado = barbero.telefonoVerificado || false;
+      }
+    }
+
+    // Devuelve el usuario con telefonoVerificado incluido
+    return usuarioObj;
   } catch (error) {
     throw new Error(`Error al obtener perfil: ${error.message}`);
   }

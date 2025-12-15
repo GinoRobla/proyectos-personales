@@ -86,9 +86,10 @@ const RegisterPage = () => {
       // Manejo de errores específicos
       let mensajeError = 'Error de conexión al registrarse';
 
-      if (err.response?.data?.message) {
-        // Error del backend (email duplicado, validación, etc.)
-        mensajeError = err.response.data.message;
+      if (err.response?.data) {
+        // Error del backend (email duplicado, validación, rate limiting, etc.)
+        // Chequear tanto 'mensaje' (español) como 'message' (inglés)
+        mensajeError = err.response.data.mensaje || err.response.data.message || mensajeError;
       } else if (err.message) {
         mensajeError = err.message;
       } else if (!navigator.onLine) {

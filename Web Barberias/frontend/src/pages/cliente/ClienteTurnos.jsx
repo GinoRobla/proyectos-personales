@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useToast } from '../../context/ToastContext';
 import turnoService from '../../services/turnoService';
+import { obtenerTextoEstadoPago, obtenerColorEstadoPago } from '../../services/pagoService';
 import useModal from '../../hooks/useModal';
 import { formatearFechaCorta, formatearFechaLarga } from '../../utils/dateUtils';
 import useApi from '../../hooks/useApi';
@@ -104,10 +105,19 @@ const ClienteTurnos = () => {
   const handleCancelarTurno = async () => {
     if (!turnoCancelarId) return;
 
-    const { success, message } = await cancelarTurnoApi(turnoCancelarId);
+    const { success, message, data } = await cancelarTurnoApi(turnoCancelarId);
 
     if (success) {
-      toast.success('Turno cancelado correctamente', 3000);
+      // Mostrar mensaje apropiado dependiendo de si hubo devolución
+      if (data?.devolucion) {
+        if (data.devolucion.devuelto) {
+          toast.success(message || 'Turno cancelado y seña devuelta exitosamente', 5000);
+        } else if (data.devolucion.error) {
+          toast.warning(message || 'Turno cancelado, pero no se pudo procesar la devolución automática', 5000);
+        }
+      } else {
+        toast.success(message || 'Turno cancelado correctamente', 3000);
+      }
       cerrarModalCancelar();
       cargarTurnos();
     } else {
@@ -117,6 +127,7 @@ const ClienteTurnos = () => {
 
   const getEstadoBadgeClass = (estado) => {
     switch (estado) {
+      case 'pendiente': return 'estado-pendiente';
       case 'reservado': return 'estado-reservado';
       case 'completado': return 'estado-completado';
       case 'cancelado': return 'estado-cancelado';
@@ -126,6 +137,7 @@ const ClienteTurnos = () => {
 
   const getEstadoTexto = (estado) => {
     switch (estado) {
+      case 'pendiente': return 'Pendiente de Pago';
       case 'reservado': return 'Reservado';
       case 'completado': return 'Completado';
       case 'cancelado': return 'Cancelado';
@@ -165,6 +177,7 @@ const ClienteTurnos = () => {
                     <th>Fecha</th>
                     <th>Hora</th>
                     <th>Estado</th>
+                    <th>Pago</th>
                     <th>Acciones</th>
                   </tr>
                 </thead>
@@ -179,13 +192,37 @@ const ClienteTurnos = () => {
                         </span>
                       </td>
                       <td>
-                        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
-                          <button
-                            onClick={() => verDetalles(turno)}
-                            className="btn-ver-detalles"
+                        {turno.requiereSena ? (
+                          <span
+                            className="pago-badge"
+                            style={{ backgroundColor: obtenerColorEstadoPago(turno.estadoPago) }}
                           >
-                            Ver detalles
-                          </button>
+                            {obtenerTextoEstadoPago(turno.estadoPago)}
+                          </span>
+                        ) : (
+                          <span className="pago-badge no-requiere">No requiere</span>
+                        )}
+                      </td>
+                      <td>
+                        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                          {turno.estado === 'pendiente' && turno.pago?.urlPago ? (
+                            <a
+                              href={turno.pago.urlPago}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="btn-pagar"
+                              style={{ padding: '0.3rem 0.5rem', fontSize: '0.6rem' }}
+                            >
+                              Completar Pago
+                            </a>
+                          ) : (
+                            <button
+                              onClick={() => verDetalles(turno)}
+                              className="btn-ver-detalles"
+                            >
+                              Ver detalles
+                            </button>
+                          )}
                           {turno.estado === 'reservado' && (
                             <button
                               onClick={() => abrirModalCancelar(turno._id)}
@@ -194,6 +231,16 @@ const ClienteTurnos = () => {
                             >
                               Cancelar turno
                             </button>
+                          )}
+                          {turno.estado === 'reservado' && turno.requiereSena && turno.estadoPago === 'pendiente' && turno.pago?.urlPago && (
+                            <a
+                              href={turno.pago.urlPago}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="btn-pagar"
+                            >
+                              Completar Pago
+                            </a>
                           )}
                         </div>
                       </td>

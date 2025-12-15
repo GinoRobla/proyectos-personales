@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import './Navbar.css';
 
@@ -11,7 +11,13 @@ import './Navbar.css';
 const Navbar = () => {
   const { usuario, estaAutenticado, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [menuAbierto, setMenuAbierto] = useState(false);
+
+  // Cerrar menú automáticamente cuando cambia la ruta
+  useEffect(() => {
+    setMenuAbierto(false);
+  }, [location.pathname]);
 
   const handleLogout = () => {
     logout();
@@ -100,6 +106,18 @@ const Navbar = () => {
                   <Link to="/admin/servicios" className="menu-item">
                     Servicios
                   </Link>
+                  <Link to="/admin/disponibilidad" className="menu-item">
+                    Disponibilidad
+                  </Link>
+                  <Link to="/admin/configuracion" className="menu-item">
+                    Configuración
+                  </Link>
+                  <Link to="/admin/configuracion-senas" className="menu-item">
+                    Señas y Pagos
+                  </Link>
+                  <Link to="/admin/pagos" className="menu-item">
+                    Gestión de Pagos
+                  </Link>
                   <Link to="/admin/estadisticas" className="menu-item">
                     Estadísticas
                   </Link>
@@ -176,6 +194,18 @@ const Navbar = () => {
                     </Link>
                     <Link to="/admin/servicios" className="menu-item" onClick={cerrarMenu}>
                       <span>Servicios</span>
+                    </Link>
+                    <Link to="/admin/disponibilidad" className="menu-item" onClick={cerrarMenu}>
+                      <span>Disponibilidad</span>
+                    </Link>
+                    <Link to="/admin/configuracion" className="menu-item" onClick={cerrarMenu}>
+                      <span>Configuración</span>
+                    </Link>
+                    <Link to="/admin/configuracion-senas" className="menu-item" onClick={cerrarMenu}>
+                      <span>Señas y Pagos</span>
+                    </Link>
+                    <Link to="/admin/pagos" className="menu-item" onClick={cerrarMenu}>
+                      <span>Gestión de Pagos</span>
                     </Link>
                     <Link to="/admin/estadisticas" className="menu-item" onClick={cerrarMenu}>
                       <span>Estadísticas</span>

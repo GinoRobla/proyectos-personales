@@ -4,21 +4,6 @@ import React from 'react';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import { formatearFechaCorta, obtenerFechaLocalISO } from '../../utils/dateUtils';
 
-// ¡HORARIOS CADA 45 MINUTOS!
-// Lunes a Viernes: 9:00 a 20:00 (último turno 19:15 para terminar a 20:00)
-const horariosLunesViernes = [
-  '09:00', '09:45', '10:30', '11:15', '12:00', '12:45',
-  '13:30', '14:15', '15:00', '15:45', '16:30', '17:15',
-  '18:00', '18:45', '19:15',
-];
-
-// Sábados: 8:00 a 18:00 (último turno 17:15 para terminar a 18:00)
-const horariosSabado = [
-  '08:00', '08:45', '09:30', '10:15', '11:00', '11:45',
-  '12:30', '13:15', '14:00', '14:45', '15:30', '16:15',
-  '17:00',
-];
-
 const Paso3_FechaHora = ({
   diasDisponibles,
   horariosDisponibles,
@@ -28,17 +13,8 @@ const Paso3_FechaHora = ({
   onSeleccionarHora,
   loadingHorarios,
 }) => {
-  // Determinar qué horarios mostrar según el día de la semana
-  const obtenerHorariosBase = () => {
-    if (!fechaSeleccionada) return horariosLunesViernes;
-
-    const fecha = new Date(fechaSeleccionada + 'T00:00:00Z');
-    const diaSemana = fecha.getUTCDay(); // 0=Domingo, 6=Sábado
-
-    return diaSemana === 6 ? horariosSabado : horariosLunesViernes;
-  };
-
-  const horariosBase = obtenerHorariosBase();
+  // Ya NO usamos horarios hardcodeados
+  // Los horarios vienen directamente del backend según la configuración
 
   return (
     <div className="paso-contenido">
@@ -79,26 +55,21 @@ const Paso3_FechaHora = ({
             <h3>Horarios para el {formatearFechaCorta(fechaSeleccionada)}</h3>
             {loadingHorarios ? (
               <LoadingSpinner mensaje="Cargando horarios..." />
+            ) : horariosDisponibles.length === 0 ? (
+              <p className="no-horarios">
+                No hay horarios disponibles para este día.
+              </p>
             ) : (
               <div className="horarios-grid">
-                {horariosBase.map((hora) => {
-                  const disponible = horariosDisponibles.includes(hora);
-                  return (
-                    <button
-                      key={hora}
-                      className={`horario-btn ${horaSeleccionada === hora ? 'seleccionado' : ''} ${!disponible ? 'deshabilitado' : ''}`}
-                      onClick={() => disponible && onSeleccionarHora(hora)}
-                      disabled={!disponible}
-                    >
-                      {hora}
-                    </button>
-                  );
-                })}
-                {horariosDisponibles.length === 0 && !loadingHorarios && (
-                  <p className="no-horarios">
-                    No hay horarios disponibles para este día.
-                  </p>
-                )}
+                {horariosDisponibles.map((hora) => (
+                  <button
+                    key={hora}
+                    className={`horario-btn ${horaSeleccionada === hora ? 'seleccionado' : ''}`}
+                    onClick={() => onSeleccionarHora(hora)}
+                  >
+                    {hora}
+                  </button>
+                ))}
               </div>
             )}
           </div>

@@ -1,65 +1,65 @@
 /* frontend/src/pages/barbero/BarberoPerfil.css */
 
-/* Reutilizar estilos de ClientePerfil o crear específicos si es necesario */
-/* Puedes copiar el contenido de ClientePerfil.css y ajustar si hay diferencias */
-
-.perfil-page-barbero { /* Clase base específica si prefieres */
-  padding: var(--spacing-lg) 0;
+.barbero-perfil-page {
+  padding: var(--spacing-xl) 0;
   min-height: calc(100vh - 60px); /* Ajustar según altura del Navbar */
   background: var(--bg-light);
 }
 
-.perfil-page-barbero .container {
-  max-width: 800px;
+.barbero-perfil-page .container {
+  max-width: 800px; /* Ancho máximo para el contenido del perfil */
   margin: 0 auto;
 }
 
-.perfil-page-barbero h1 {
+.barbero-perfil-page h1 {
   margin-bottom: var(--spacing-xl);
   font-size: 1.75rem;
   font-weight: 700;
   color: var(--text-dark);
 }
 
-.perfil-card-barbero { /* Clase específica */
+.perfil-card-barbero {
   background: white;
   border-radius: var(--radius-lg);
   padding: var(--spacing-xl);
   box-shadow: var(--shadow-sm);
 }
 
-.perfil-form-barbero { /* Clase específica */
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-md);
-}
-
-.section-title { /* Puedes reutilizar si es igual */
-  margin-top: var(--spacing-md);
-  margin-bottom: var(--spacing-lg); /* Aumentado */
-  padding-bottom: var(--spacing-sm);
-  border-bottom: 1px solid #e5e5e5;
-  font-size: 1.1rem;
+.perfil-section-title {
+  font-size: 1.25rem;
   font-weight: 600;
   color: var(--text-dark);
+  margin-bottom: var(--spacing-lg);
+  padding-bottom: var(--spacing-sm);
+  border-bottom: 1px solid #e9ecef;
 }
 
-.input-hint { /* Reutilizable */
-  display: block;
-  margin-top: calc(-1 * var(--spacing-md) + var(--spacing-xs)); /* Ajuste para subirlo */
-  font-size: 0.8rem;
+.perfil-grid {
+  display: grid;
+  gap: var(--spacing-lg);
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); /* Responsive */
+}
+
+.perfil-divider {
+  margin: var(--spacing-xl) 0;
+  border-top: 1px solid #e9ecef;
+}
+
+.password-hint {
+  font-size: 0.875rem;
   color: var(--text-gray);
-  margin-bottom: var(--spacing-md);
+  margin-top: calc(-1 * var(--spacing-lg) + var(--spacing-sm)); /* Ajuste para acercar al título */
+  margin-bottom: var(--spacing-lg);
 }
 
-.perfil-acciones-barbero { /* Clase específica */
+.perfil-actions {
+  margin-top: var(--spacing-xl) !important;
   display: flex !important;
-  gap: var(--spacing-sm) !important;
-  margin-top: var(--spacing-xl) !important; /* Aumentado */
-  flex-wrap: wrap !important;
+  gap: var(--spacing-md) !important;
+  flex-wrap: wrap !important; /* Para que los botones se apilen en móvil */
 }
 
-.perfil-acciones-barbero .btn {
+.perfil-actions .btn {
   /* Tamaño fijo y más compacto */
   flex: 0 0 auto !important;
   min-width: auto !important;
@@ -69,17 +69,30 @@
   font-size: 0.875rem !important;
 }
 
-/* Reutilizar clases de index.css para input-group, input-label, input, btn, etc. */
+.btn-limpiar {
+  background-color: var(--text-gray);
+}
 
-/* Responsive */
+.btn-limpiar:hover {
+  background-color: #5a6268;
+}
+
+/* Loading state */
+.perfil-loading {
+  padding: var(--spacing-xl);
+  text-align: center;
+  color: var(--text-gray);
+}
+
+/* Responsive adjustments */
 @media (max-width: 767px) {
-  .perfil-acciones-barbero {
+  .perfil-actions {
     flex-direction: row !important;
     flex-wrap: wrap !important;
     gap: 0.5rem !important;
   }
 
-  .perfil-acciones-barbero .btn {
+  .perfil-actions .btn {
     flex: 0 0 auto !important;
     width: auto !important;
     max-width: fit-content !important;
@@ -90,10 +103,10 @@
 }
 
 @media (min-width: 768px) {
-  .perfil-page-barbero h1 {
+  .barbero-perfil-page h1 {
     font-size: 2rem;
   }
-   .perfil-card-barbero {
+  .perfil-card-barbero {
     padding: 2rem;
   }
 }

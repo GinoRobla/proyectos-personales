@@ -38,6 +38,54 @@ const AdminDashboard = () => {
                 <span className="gestion-link">Gestionar →</span>
               </div>
             </Link>
+
+            <Link to="/admin/disponibilidad" className="gestion-card">
+              <div className="gestion-header">
+                <h3>Disponibilidad</h3>
+              </div>
+              <p className="gestion-descripcion">
+                Configurar horarios, bloqueos y excepciones
+              </p>
+              <div className="gestion-footer">
+                <span className="gestion-link">Gestionar →</span>
+              </div>
+            </Link>
+
+            <Link to="/admin/configuracion" className="gestion-card">
+              <div className="gestion-header">
+                <h3>Configuración</h3>
+              </div>
+              <p className="gestion-descripcion">
+                Ajustar duración de turnos y días bloqueados
+              </p>
+              <div className="gestion-footer">
+                <span className="gestion-link">Gestionar →</span>
+              </div>
+            </Link>
+
+            <Link to="/admin/configuracion-senas" className="gestion-card">
+              <div className="gestion-header">
+                <h3>Señas y Pagos</h3>
+              </div>
+              <p className="gestion-descripcion">
+                Configurar sistema de señas y MercadoPago
+              </p>
+              <div className="gestion-footer">
+                <span className="gestion-link">Gestionar →</span>
+              </div>
+            </Link>
+
+            <Link to="/admin/pagos" className="gestion-card">
+              <div className="gestion-header">
+                <h3>Gestión de Pagos</h3>
+              </div>
+              <p className="gestion-descripcion">
+                Ver y administrar pagos y devoluciones
+              </p>
+              <div className="gestion-footer">
+                <span className="gestion-link">Gestionar →</span>
+              </div>
+            </Link>
           </div>
         </div>
 

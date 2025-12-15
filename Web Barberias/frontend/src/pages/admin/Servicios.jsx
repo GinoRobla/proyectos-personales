@@ -9,7 +9,7 @@ import useApi from '../../hooks/useApi';
 import './Servicios.css';
 
 const initialFormState = {
-  nombre: '', descripcion: '', duracion: '', precioBase: '',
+  nombre: '', descripcion: '', precioBase: '',
 };
 
 const AdminServicios = () => {
@@ -50,16 +50,6 @@ const AdminServicios = () => {
     // Validaciones del frontend
     if (!formData.nombre.trim()) {
       toast.error('El nombre del servicio es obligatorio', 4000);
-      return;
-    }
-
-    if (!formData.duracion || isNaN(formData.duracion)) {
-      toast.error('La duración es obligatoria y debe ser un número', 4000);
-      return;
-    }
-
-    if (formData.duracion <= 0) {
-      toast.error('La duración debe ser mayor a 0 minutos', 4000);
       return;
     }
 
@@ -126,7 +116,6 @@ const AdminServicios = () => {
     setValues({
       nombre: servicio.nombre || '',
       descripcion: servicio.descripcion || '',
-      duracion: servicio.duracion || '',
       precioBase: servicio.precioBase || '',
     });
     openFormModal();
@@ -194,21 +183,6 @@ const AdminServicios = () => {
                       onChange={handleChange}
                       placeholder="Descripción del servicio"
                       rows="3"
-                    />
-                  </div>
-
-                  <div className="input-group">
-                    <label htmlFor="duracion">Duración (minutos)</label>
-                    <input
-                      type="number"
-                      id="duracion"
-                      name="duracion"
-                      className="input"
-                      value={formData.duracion}
-                      onChange={handleChange}
-                      placeholder="30"
-                      min="1"
-                      required
                     />
                   </div>
 
@@ -289,17 +263,6 @@ const AdminServicios = () => {
                   )}
 
                   <div className="servicio-info-grid">
-                    <div className="info-item">
-                      <svg className="info-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <circle cx="12" cy="12" r="10"/>
-                        <polyline points="12 6 12 12 16 14"/>
-                      </svg>
-                      <div className="info-content">
-                        <span className="info-label">Duración</span>
-                        <span className="info-value">{servicio.duracion} min</span>
-                      </div>
-                    </div>
-
                     <div className="info-item">
                       <svg className="info-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                         <line x1="12" y1="1" x2="12" y2="23"/>

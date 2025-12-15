@@ -1,51 +1,75 @@
 // frontend/src/pages/barbero/BarberoPerfil.jsx
 
-import { useEffect } from 'react';
-import { useAuth } from '../../context/AuthContext'; // Ajusta la ruta si es necesario
-import { useToast } from '../../context/ToastContext'; // Ajusta la ruta si es necesario
+import { useEffect, useCallback } from 'react';
+import { useAuth } from '../../context/AuthContext';
+import { useToast } from '../../context/ToastContext';
 import authService from '../../services/authService';
-import useFormData from '../../hooks/useFormData'; // Ajusta la ruta si es necesario
-import useApi from '../../hooks/useApi'; // Ajusta la ruta si es necesario
-import './BarberoPerfil.css'; // Importar el nuevo CSS
+import useFormData from '../../hooks/useFormData';
+import useApi from '../../hooks/useApi';
+import './BarberoPerfil.css';
 
 const BarberoPerfil = () => {
-  const { usuario, actualizarUsuario } = useAuth();
+  const { actualizarUsuario: actualizarUsuarioContext } = useAuth();
   const toast = useToast();
 
-  // --- HOOKS DE ESTADO ---
-  const { values: perfil, handleChange, setValues: setPerfilValues } = useFormData({
-    nombre: '', apellido: '', email: '', telefono: ''
-  });
-  const { values: passwords, handleChange: handlePasswordChange, resetForm: resetPasswordForm } = useFormData({
-    passwordActual: '', passwordNuevo: '', passwordConfirmar: ''
-  });
-
-  // --- HOOKS DE API ---
-  const { loading: loadingPerfil, request: actualizarPerfilApi } = useApi(authService.actualizarPerfil);
+  // Hooks de API
+  const { loading: loadingPerfil, request: cargarPerfilApi } = useApi(authService.obtenerPerfil);
+  const { loading: loadingGuardar, request: actualizarPerfilApi } = useApi(authService.actualizarPerfil);
   const { loading: loadingPassword, request: cambiarPasswordApi } = useApi(authService.cambiarPassword);
 
-  const guardando = loadingPerfil || loadingPassword;
+  const isLoading = loadingPerfil;
+  const isSaving = loadingGuardar || loadingPassword;
 
-  // Cargar datos iniciales
-  useEffect(() => {
-    if (usuario) {
+  // Hook para datos del perfil
+  const { values: perfil, handleChange, setValues: setPerfilValues } = useFormData({
+    nombre: '', apellido: '', email: '', telefono: '', foto: '',
+  });
+
+  // Hook para cambio de contraseña
+  const { values: passwords, handleChange: handlePasswordChange, resetForm: resetPasswordForm } = useFormData({
+    passwordActual: '', passwordNuevo: '', passwordConfirmar: '',
+  });
+
+  // Cargar perfil inicial
+  const cargarPerfil = useCallback(async () => {
+    const { success, data, message } = await cargarPerfilApi();
+    if (success && data) {
       setPerfilValues({
-        nombre: usuario.nombre || '',
-        apellido: usuario.apellido || '',
-        email: usuario.email || '', // Email generalmente no se edita aquí
-        telefono: usuario.telefono || '',
+        nombre: data.nombre || '',
+        apellido: data.apellido || '',
+        email: data.email || '',
+        telefono: data.telefono || '',
+        foto: data.foto || '',
       });
+    } else {
+      toast.error(message || 'Error al cargar tu perfil', 4000);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [usuario]);
+  }, []);
 
-  // handleSubmit (similar a ClientePerfil.jsx)
+  useEffect(() => {
+    cargarPerfil();
+  }, [cargarPerfil]);
+
+  // Manejar envío del formulario
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Validaciones mejoradas
+    // Validaciones básicas
     if (!perfil.nombre.trim() || !perfil.apellido.trim()) {
       toast.error('Nombre y apellido son obligatorios', 4000);
+      return;
+    }
+
+    if (!perfil.email.trim()) {
+      toast.error('El email es obligatorio', 4000);
+      return;
+    }
+
+    // Validar formato de email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(perfil.email)) {
+      toast.error('Por favor ingresa un email válido', 4000);
       return;
     }
 
@@ -54,117 +78,180 @@ const BarberoPerfil = () => {
       return;
     }
 
-    const passNuevo = passwords.passwordNuevo;
-    if (passNuevo && passNuevo.length < 6) {
-      toast.error('La nueva contraseña debe tener al menos 6 caracteres', 4000);
-      return;
-    }
-    if (passNuevo && passNuevo !== passwords.passwordConfirmar) {
-      toast.error('Las contraseñas nuevas no coinciden. Por favor verifica', 4000);
-      return;
-    }
-    if (passNuevo && !passwords.passwordActual) {
-      toast.error('Debes ingresar tu contraseña actual para cambiarla', 4000);
-      return;
+    // Validaciones de contraseña si se intenta cambiar
+    if (passwords.passwordActual || passwords.passwordNuevo || passwords.passwordConfirmar) {
+      if (!passwords.passwordActual || !passwords.passwordNuevo || !passwords.passwordConfirmar) {
+        toast.error('Para cambiar la contraseña, completa todos los campos de contraseña', 4000);
+        return;
+      }
+      if (passwords.passwordNuevo !== passwords.passwordConfirmar) {
+        toast.error('Las contraseñas nuevas no coinciden. Por favor verifica', 4000);
+        return;
+      }
+      if (passwords.passwordNuevo.length < 6) {
+        toast.error('La nueva contraseña debe tener al menos 6 caracteres', 4000);
+        return;
+      }
     }
 
-    let perfilActualizado = false;
-    let passActualizado = false;
+    let perfilActualizadoExitoso = false;
+    let passwordCambiadoExitoso = false;
 
     // Actualizar perfil
-    const perfilParaActualizar = {
-      nombre: perfil.nombre,
-      apellido: perfil.apellido,
-      telefono: perfil.telefono,
-    };
-    const responsePerfil = await actualizarPerfilApi(perfilParaActualizar);
-
-    if (responsePerfil.success) {
-      perfilActualizado = true;
-      actualizarUsuario(responsePerfil.data);
+    const responsePerfil = await actualizarPerfilApi(perfil);
+    if (responsePerfil.success && responsePerfil.data) {
+      actualizarUsuarioContext(responsePerfil.data);
+      perfilActualizadoExitoso = true;
     } else {
       toast.error(responsePerfil.message || 'No se pudo actualizar el perfil', 4000);
     }
 
-    // Cambiar contraseña
+    // Cambiar contraseña si se proporcionaron datos
     if (passwords.passwordActual && passwords.passwordNuevo) {
-      const responsePass = await cambiarPasswordApi(passwords.passwordActual, passwords.passwordNuevo);
-      if (responsePass.success) {
-        passActualizado = true;
+      const responsePassword = await cambiarPasswordApi(passwords.passwordActual, passwords.passwordNuevo);
+      if (responsePassword.success) {
         resetPasswordForm();
+        passwordCambiadoExitoso = true;
       } else {
-        toast.error(responsePass.message || 'No se pudo cambiar la contraseña', 4000);
+        toast.error(responsePassword.message || 'No se pudo cambiar la contraseña', 4000);
       }
     }
 
-    // Mostrar mensajes de éxito
-    if (perfilActualizado && passActualizado) {
+    // Mostrar mensajes de éxito combinados o individuales
+    if (perfilActualizadoExitoso && passwordCambiadoExitoso) {
       toast.success('Perfil y contraseña actualizados correctamente', 3000);
-    } else if (perfilActualizado) {
+    } else if (perfilActualizadoExitoso) {
       toast.success('Perfil actualizado correctamente', 3000);
-    } else if (passActualizado) {
+    } else if (passwordCambiadoExitoso) {
       toast.success('Contraseña cambiada correctamente', 3000);
     }
   };
 
+  if (isLoading) {
+    return (
+      <div className="barbero-perfil-page">
+        <div className="container perfil-loading">
+          <p>Cargando perfil...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    // Clase base específica
-    <div className="perfil-page-barbero">
+    <div className="barbero-perfil-page">
       <div className="container">
-        <h1>Mi Perfil (Barbero)</h1>
-        {/* Clase de card específica */}
+        <h1>Mi Perfil</h1>
+
         <div className="perfil-card-barbero">
-          {/* Clase de form específica */}
-          <form onSubmit={handleSubmit} className="perfil-form-barbero">
-            <h3 className="section-title">Información Personal</h3>
-             {/* Inputs: Usan clases genéricas de index.css */}
-             <div className="input-group">
-                <label className="input-label" htmlFor="nombre">Nombre *</label>
-                <input type="text" id="nombre" name="nombre" value={perfil.nombre} onChange={handleChange} required className="input" />
-            </div>
-             <div className="input-group">
-                <label className="input-label" htmlFor="apellido">Apellido *</label>
-                <input type="text" id="apellido" name="apellido" value={perfil.apellido} onChange={handleChange} required className="input" />
-            </div>
-             <div className="input-group">
-                <label className="input-label" htmlFor="email">Email (no editable)</label>
-                <input type="email" id="email" name="email" value={perfil.email} readOnly disabled className="input" />
-            </div>
-            <div className="input-group">
-                <label className="input-label" htmlFor="telefono">Teléfono *</label>
-                <input type="tel" id="telefono" name="telefono" value={perfil.telefono} onChange={handleChange} required className="input" />
+          <form onSubmit={handleSubmit}>
+            {/* Información Personal */}
+            <h2 className="perfil-section-title">Información Personal</h2>
+            <div className="perfil-grid">
+              <div className="input-group">
+                <label className="input-label">Nombre *</label>
+                <input
+                  type="text"
+                  name="nombre"
+                  value={perfil.nombre}
+                  onChange={handleChange}
+                  required
+                  className="input"
+                />
+              </div>
+              <div className="input-group">
+                <label className="input-label">Apellido *</label>
+                <input
+                  type="text"
+                  name="apellido"
+                  value={perfil.apellido}
+                  onChange={handleChange}
+                  required
+                  className="input"
+                />
+              </div>
+              <div className="input-group">
+                <label className="input-label">Email *</label>
+                <input
+                  type="email"
+                  name="email"
+                  value={perfil.email}
+                  onChange={handleChange}
+                  required
+                  className="input"
+                />
+              </div>
+              <div className="input-group">
+                <label className="input-label">Teléfono *</label>
+                <input
+                  type="tel"
+                  name="telefono"
+                  value={perfil.telefono}
+                  onChange={handleChange}
+                  required
+                  className="input"
+                />
+              </div>
             </div>
 
-            <h3 className="section-title">Cambiar Contraseña</h3>
-            <p className="input-hint">Deja en blanco si no deseas cambiarla.</p>
-             {/* Inputs Contraseña */}
-             <div className="input-group">
-                <label className="input-label" htmlFor="passwordActual">Contraseña Actual</label>
-                <input type="password" id="passwordActual" name="passwordActual" value={passwords.passwordActual} onChange={handlePasswordChange} className="input" autoComplete="current-password"/>
-            </div>
-             <div className="input-group">
-                <label className="input-label" htmlFor="passwordNuevo">Nueva Contraseña</label>
-                <input type="password" id="passwordNuevo" name="passwordNuevo" value={passwords.passwordNuevo} onChange={handlePasswordChange} className="input" autoComplete="new-password"/>
-            </div>
-             <div className="input-group">
-                <label className="input-label" htmlFor="passwordConfirmar">Confirmar Nueva Contraseña</label>
-                <input type="password" id="passwordConfirmar" name="passwordConfirmar" value={passwords.passwordConfirmar} onChange={handlePasswordChange} className="input" autoComplete="new-password"/>
+            <div className="perfil-divider"></div>
+
+            {/* Cambio de Contraseña */}
+            <h2 className="perfil-section-title">Cambiar Contraseña</h2>
+            <p className="password-hint">
+              Deja estos campos en blanco si no deseas cambiar tu contraseña.
+            </p>
+            <div className="perfil-grid">
+              <div className="input-group">
+                <label className="input-label">Contraseña Actual</label>
+                <input
+                  type="password"
+                  name="passwordActual"
+                  value={passwords.passwordActual}
+                  onChange={handlePasswordChange}
+                  className="input"
+                  autoComplete="current-password"
+                />
+              </div>
+              <div className="input-group">
+                <label className="input-label">Nueva Contraseña</label>
+                <input
+                  type="password"
+                  name="passwordNuevo"
+                  value={passwords.passwordNuevo}
+                  onChange={handlePasswordChange}
+                  minLength={6}
+                  className="input"
+                  autoComplete="new-password"
+                />
+              </div>
+              <div className="input-group">
+                <label className="input-label">Confirmar Nueva Contraseña</label>
+                <input
+                  type="password"
+                  name="passwordConfirmar"
+                  value={passwords.passwordConfirmar}
+                  onChange={handlePasswordChange}
+                  minLength={6}
+                  className="input"
+                  autoComplete="new-password"
+                />
+              </div>
             </div>
 
-            {/* Clase de acciones específica */}
-            <div className="perfil-acciones-barbero">
-              <button type="submit" disabled={guardando} className='btn btn-primary'>
-                {guardando ? 'Guardando...' : 'Guardar Cambios'}
+            {/* Botones */}
+            <div className="perfil-actions">
+              <button type="submit" disabled={isSaving} className="btn btn-primary">
+                {isSaving ? 'Guardando...' : 'Guardar Cambios'}
               </button>
               {(passwords.passwordActual || passwords.passwordNuevo || passwords.passwordConfirmar) && (
-                 <button
-                   type="button"
-                   onClick={resetPasswordForm}
-                   disabled={guardando}
-                   className="btn btn-outline"
-                 >
-                   Limpiar Contraseñas
-                 </button>
+                <button
+                  type="button"
+                  onClick={resetPasswordForm}
+                  className="btn btn-limpiar"
+                  disabled={isSaving}
+                >
+                  Limpiar Contraseñas
+                </button>
               )}
             </div>
           </form>
