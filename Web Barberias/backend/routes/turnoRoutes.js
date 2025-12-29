@@ -18,6 +18,7 @@ import {
 import { paginacion } from '../middlewares/paginacionMiddleware.js';
 import { autenticar, autorizar } from '../middlewares/authMiddleware.js';
 import { validar } from '../middlewares/validationMiddleware.js';
+import { requireCustomHeader } from '../middlewares/csrfMiddleware.js';
 import {
   validarCrearTurno,
   validarActualizarTurno,
@@ -32,16 +33,16 @@ const router = express.Router();
 // Rutas públicas (consulta de disponibilidad)
 router.get('/horarios-disponibles', validarHorariosDisponibles, validar, obtenerHorariosDisponibles);
 router.get('/dias-disponibles', obtenerDiasDisponibles);
-router.get('/cancelar-publico/:id', cancelarTurnoPublico);
+router.get('/cancelar-publico/:id/:token', cancelarTurnoPublico);
 
 // Rutas protegidas (requieren autenticación)
 router.get('/mis-turnos', autenticar, paginacion, obtenerMisTurnos);
-router.post('/', autenticar, validarCrearTurno, validar, crearTurno);
-router.patch('/:id/cancelar', autenticar, validarCancelarTurno, validar, cancelarTurno);
+router.post('/', autenticar, requireCustomHeader, validarCrearTurno, validar, crearTurno);
+router.patch('/:id/cancelar', autenticar, requireCustomHeader, validarCancelarTurno, validar, cancelarTurno);
 
 // Rutas administrativas (admin y barbero pueden ver todos los turnos)
 router.get('/', autenticar, autorizar('admin', 'barbero'), validarListarTurnos, validar, paginacion, obtenerTurnos);
 router.get('/:id', autenticar, autorizar('admin', 'barbero'), validarObtenerTurnoPorId, validar, obtenerTurnoPorId);
-router.put('/:id', autenticar, autorizar('admin', 'barbero'), validarActualizarTurno, validar, actualizarTurno);
+router.put('/:id', autenticar, requireCustomHeader, autorizar('admin', 'barbero'), validarActualizarTurno, validar, actualizarTurno);
 
 export default router;

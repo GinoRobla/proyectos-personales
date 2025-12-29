@@ -10,7 +10,7 @@ const codigoVerificacionSchema = new mongoose.Schema(
     telefono: {
       type: String,
       required: true,
-      index: true,
+      // Índice creado en línea 45 como parte del índice compuesto
     },
     codigo: {
       type: String,
@@ -33,7 +33,7 @@ const codigoVerificacionSchema = new mongoose.Schema(
     expiraEn: {
       type: Date,
       required: true,
-      index: true,
+      // Índice creado en línea 45 como parte del índice compuesto
     },
   },
   {

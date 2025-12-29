@@ -57,6 +57,15 @@ const turnoSchema = new mongoose.Schema(
       default: null,
       description: 'Fecha de expiración para turnos pendientes (si no pagan a tiempo, se cancelan)',
     },
+
+    // Token de cancelación pública
+    tokenCancelacion: {
+      type: String,
+      default: function() {
+        return require('crypto').randomBytes(32).toString('hex');
+      },
+      description: 'Token único para permitir cancelación sin autenticación',
+    },
   },
   { timestamps: true, versionKey: false }
 );

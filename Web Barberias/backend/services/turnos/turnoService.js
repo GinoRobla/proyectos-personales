@@ -288,12 +288,23 @@ export const crear = async (datosDeTurno) => {
       console.log('[TURNOS] Cliente creado automáticamente:', clienteDelTurno._id);
     }
 
-    // 6. Verificar si el turno requiere seña
+    // 6. Verificar límite de turnos futuros (máximo 5 por cliente)
+    const turnosFuturos = await Turno.countDocuments({
+      cliente: clienteDelTurno._id,
+      fecha: { $gte: new Date() },
+      estado: { $in: ['pendiente', 'reservado'] }
+    });
+
+    if (turnosFuturos >= 5) {
+      throw new Error('Has alcanzado el límite de turnos futuros (máximo 5). Cancela alguno para reservar uno nuevo.');
+    }
+
+    // 7. Verificar si el turno requiere seña
     console.log('[TURNOS] Verificando si el turno requiere seña...');
     const requiereSena = await verificarRequiereSena(clienteDelTurno._id, servicioId);
     console.log(`[TURNOS] Requiere seña: ${requiereSena}`);
 
-    // 7. Crear el turno (pendiente si requiere seña, reservado si no)
+    // 8. Crear el turno (pendiente si requiere seña, reservado si no)
     // Si requiere seña, establecer expiración de 15 minutos (recordatorio a los 5 min, cancelación a los 15 min)
     const fechaExpiracion = requiereSena ? new Date(Date.now() + 15 * 60 * 1000) : null;
 
@@ -314,10 +325,10 @@ export const crear = async (datosDeTurno) => {
 
     await nuevoTurno.save();
 
-    // 8. Cargar los datos relacionados para la respuesta
+    // 9. Cargar los datos relacionados para la respuesta
     await nuevoTurno.populate(['cliente', 'barbero', 'servicio']);
 
-    // 9. Si requiere seña, crear preferencia de pago en MercadoPago
+    // 10. Si requiere seña, crear preferencia de pago en MercadoPago
     let urlPago = null;
     let pagoId = null;
 

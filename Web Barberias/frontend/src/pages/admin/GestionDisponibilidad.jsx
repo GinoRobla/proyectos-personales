@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useToast } from '../../context/ToastContext';
 import disponibilidadService from '../../services/disponibilidadService';
 import barberoService from '../../services/barberoService';
+import configuracionService from '../../services/configuracionService';
 import useModal from '../../hooks/useModal';
 import { DIAS_SEMANA_LUNES_PRIMERO } from '../../constants/common';
 import { formatearFechaConAjuste } from '../../utils/dateUtils';
@@ -11,11 +12,15 @@ import { validarRangoHoras, validarRangoFechas } from '../../utils/validators';
 import './GestionDisponibilidad.css';
 
 // Usar días de lunes a domingo para gestión de disponibilidad
-const DIAS_SEMANA = DIAS_SEMANA_LUNES_PRIMERO;
+const DIAS_SEMANA_COMPLETO = DIAS_SEMANA_LUNES_PRIMERO;
 
 const GestionDisponibilidad = () => {
   const toast = useToast();
   const [tabActivo, setTabActivo] = useState('general'); // general, barbero, bloqueos
+
+  // Estados para configuración
+  const [configuracion, setConfiguracion] = useState(null);
+  const [diasActivos, setDiasActivos] = useState(DIAS_SEMANA_COMPLETO);
 
   // Estados para horarios generales
   const [horariosGenerales, setHorariosGenerales] = useState([]);
@@ -56,6 +61,7 @@ const GestionDisponibilidad = () => {
 
   // ========== CARGA INICIAL ==========
   useEffect(() => {
+    cargarConfiguracion();
     cargarHorariosGenerales();
     cargarBarberos();
     cargarBloqueos();
@@ -68,6 +74,25 @@ const GestionDisponibilidad = () => {
   }, [barberoSeleccionado]);
 
   // ========== FUNCIONES DE CARGA ==========
+
+  const cargarConfiguracion = async () => {
+    try {
+      const response = await configuracionService.obtenerConfiguracion();
+      if (response.success) {
+        const config = response.data;
+        setConfiguracion(config);
+
+        // Filtrar días activos (excluir días bloqueados permanentemente)
+        const diasBloqueados = config.diasBloqueadosPermanente || [];
+        const diasFiltrados = DIAS_SEMANA_COMPLETO.filter(dia => !diasBloqueados.includes(dia.numero));
+        setDiasActivos(diasFiltrados);
+      }
+    } catch (error) {
+      console.error('Error al cargar configuración:', error);
+      // Si hay error, mostrar todos los días por defecto
+      setDiasActivos(DIAS_SEMANA_COMPLETO);
+    }
+  };
 
   const cargarHorariosGenerales = async () => {
     setLoadingGenerales(true);
@@ -425,7 +450,7 @@ const GestionDisponibilidad = () => {
 
     return (
       <div className="cuadricula-horarios">
-        {DIAS_SEMANA.map((dia) => {
+        {diasActivos.map((dia) => {
           const horario = obtenerHorario(dia.numero);
 
           return (
@@ -511,6 +536,11 @@ const GestionDisponibilidad = () => {
             <div className="tab-header">
               <h2>Horarios Generales de la Barbería</h2>
               <p>Define los días y horarios de apertura de tu negocio</p>
+              {configuracion && configuracion.diasBloqueadosPermanente && configuracion.diasBloqueadosPermanente.length > 0 && (
+                <div className="info-dias-bloqueados">
+                  <p>ℹ️ Los días bloqueados en Configuración no aparecen aquí. Para habilitarlos, ve a Configuración del Negocio.</p>
+                </div>
+              )}
             </div>
 
             {loadingGenerales ? (
@@ -533,6 +563,11 @@ const GestionDisponibilidad = () => {
             <div className="tab-header">
               <h2>Horarios por Barbero</h2>
               <p>Configura horarios específicos para cada barbero</p>
+              {configuracion && configuracion.diasBloqueadosPermanente && configuracion.diasBloqueadosPermanente.length > 0 && (
+                <div className="info-dias-bloqueados">
+                  <p>ℹ️ Los días bloqueados en Configuración no aparecen aquí. Para habilitarlos, ve a Configuración del Negocio.</p>
+                </div>
+              )}
             </div>
 
             <div className="selector-barbero">

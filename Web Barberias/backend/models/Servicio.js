@@ -24,7 +24,7 @@ const servicioSchema = new mongoose.Schema(
   { timestamps: true, versionKey: false }
 );
 
-servicioSchema.index({ nombre: 1 });
+// El índice 'nombre' ya se crea automáticamente por unique:true en el schema
 servicioSchema.index({ activo: 1 });
 
 export default mongoose.model('Servicio', servicioSchema);

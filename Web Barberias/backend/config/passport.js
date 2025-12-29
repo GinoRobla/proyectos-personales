@@ -8,8 +8,15 @@ import Cliente from '../models/Cliente.js';
  * IMPORTANTE: Este archivo se ejecuta DESPUÉS de que dotenv.config() se llame en index.js
  */
 
-// Configurar Google OAuth Strategy
-passport.use(
+// Verificar si las credenciales de Google OAuth están configuradas
+const googleOAuthConfigured =
+  process.env.GOOGLE_CLIENT_ID &&
+  process.env.GOOGLE_CLIENT_SECRET &&
+  process.env.GOOGLE_CALLBACK_URL;
+
+// Configurar Google OAuth Strategy solo si las credenciales están disponibles
+if (googleOAuthConfigured) {
+  passport.use(
     new GoogleStrategy(
       {
         clientID: process.env.GOOGLE_CLIENT_ID,
@@ -94,7 +101,11 @@ passport.use(
         }
       }
     )
-);
+  );
+  console.log('✅ Google OAuth configurado correctamente');
+} else {
+  console.log('ℹ️  Google OAuth no configurado. Para habilitar login con Google, configura las credenciales en .env');
+}
 
 // Serializar usuario (guardar en sesión)
 passport.serializeUser((usuario, done) => {

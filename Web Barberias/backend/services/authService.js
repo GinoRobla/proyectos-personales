@@ -36,9 +36,15 @@ export const registrar = async (datosUsuario) => {
     throw new Error('El formato del email no es válido');
   }
 
-  // Validar longitud mínima de contraseña
-  if (password.length < 6) {
-    throw new Error('La contraseña debe tener al menos 6 caracteres');
+  // Validar longitud mínima y complejidad de contraseña
+  if (password.length < 8) {
+    throw new Error('La contraseña debe tener al menos 8 caracteres');
+  }
+
+  // Validar complejidad: debe contener mayúscula, minúscula y número
+  const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/;
+  if (!passwordRegex.test(password)) {
+    throw new Error('La contraseña debe contener al menos una mayúscula, una minúscula y un número');
   }
 
   // Validar y normalizar número de teléfono
@@ -105,7 +111,6 @@ export const login = async (email, password) => {
   }
 
   const passwordValida = await usuario.compararPassword(password);
-  console.log('[LOGIN] Contraseña válida:', passwordValida);
 
   if (!passwordValida) {
     console.log('[LOGIN] Error: Contraseña incorrecta');

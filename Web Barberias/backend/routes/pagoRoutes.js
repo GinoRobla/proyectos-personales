@@ -6,6 +6,7 @@
 import express from 'express';
 import * as pagoController from '../controllers/pagoController.js';
 import { autenticar, autorizar } from '../middlewares/authMiddleware.js';
+import { requireCustomHeader } from '../middlewares/csrfMiddleware.js';
 
 const router = express.Router();
 
@@ -21,7 +22,7 @@ router.get('/', autenticar, autorizar('admin'), pagoController.listarPagos);
  * Crear un nuevo pago/seña para un turno
  * Requiere autenticación
  */
-router.post('/', autenticar, pagoController.crearPago);
+router.post('/', autenticar, requireCustomHeader, pagoController.crearPago);
 
 /**
  * POST /api/pagos/webhook
@@ -49,20 +50,20 @@ router.get('/turno/:turnoId', autenticar, pagoController.obtenerPagoPorTurno);
  * Aplicar seña al total (cuando cliente asiste)
  * Requiere autenticación de admin/barbero
  */
-router.post('/:id/aplicar', autenticar, autorizar('admin', 'barbero'), pagoController.aplicarSena);
+router.post('/:id/aplicar', autenticar, requireCustomHeader, autorizar('admin', 'barbero'), pagoController.aplicarSena);
 
 /**
  * POST /api/pagos/:id/retener
  * Retener seña (cuando cliente no asiste)
  * Requiere autenticación de admin/barbero
  */
-router.post('/:id/retener', autenticar, autorizar('admin', 'barbero'), pagoController.retenerSena);
+router.post('/:id/retener', autenticar, requireCustomHeader, autorizar('admin', 'barbero'), pagoController.retenerSena);
 
 /**
  * POST /api/pagos/:id/devolver
  * Devolver seña (cancelación con anticipación)
  * Requiere autenticación de admin
  */
-router.post('/:id/devolver', autenticar, autorizar('admin'), pagoController.devolverSena);
+router.post('/:id/devolver', autenticar, requireCustomHeader, autorizar('admin'), pagoController.devolverSena);
 
 export default router;

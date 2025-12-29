@@ -27,6 +27,7 @@ const barberoSchema = new mongoose.Schema(
         },
       },
     },
+    telefonoVerificado: { type: Boolean, default: false },
     foto: { type: String, trim: true },
     activo: { type: Boolean, default: true },
     objetivoMensual: { type: Number, default: 0 },

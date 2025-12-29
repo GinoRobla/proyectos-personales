@@ -5,29 +5,43 @@ import nodemailer from 'nodemailer';
  * Configurado para Gmail (puedes cambiar a SendGrid, Mailgun, etc.)
  */
 
-// Configurar transporter (Gmail)
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS // App Password, no la contraseña normal
-  }
-});
+// Verificar si las credenciales de email están configuradas
+const emailConfigured = process.env.EMAIL_USER && process.env.EMAIL_PASS;
 
-// Verificar configuración al iniciar
-transporter.verify((error, success) => {
-  if (error) {
-    console.error('❌ Error en configuración de email:', error.message);
-    console.log('⚠️  Asegúrate de configurar EMAIL_USER y EMAIL_PASS en .env');
-  } else {
-    console.log('✅ Servicio de email listo para enviar mensajes');
-  }
-});
+// Configurar transporter (Gmail) solo si las credenciales están configuradas
+let transporter = null;
+
+if (emailConfigured) {
+  transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS // App Password, no la contraseña normal
+    }
+  });
+
+  // Verificar configuración al iniciar
+  transporter.verify((error, success) => {
+    if (error) {
+      console.error('❌ Error en configuración de email:', error.message);
+      console.log('⚠️  Asegúrate de configurar EMAIL_USER y EMAIL_PASS en .env');
+    } else {
+      console.log('✅ Servicio de email listo para enviar mensajes');
+    }
+  });
+} else {
+  console.log('ℹ️  Email no configurado. Para habilitar notificaciones por email, configura EMAIL_USER y EMAIL_PASS en .env');
+}
 
 /**
  * Enviar email de recuperación de contraseña
  */
 export const enviarEmailRecuperacion = async (email, nombre, token) => {
+  if (!transporter) {
+    console.log('⚠️  No se puede enviar email: servicio no configurado');
+    return { exito: false, error: 'Email no configurado' };
+  }
+
   const urlRecuperacion = `${process.env.FRONTEND_URL}/resetear-contrasena?token=${token}`;
 
   const mailOptions = {
@@ -102,6 +116,11 @@ export const enviarEmailRecuperacion = async (email, nombre, token) => {
  * Enviar email de confirmación de cambio de contraseña
  */
 export const enviarEmailConfirmacionCambio = async (email, nombre) => {
+  if (!transporter) {
+    console.log('⚠️  No se puede enviar email de confirmación: servicio no configurado');
+    return;
+  }
+
   const mailOptions = {
     from: `"${process.env.NOMBRE_NEGOCIO || 'Barbería GR'}" <${process.env.EMAIL_USER}>`,
     to: email,
@@ -154,6 +173,11 @@ export const enviarEmailConfirmacionCambio = async (email, nombre) => {
  * Enviar email de confirmación de pago aprobado
  */
 export const enviarEmailPagoAprobado = async (email, nombre, turno, pago) => {
+  if (!transporter) {
+    console.log('⚠️  No se puede enviar email de pago aprobado: servicio no configurado');
+    return;
+  }
+
   const mailOptions = {
     from: `"${process.env.NOMBRE_NEGOCIO || 'Barbería GR'}" <${process.env.EMAIL_USER}>`,
     to: email,
@@ -250,6 +274,11 @@ export const enviarEmailPagoAprobado = async (email, nombre, turno, pago) => {
  * Enviar email de pago rechazado
  */
 export const enviarEmailPagoRechazado = async (email, nombre, turno) => {
+  if (!transporter) {
+    console.log('⚠️  No se puede enviar email de pago rechazado: servicio no configurado');
+    return;
+  }
+
   const mailOptions = {
     from: `"${process.env.NOMBRE_NEGOCIO || 'Barbería GR'}" <${process.env.EMAIL_USER}>`,
     to: email,
@@ -322,6 +351,11 @@ export const enviarEmailPagoRechazado = async (email, nombre, turno) => {
  * Enviar email de pago pendiente
  */
 export const enviarEmailPagoPendiente = async (email, nombre, turno, urlPago) => {
+  if (!transporter) {
+    console.log('⚠️  No se puede enviar email de pago pendiente: servicio no configurado');
+    return;
+  }
+
   const mailOptions = {
     from: `"${process.env.NOMBRE_NEGOCIO || 'Barbería GR'}" <${process.env.EMAIL_USER}>`,
     to: email,

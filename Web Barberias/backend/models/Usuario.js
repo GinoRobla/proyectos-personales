@@ -27,6 +27,7 @@ const usuarioSchema = new mongoose.Schema(
         },
       },
     },
+    telefonoVerificado: { type: Boolean, default: false },
     rol: {
       type: String,
       enum: ['cliente', 'barbero', 'admin'],

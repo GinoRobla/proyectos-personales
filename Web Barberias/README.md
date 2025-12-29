@@ -1,317 +1,562 @@
 # 💈 Sistema de Gestión de Barbería
 
-Sistema completo de gestión para barberías con reservas online, pagos de señas, recordatorios por WhatsApp y panel administrativo.
+<div align="center">
 
-## 🚀 Características Principales
+![Status](https://img.shields.io/badge/status-production--ready-brightgreen)
+![Version](https://img.shields.io/badge/version-1.0.0-blue)
+![License](https://img.shields.io/badge/license-MIT-green)
 
-### Para Clientes
-- ✅ Registro y autenticación (Email/Password + Google OAuth)
-- ✅ Reserva de turnos online con selección de servicio, barbero, fecha y hora
-- ✅ Verificación de teléfono por WhatsApp (código de 6 dígitos)
-- ✅ Pago de señas online con MercadoPago
-- ✅ Recordatorios automáticos por WhatsApp (30min antes + pago pendiente)
-- ✅ Historial completo de turnos
-- ✅ Gestión de perfil
-- ✅ Cancelación de turnos
+Plataforma integral para gestión de barberías con reservas online, pagos digitales y notificaciones automáticas vía WhatsApp.
 
-### Para Barberos
-- ✅ Dashboard personalizado con agenda del día
-- ✅ Visualización de turnos asignados
-- ✅ Estadísticas de rendimiento
-- ✅ Gestión de perfil y disponibilidad
+[Características](#-características) • [Demo](#-demo) • [Instalación](#-instalación) • [Documentación API](API_DOC.md) • [Reportar Bug](https://github.com/GinoRobla/proyectos-personales/issues)
 
-### Para Administradores
-- ✅ Panel completo de administración
-- ✅ Gestión de barberos (crear, editar, activar/desactivar)
-- ✅ Gestión de servicios (precios, duraciones)
-- ✅ Gestión de disponibilidad general y horarios
-- ✅ Gestión de pagos y señas
-- ✅ Configuración de señas (porcentaje, política)
-- ✅ Estadísticas completas del negocio
-- ✅ Reportes diarios automáticos por WhatsApp
+</div>
 
-### Automatizaciones
-- 🤖 Recordatorios por WhatsApp 30min antes del turno
-- 🤖 Recordatorios de pago pendiente 5min después de reservar
-- 🤖 Cancelación automática de turnos pendientes sin pago (15min)
-- 🤖 Marcado automático de turnos como completados
-- 🤖 Reporte diario al admin después del último turno
-- 🤖 Sistema de cron jobs cada 5 minutos
+---
+
+## 📋 Tabla de Contenidos
+
+- [Sobre el Proyecto](#-sobre-el-proyecto)
+- [Características](#-características)
+- [Stack Tecnológico](#️-stack-tecnológico)
+- [Instalación](#-instalación)
+- [Configuración](#️-configuración)
+- [Uso](#-uso)
+- [Estructura del Proyecto](#-estructura-del-proyecto)
+- [Deployment](#-deployment)
+- [Licencia](#-licencia)
+- [Contacto](#-contacto)
+
+---
+
+## 🎯 Sobre el Proyecto
+
+Sistema completo de gestión para barberías que digitaliza todo el proceso de negocio: desde la reserva de turnos hasta el pago de señas, pasando por recordatorios automáticos por WhatsApp y estadísticas en tiempo real.
+
+### El Problema
+
+Las barberías tradicionalmente manejan reservas por WhatsApp personal, anotaciones en papel o agendas físicas, lo que genera:
+
+- 📱 **Pérdida de mensajes** y confusión de horarios entre clientes
+- ⏰ **Olvidos constantes** de clientes que no asisten sin avisar
+- 📊 **Cero visibilidad** de métricas para mejorar el negocio
+- 💰 **Dificultad para gestionar señas** y pagos anticipados
+- 👥 **Ineficiencia operativa** al no poder optimizar horarios
+
+### La Solución
+
+Plataforma web moderna que permite:
+
+- ✅ Reservas online 24/7 sin intervención manual
+- ✅ Pagos de señas con MercadoPago integrado
+- ✅ Recordatorios automáticos por WhatsApp
+- ✅ Dashboard con métricas y estadísticas en tiempo real
+- ✅ Gestión completa de barberos, servicios y disponibilidad
+- ✅ 3 roles diferenciados: Cliente, Barbero, Administrador
+
+---
+
+## ✨ Características
+
+### 👤 Para Clientes
+
+- **Reserva de turnos en 4 pasos**
+  - Selección de servicio
+  - Elección de barbero (o "cualquiera")
+  - Calendario interactivo con horarios disponibles en tiempo real
+  - Confirmación y pago de seña (si aplica)
+
+- **Gestión de turnos**
+  - Historial completo de turnos (pasados, próximos, cancelados)
+  - Cancelación fácil con token único
+  - Ver estado de pago y comprobantes
+
+- **Notificaciones automáticas**
+  - WhatsApp 30 minutos antes del turno
+  - Recordatorio de pago pendiente
+  - Confirmación al completar reserva
+
+- **Verificación de teléfono**
+  - Código de 6 dígitos por WhatsApp
+  - Mayor seguridad y confiabilidad
+
+- **Perfil personalizado**
+  - Edición de datos personales
+  - Cambio de contraseña
+  - Foto de perfil
+
+### 💼 Para Barberos
+
+- **Agenda personalizada**
+  - Vista diaria de turnos asignados
+  - Información detallada de cada cliente
+  - Marcar turnos como completados
+
+- **Estadísticas de performance**
+  - Turnos completados por periodo
+  - Ingresos generados
+  - Clientes atendidos
+  - Progreso vs objetivo mensual
+  - Gráficos de tendencias
+
+- **Gestión de disponibilidad**
+  - Configurar horarios de trabajo personalizados
+  - Solicitar bloqueos (vacaciones, días libres)
+
+- **Notificaciones**
+  - WhatsApp al recibir nuevo turno
+  - Alertas de cancelaciones
+
+### 🔧 Para Administradores
+
+- **Dashboard ejecutivo**
+  - KPIs generales del negocio
+  - Turnos del día/mes
+  - Ingresos totales
+  - Ocupación por barbero
+  - Estadísticas de señas
+
+- **Gestión de turnos**
+  - CRUD completo
+  - Filtros avanzados (estado, barbero, cliente, fecha)
+  - Reasignar barberos
+  - Marcar como completado/cancelado
+
+- **Gestión de barberos**
+  - Crear/editar/eliminar barberos
+  - Establecer objetivos mensuales
+  - Ver estadísticas individuales
+  - Configurar horarios personalizados
+
+- **Gestión de servicios**
+  - CRUD de servicios ofrecidos
+  - Definir precios
+  - Activar/desactivar servicios
+  - Marcar servicios premium (requieren seña obligatoria)
+
+- **Sistema de señas configurable**
+  - Activar/desactivar globalmente
+  - Definir porcentaje de seña (10-100%)
+  - Políticas: ninguno, todos, solo nuevos clientes, solo servicios premium
+  - Aplicar/retener/devolver señas
+  - Historial de pagos
+
+- **Disponibilidad y horarios**
+  - Horarios generales por día de semana
+  - Horarios específicos por barbero
+  - Bloqueos de fechas (feriados, eventos)
+  - Bloqueos de rangos horarios
+
+- **Configuración del negocio**
+  - Nombre, dirección, teléfono, email
+  - Logo y redes sociales
+  - Duración de turnos (30/45/60 min)
+  - Días permanentemente bloqueados
+  - Políticas de cancelación
+
+- **Reportes automáticos**
+  - WhatsApp diario con resumen del día
+  - Exportación de datos
+
+---
 
 ## 🛠️ Stack Tecnológico
 
 ### Backend
-- **Node.js** + **Express.js**
-- **MongoDB** + **Mongoose**
-- **JWT** para autenticación
-- **Passport** (Google OAuth2.0)
-- **Bcrypt** para encriptación de contraseñas
-- **Twilio** para WhatsApp
-- **MercadoPago SDK** para pagos
-- **Nodemailer** para emails
-- **Node-cron** para tareas programadas
+
+| Tecnología | Versión | Uso |
+|-----------|---------|-----|
+| Node.js | 18+ | Runtime de JavaScript |
+| Express | 4.18 | Framework web (ES Modules) |
+| MongoDB | 5+ | Base de datos NoSQL |
+| Mongoose | 8.0 | ODM para MongoDB |
+| JWT | - | Autenticación stateless |
+| Bcrypt | - | Hashing de contraseñas |
+| Passport.js | - | OAuth (Google) |
+| Node-Cron | - | Tareas programadas |
+| Express Validator | - | Validación de datos |
 
 ### Frontend
-- **React 18**
-- **React Router** v6
-- **Context API** para estado global
-- **CSS3** con diseño responsive
-- **Vite** como bundler
 
-## 📦 Instalación
+| Tecnología | Versión | Uso |
+|-----------|---------|-----|
+| React | 18.2 | Biblioteca UI |
+| Vite | 5.0 | Build tool y dev server |
+| React Router | 6 | Navegación SPA |
+| Context API | - | State management |
+| Axios | - | HTTP client |
+| CSS Vanilla | - | Estilos |
 
-### Prerrequisitos
-- Node.js >= 16
-- MongoDB instalado y corriendo
-- Cuenta de Twilio (WhatsApp)
-- Cuenta de MercadoPago
-- Cuenta de Google Cloud (OAuth) - opcional
+### Servicios Externos
+
+| Servicio | Uso |
+|----------|-----|
+| **Twilio** | Envío de WhatsApp (recordatorios, confirmaciones, reportes) |
+| **MercadoPago** | Procesamiento de pagos de señas |
+| **Gmail** | Envío de emails (confirmaciones, recuperación de contraseña) |
+| **Google OAuth 2.0** | Login con cuenta Google |
+
+### Seguridad
+
+- **Helmet** - Headers de seguridad HTTP
+- **Express-mongo-sanitize** - Protección contra NoSQL injection
+- **Express-rate-limit** - Limitación de peticiones (anti brute-force)
+- **CORS** - Control de orígenes cruzados
+- **Custom CSRF** - Validación de header personalizado
+
+---
+
+## 📥 Instalación
+
+### Requisitos Previos
+
+- **Node.js** >= 18.0.0
+- **MongoDB** >= 5.0 (o cuenta en MongoDB Atlas)
+- **npm** o **yarn**
+- Cuenta activa en **Twilio** (para WhatsApp)
+- Cuenta de desarrollador en **MercadoPago**
+- Cuenta de **Gmail** (para emails)
 
 ### 1. Clonar el Repositorio
 
 ```bash
-git clone https://github.com/tu-usuario/sistema-barberia.git
-cd sistema-barberia
+git clone https://github.com/GinoRobla/proyectos-personales.git
+cd "proyectos-personales/Web Barberias"
 ```
 
-### 2. Backend
+### 2. Instalar Dependencias
 
 ```bash
+# Backend
 cd backend
+npm install
+
+# Frontend
+cd ../frontend
 npm install
 ```
 
-Crear archivo `.env` basándote en `.env.example`:
+---
+
+## ⚙️ Configuración
+
+### Variables de Entorno
+
+El proyecto requiere configurar variables de entorno en el backend y frontend.
+
+Ver **[ENV_GUIDE.md](ENV_GUIDE.md)** para la guía completa de configuración de variables de entorno.
+
+#### Backend (`backend/.env`)
+
+Copiar `backend/.env.example` y configurar:
 
 ```env
+# Servidor
+PORT=3000
+NODE_ENV=development
+
 # Base de Datos
 MONGODB_URI=mongodb://localhost:27017/barberia
-
-# Puerto
-PORT=3000
-
-# JWT
-JWT_SECRET=tu-secreto-muy-seguro-aqui
-JWT_EXPIRATION=7d
-
-# Twilio (WhatsApp)
-TWILIO_ACCOUNT_SID=tu_account_sid
-TWILIO_AUTH_TOKEN=tu_auth_token
-TWILIO_WHATSAPP_FROM=+14155238886
-
-# MercadoPago
-MERCADOPAGO_ACCESS_TOKEN=tu_access_token
-MERCADOPAGO_PUBLIC_KEY=tu_public_key
-
-# Email (Gmail)
-EMAIL_USER=tu-email@gmail.com
-EMAIL_PASS=tu-app-password
-
-# Google OAuth (opcional)
-GOOGLE_CLIENT_ID=tu_client_id
-GOOGLE_CLIENT_SECRET=tu_client_secret
-GOOGLE_CALLBACK_URL=http://localhost:3000/api/auth/google/callback
 
 # URLs
 FRONTEND_URL=http://localhost:5173
 BACKEND_URL=http://localhost:3000
+
+# JWT
+JWT_SECRET=tu-clave-super-secreta-cambiar-en-produccion
+JWT_EXPIRATION=7d
+
+# Twilio (WhatsApp)
+TWILIO_ACCOUNT_SID=tu-twilio-account-sid
+TWILIO_AUTH_TOKEN=tu-twilio-auth-token
+TWILIO_WHATSAPP_FROM=whatsapp:+14155238886
+ANTICIPACION_RECORDATORIO_MINUTOS=30
+
+# MercadoPago
+MERCADOPAGO_ACCESS_TOKEN=APP_USR-tu-access-token
+MERCADOPAGO_PUBLIC_KEY=APP_USR-tu-public-key
+
+# Email (Gmail)
+EMAIL_USER=tucorreo@gmail.com
+EMAIL_PASS=tu-app-password-de-gmail
+
+# Negocio
+NOMBRE_NEGOCIO=Barbería GR
+BUSINESS_NAME=Barbería GR
+
+# Google OAuth (opcional)
+GOOGLE_CLIENT_ID=tu-google-client-id
+GOOGLE_CLIENT_SECRET=tu-google-client-secret
+GOOGLE_CALLBACK_URL=http://localhost:3000/api/auth/google/callback
 ```
 
-### 3. Frontend
-
-```bash
-cd frontend
-npm install
-```
-
-Crear archivo `.env` (opcional, solo si cambias URLs):
+#### Frontend (`frontend/.env`)
 
 ```env
 VITE_API_URL=http://localhost:3000/api
 ```
 
-### 4. Poblar Base de Datos (Seed)
+### Poblar Base de Datos
+
+Ejecutar el seed para crear datos de prueba:
 
 ```bash
 cd backend
 npm run seed
 ```
 
-Esto creará:
-- 1 Admin
+Esto crea:
+- 1 Administrador
 - 3 Barberos
-- 15 Clientes
-- 8 Servicios
-- 438 Turnos (históricos y futuros)
-- 90 Pagos
-- Configuración completa
+- 15 Clientes de prueba
+- 10 Servicios
+- Configuración inicial del negocio
 
-## 🚀 Ejecución
+---
 
-### Desarrollo
+## 🚀 Uso
 
-Terminal 1 - Backend:
+### Desarrollo Local
+
+Abrir dos terminales:
+
+**Terminal 1 - Backend:**
 ```bash
 cd backend
 npm run dev
 ```
+Servidor en `http://localhost:3000`
 
-Terminal 2 - Frontend:
+**Terminal 2 - Frontend:**
 ```bash
 cd frontend
 npm run dev
 ```
+Aplicación en `http://localhost:5173`
 
-El frontend estará en `http://localhost:5173`
+### Credenciales de Prueba
 
-El backend estará en `http://localhost:3000`
+Después de ejecutar `npm run seed`:
 
-### Producción
+**Administrador:**
+- Email: `admin@barberia.com`
+- Contraseña: `123456`
 
-```bash
-# Backend
-cd backend
-npm start
-
-# Frontend (build)
-cd frontend
-npm run build
-# Servir la carpeta dist/ con tu servidor web preferido
-```
-
-## 🔐 Credenciales de Prueba
-
-Después de ejecutar el seed:
-
-### Admin
-- **Email**: `admin@barberia.com`
-- **Password**: `123456`
-
-### Barberos
+**Barberos:**
 - `carlos@barberia.com` / `123456`
 - `diego@barberia.com` / `123456`
 - `mateo@barberia.com` / `123456`
 
-### Clientes
+**Clientes:**
 - `juan1@mail.com` / `123456`
 - `pedro2@mail.com` / `123456`
-- ... (15 clientes en total)
+- (15 clientes disponibles: `usuario1-15@mail.com`)
 
-## 📱 Funcionalidades Detalladas
+### Scripts Disponibles
 
-### Sistema de Señas
-- Configuración flexible: todos los clientes, solo nuevos, o servicios premium
-- Porcentaje configurable (10-100%)
-- Pago online con MercadoPago
-- Estados: pendiente, aprobado, rechazado, devuelto, expirado
-- Aplicación automática al completar turno
-- Devolución automática si el turno se cancela
+#### Backend
 
-### Sistema de Recordatorios
-- **30 minutos antes**: Solo para turnos reservados/confirmados
-- **Pago pendiente**: 5 minutos después de crear turno pendiente
-- **Turno cancelado**: Notificación inmediata
-- Todos los mensajes por WhatsApp vía Twilio
+```bash
+npm start          # Servidor en producción
+npm run dev        # Servidor con auto-reload (nodemon)
+npm run seed       # Poblar base de datos
+```
 
-### Sistema de Disponibilidad
-- Configuración de horarios por día de la semana
-- Horarios específicos por barbero
-- Bloqueos de fechas especiales
-- Cálculo automático de slots disponibles
+#### Frontend
 
-### Estadísticas
-- **Para Barberos**: Turnos del día, completados, pendientes
-- **Para Admin**:
-  - Resumen diario, semanal, mensual
-  - Ingresos totales y proyectados
-  - Top servicios y barberos
-  - Tasa de cancelación
-  - Gráficos interactivos
+```bash
+npm run dev        # Servidor de desarrollo
+npm run build      # Build para producción
+npm run preview    # Preview del build
+```
 
-## 🗂️ Estructura del Proyecto
+---
+
+## 📁 Estructura del Proyecto
 
 ```
-sistema-barberia/
+Web Barberias/
 ├── backend/
-│   ├── config/           # Configuraciones (passport, rate limiter, etc.)
-│   ├── controllers/      # Controladores de rutas
-│   ├── middlewares/      # Middlewares personalizados
-│   ├── models/           # Modelos de Mongoose
-│   ├── routes/           # Definición de rutas
-│   ├── services/         # Lógica de negocio
-│   │   ├── turnos/       # Servicios de turnos (modularizado)
-│   │   └── estadisticas/ # Servicios de estadísticas
-│   ├── utils/            # Utilidades y helpers
-│   ├── validators/       # Validadores de datos
-│   ├── seed.js           # Script de seed
-│   ├── index.js          # Punto de entrada
-│   └── .env.example      # Ejemplo de variables de entorno
+│   ├── config/              # Configuraciones (Passport, rate limiter, validación env)
+│   ├── controllers/         # Controladores de rutas
+│   ├── middlewares/         # Middlewares (auth, validación, CSRF)
+│   ├── models/              # Schemas de Mongoose
+│   │   ├── Usuario.js
+│   │   ├── Cliente.js
+│   │   ├── Barbero.js
+│   │   ├── Turno.js
+│   │   ├── Servicio.js
+│   │   ├── Pago.js
+│   │   ├── DisponibilidadGeneral.js
+│   │   ├── DisponibilidadBarbero.js
+│   │   ├── Bloqueo.js
+│   │   ├── CodigoVerificacion.js
+│   │   ├── TokenRecuperacion.js
+│   │   └── ConfiguracionNegocio.js
+│   ├── routes/              # Rutas de la API
+│   │   ├── authRoutes.js
+│   │   ├── turnoRoutes.js
+│   │   ├── pagoRoutes.js
+│   │   ├── barberoRoutes.js
+│   │   ├── servicioRoutes.js
+│   │   ├── disponibilidadRoutes.js
+│   │   ├── estadisticasRoutes.js
+│   │   ├── configuracionRoutes.js
+│   │   └── verificacionRoutes.js
+│   ├── services/            # Lógica de negocio
+│   │   ├── turnos/         # Servicios modulares de turnos
+│   │   ├── estadisticas/   # Servicios de estadísticas
+│   │   ├── authService.js
+│   │   ├── whatsappService.js
+│   │   ├── pagoService.js
+│   │   ├── emailService.js
+│   │   └── cronService.js
+│   ├── scripts/             # Scripts de utilidad
+│   │   ├── seed.js
+│   │   └── backup-database.js
+│   ├── validators/          # Validadores con express-validator
+│   ├── utils/               # Utilidades y helpers
+│   ├── index.js             # Entry point
+│   ├── package.json
+│   └── .env.example
 │
-└── frontend/
-    ├── src/
-    │   ├── components/   # Componentes reutilizables
-    │   ├── context/      # Contextos de React
-    │   ├── hooks/        # Custom hooks
-    │   ├── pages/        # Páginas/vistas
-    │   │   ├── admin/    # Páginas del admin
-    │   │   ├── barbero/  # Páginas del barbero
-    │   │   └── cliente/  # Páginas del cliente
-    │   ├── services/     # Servicios de API
-    │   ├── utils/        # Utilidades
-    │   ├── App.jsx       # Componente principal
-    │   └── main.jsx      # Punto de entrada
-    └── public/           # Assets estáticos
+├── frontend/
+│   ├── src/
+│   │   ├── components/      # Componentes reutilizables
+│   │   ├── context/         # Context API (Auth, Toast)
+│   │   ├── hooks/           # Custom hooks
+│   │   ├── pages/           # Vistas por rol
+│   │   │   ├── admin/       # Panel de administración
+│   │   │   ├── barbero/     # Dashboard del barbero
+│   │   │   ├── cliente/     # Área del cliente
+│   │   │   └── reservarTurno/  # Flujo de reserva (4 pasos)
+│   │   ├── services/        # API calls (Axios)
+│   │   ├── utils/           # Helpers
+│   │   ├── App.jsx          # Routing principal
+│   │   └── main.jsx         # Entry point
+│   ├── public/
+│   ├── package.json
+│   └── vite.config.js
+│
+├── API_DOC.md               # Documentación completa de la API
+├── ENV_GUIDE.md             # Guía de configuración de variables
+├── GUIA_DEPLOY_SIMPLE.md    # Guía de deployment
+├── README.md                # Este archivo
+└── .gitignore
 ```
 
-## 🔄 Flujos Principales
+---
 
-### Reserva de Turno (Cliente)
-1. Selecciona servicio
-2. Selecciona barbero (o indistinto)
-3. Elige fecha y hora
-4. Confirma reserva
-5. Si requiere seña → Paga con MercadoPago
-6. Recibe confirmación por WhatsApp
+## 🚢 Deployment
 
-### Gestión de Turno (Admin/Barbero)
-1. Ve turnos en dashboard
-2. Marca como completado
-3. Sistema aplica seña automáticamente
-4. Cliente recibe notificación
+### Vercel + Railway (Recomendado)
 
-## 📊 Modelos de Datos
+La forma más fácil de deployar el proyecto es usando:
+- **Vercel** para el frontend (React)
+- **Railway** para el backend (Node.js + MongoDB)
 
-- **Usuario**: Datos de autenticación y perfil
-- **Cliente**: Información del cliente
-- **Barbero**: Información y disponibilidad del barbero
-- **Servicio**: Servicios ofrecidos
-- **Turno**: Reservas y citas
-- **Pago**: Señas y pagos
-- **DisponibilidadGeneral**: Horarios por día de semana
-- **DisponibilidadBarbero**: Excepciones de horario por barbero
-- **Bloqueo**: Fechas bloqueadas
-- **ConfiguracionNegocio**: Configuración general
-- **CodigoVerificacion**: Códigos de verificación de teléfono
-- **TokenRecuperacion**: Tokens de recuperación de contraseña
+Ver **[GUIA_DEPLOY_SIMPLE.md](GUIA_DEPLOY_SIMPLE.md)** para instrucciones detalladas paso a paso.
 
-## 🐛 Debugging
+### Checklist Pre-Deployment
 
-Los logs del backend se muestran en la consola con prefijos:
-- `[TURNOS]`: Operaciones de turnos
-- `[RECORDATORIO PAGO]`: Recordatorios de pago
-- `[CRON]`: Tareas programadas
-- `[DEBUG]`: Información de debugging
+- [ ] Cambiar `JWT_SECRET` a valor aleatorio seguro
+- [ ] Configurar `MONGODB_URI` de producción (MongoDB Atlas)
+- [ ] Actualizar `FRONTEND_URL` y `BACKEND_URL` con dominios reales
+- [ ] Configurar credenciales de **PRODUCCIÓN** en Twilio y MercadoPago
+- [ ] Obtener Gmail App Password
+- [ ] Ejecutar `npm audit` y resolver vulnerabilidades
+- [ ] Configurar variables de entorno en plataforma de deploy
+- [ ] Ejecutar seed en BD de producción
+- [ ] Configurar dominio personalizado (opcional)
+- [ ] Verificar que HTTPS esté activo
 
-## 📝 Licencia
+---
 
-MIT
+## 📚 Documentación Adicional
 
-## 👨‍💻 Autor
+- **[API_DOC.md](API_DOC.md)** - Documentación completa de todos los endpoints de la API
+- **[ENV_GUIDE.md](ENV_GUIDE.md)** - Guía detallada de configuración de variables de entorno
+- **[GUIA_DEPLOY_SIMPLE.md](GUIA_DEPLOY_SIMPLE.md)** - Guía paso a paso de deployment
+- **[CLAUDE.md](CLAUDE.md)** - Documentación técnica para desarrollo
 
-Gino Roblabel Leggia
+---
+
+## 🔒 Seguridad
+
+El sistema implementa múltiples capas de seguridad:
+
+- **Autenticación**: JWT con expiración configurable
+- **Contraseñas**: Hasheadas con bcrypt (salt rounds: 10)
+- **Rate Limiting**: Límites por IP en endpoints sensibles
+- **CORS**: Configurado para dominios específicos
+- **NoSQL Injection**: Sanitización de inputs con express-mongo-sanitize
+- **Headers**: Helmet para headers de seguridad HTTP
+- **CSRF**: Validación de header custom en endpoints críticos
+- **Validación**: Express-validator en todos los inputs
+
+---
+
+## 🧪 Testing
+
+_(En desarrollo)_
+
+El proyecto está preparado para implementar tests unitarios y de integración:
+
+```bash
+# Backend (configurar Jest + Supertest)
+cd backend
+npm test
+
+# Frontend (configurar Vitest + Testing Library)
+cd frontend
+npm test
+```
+
+---
+
+## 🤝 Contribuir
+
+Las contribuciones son bienvenidas. Para cambios importantes:
+
+1. Fork del proyecto
+2. Crear branch de feature: `git checkout -b feature/nueva-funcionalidad`
+3. Commit de cambios: `git commit -m 'feat: agregar nueva funcionalidad'`
+4. Push al branch: `git push origin feature/nueva-funcionalidad`
+5. Abrir Pull Request
+
+Ver [Conventional Commits](https://www.conventionalcommits.org/) para el formato de commits.
+
+---
+
+## 📄 Licencia
+
+Este proyecto está bajo la Licencia MIT. Ver archivo [LICENSE](LICENSE) para más detalles.
+
+---
+
+## 👤 Contacto
+
+**Gino Robla Belleggia**
+
+- 💼 LinkedIn: [Gino Robla](https://www.linkedin.com/in/gino-robla-803a9337b/)
+- 📧 Email: ginoroblabelleggia@gmail.com
+- 🐙 GitHub: [@GinoRobla](https://github.com/GinoRobla)
+
+---
 
 ## 🙏 Agradecimientos
 
-- Twilio por la API de WhatsApp
-- MercadoPago por la API de pagos
-- Todos los contribuidores y testers
+- MercadoPago por la excelente documentación de su API
+- Twilio por el sandbox de WhatsApp
+- MongoDB y Mongoose por la documentación
+- Comunidad de React y Node.js
+
+---
+
+<div align="center">
+
+**⭐ Si este proyecto te resultó útil, dale una estrella en GitHub ⭐**
+
+Desarrollado con ❤️ por [Gino Robla](https://github.com/GinoRobla)
+
+</div>

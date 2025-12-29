@@ -52,12 +52,8 @@ export const validateEnv = () => {
     throw new Error(`Missing required environment variables: ${missing.join(', ')}`);
   }
 
-  // Mostrar advertencias de variables opcionales
-  if (warnings.length > 0) {
-    console.warn('⚠️  Variables de entorno opcionales no configuradas:');
-    warnings.forEach((v) => console.warn(`   - ${v}`));
-    console.warn('   (Algunas funcionalidades pueden estar limitadas)\n');
-  }
+  // No mostrar advertencias de variables opcionales en desarrollo
+  // Si necesitas alguna funcionalidad específica, configúrala en .env
 
   console.log('✅ Variables de entorno validadas correctamente\n');
 };

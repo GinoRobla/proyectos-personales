@@ -44,6 +44,12 @@ const app = express();
 // Define el puerto. Usa el del .env o 3000 por defecto
 const PORT = process.env.PORT || 3000;
 
+// Configurar trust proxy para rate limiting detrás de Nginx/CloudFlare
+// Solo en producción para evitar problemas en desarrollo
+if (process.env.NODE_ENV === 'production') {
+  app.set('trust proxy', 1); // Confiar en el primer proxy
+}
+
 // ============================================================================
 // MIDDLEWARES (Se ejecutan en orden antes de las rutas)
 // ============================================================================
@@ -143,13 +149,47 @@ app.get('/', (req, res) => {
   });
 });
 
-// Ruta de Salud (/api/health): Verifica que el servidor esté vivo
-app.get('/api/health', (req, res) => {
-  res.json({
-    estado: 'OK',
+// Ruta de Salud (/api/health): Verifica que el servidor esté vivo y servicios críticos
+app.get('/api/health', async (req, res) => {
+  const health = {
+    status: 'OK',
     timestamp: new Date().toISOString(),
-    uptime: `${Math.floor(process.uptime())} segundos`,
-  });
+    uptime: process.uptime(),
+    environment: process.env.NODE_ENV || 'development',
+    checks: {}
+  };
+
+  try {
+    // Verificar MongoDB
+    const mongoose = (await import('mongoose')).default;
+    health.checks.database = {
+      status: mongoose.connection.readyState === 1 ? 'OK' : 'ERROR',
+      readyState: mongoose.connection.readyState,
+      name: mongoose.connection.name
+    };
+
+    // Verificar memoria
+    const memoryUsage = process.memoryUsage();
+    const memoryPercent = memoryUsage.heapUsed / memoryUsage.heapTotal;
+    health.checks.memory = {
+      status: memoryPercent < 0.9 ? 'OK' : 'WARNING',
+      heapUsed: `${Math.round(memoryUsage.heapUsed / 1024 / 1024)}MB`,
+      heapTotal: `${Math.round(memoryUsage.heapTotal / 1024 / 1024)}MB`,
+      percentage: `${Math.round(memoryPercent * 100)}%`
+    };
+
+    // Status general
+    const hasError = Object.values(health.checks).some(c => c.status === 'ERROR');
+    health.status = hasError ? 'ERROR' : 'OK';
+
+    res.status(hasError ? 503 : 200).json(health);
+  } catch (error) {
+    res.status(503).json({
+      ...health,
+      status: 'ERROR',
+      error: error.message
+    });
+  }
 });
 
 // ============================================================================

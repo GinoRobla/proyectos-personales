@@ -318,6 +318,12 @@ const calcularHorarioReporteDiario = async () => {
     const horariosReporte = {};
 
     for (const disp of disponibilidades) {
+      // [FIX] Verificar si el día está bloqueado permanentemente
+      if (config.diasBloqueadosPermanente && config.diasBloqueadosPermanente.includes(disp.diaSemana)) {
+        console.log(`ℹ️  Día ${disp.diaSemana} tiene disponibilidad pero está bloqueado permanentemente. No se programará reporte.`);
+        continue; // Saltar este día
+      }
+
       // Parsear horaFin (ej: "20:00")
       const [hora, minuto] = disp.horaFin.split(':').map(Number);
 

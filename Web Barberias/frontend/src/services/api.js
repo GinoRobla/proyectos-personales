@@ -20,6 +20,7 @@ const api = axios.create({
   // 'headers' por defecto para todas las peticiones
   headers: {
     'Content-Type': 'application/json',
+    'X-Requested-With': 'XMLHttpRequest', // Protección CSRF básica
   },
 });
 

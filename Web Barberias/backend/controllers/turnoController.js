@@ -122,10 +122,42 @@ export const cancelarTurno = async (req, res) => {
  */
 export const cancelarTurnoPublico = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { id, token } = req.params;
 
-    // Verificar que el turno existe y está pendiente
+    // Verificar que el turno existe
     const turno = await turnoService.obtenerPorId(id);
+
+    // Validar token ANTES de verificar estado
+    if (!turno || turno.tokenCancelacion !== token) {
+      return res.status(403).send(`
+        <!DOCTYPE html>
+        <html lang="es">
+        <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Link inválido</title>
+          <style>
+            * { margin: 0; padding: 0; box-sizing: border-box; }
+            body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; background: #1a1a1a; padding: 1rem; }
+            .container { background: #2d2d2d; padding: 3rem 2rem; border-radius: 16px; box-shadow: 0 20px 60px rgba(0,0,0,0.5); text-align: center; max-width: 480px; width: 100%; border: 1px solid #404040; }
+            .icon-circle { width: 80px; height: 80px; margin: 0 auto 1.5rem; background: #ef4444; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+            .icon-circle svg { width: 40px; height: 40px; stroke: white; stroke-width: 3; fill: none; }
+            h1 { color: #ef4444; margin: 1rem 0; font-size: 1.75rem; font-weight: 600; }
+            p { color: #a1a1a1; line-height: 1.7; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="icon-circle">
+              <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </div>
+            <h1>⚠️ Link de cancelación inválido</h1>
+            <p>Este link no es válido o ha expirado. Verifica que hayas copiado el link completo.</p>
+          </div>
+        </body>
+        </html>
+      `);
+    }
 
     if (!turno) {
       return res.status(404).send(`

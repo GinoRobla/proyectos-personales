@@ -4,11 +4,28 @@ import dotenv from 'dotenv';
 // Carga las variables de entorno (ej: .env)
 dotenv.config();
 
-// Configura el cliente de Twilio con tus credenciales
-const cliente = twilio(
-  process.env.TWILIO_ACCOUNT_SID,
-  process.env.TWILIO_AUTH_TOKEN
-);
+// Configura el cliente de Twilio solo si las credenciales son válidas
+let cliente = null;
+
+// Verificar si las credenciales de Twilio están configuradas correctamente
+const twilioConfigured =
+  process.env.TWILIO_ACCOUNT_SID &&
+  process.env.TWILIO_AUTH_TOKEN &&
+  process.env.TWILIO_ACCOUNT_SID.startsWith('AC'); // Validación básica
+
+if (twilioConfigured) {
+  try {
+    cliente = twilio(
+      process.env.TWILIO_ACCOUNT_SID,
+      process.env.TWILIO_AUTH_TOKEN
+    );
+  } catch (error) {
+    console.warn('⚠️  No se pudo inicializar Twilio:', error.message);
+    console.warn('⚠️  Los mensajes de WhatsApp no se enviarán.');
+  }
+} else {
+  console.log('ℹ️  Twilio/WhatsApp no configurado. Para habilitar notificaciones, configura las credenciales en .env');
+}
 
 /**
  * -------------------------------------------------------------------
@@ -43,27 +60,33 @@ const normalizarTelefono = (telefono) => {
  * Maneja la validación, normalización y el bloque try/catch.
  */
 export const _enviarWhatsApp = async (telefonoDestino, mensaje) => {
-  // 1. Verifica si el número de Twilio está configurado
+  // 1. Verifica si el cliente de Twilio está inicializado
+  if (!cliente) {
+    console.log('ℹ️ Cliente de Twilio no inicializado, saltando envío.');
+    return false;
+  }
+
+  // 2. Verifica si el número de Twilio está configurado
   if (!process.env.TWILIO_WHATSAPP_FROM) {
     console.log('ℹ️ WhatsApp no configurado, saltando envío.');
     return false;
   }
 
-  // 2. Verifica si el destinatario tiene un teléfono
+  // 3. Verifica si el destinatario tiene un teléfono
   if (!telefonoDestino) {
     console.log('ℹ️ No hay teléfono de destino, saltando envío.');
     return false;
   }
 
-  // 3. Normaliza el número de teléfono
+  // 4. Normaliza el número de teléfono
   const telefonoNormalizado = normalizarTelefono(telefonoDestino);
   if (!telefonoNormalizado) {
     console.log(`ℹ️ Número de teléfono inválido (${telefonoDestino}), saltando envío.`);
     return false;
   }
-  
+
   try {
-    // 4. Intenta enviar el mensaje
+    // 5. Intenta enviar el mensaje
     await cliente.messages.create({
       from: `whatsapp:${process.env.TWILIO_WHATSAPP_FROM}`, // Número de Twilio
       to: `whatsapp:${telefonoNormalizado}`, // Número del destinatario
@@ -73,7 +96,7 @@ export const _enviarWhatsApp = async (telefonoDestino, mensaje) => {
     console.log(`📱 WhatsApp enviado a ${telefonoNormalizado}`);
     return true;
   } catch (error) {
-    // 5. Maneja errores de envío
+    // 6. Maneja errores de envío
     console.error(`❌ Error al enviar WhatsApp a ${telefonoNormalizado}:`, error.message);
     return false;
   }
@@ -90,16 +113,21 @@ export const _enviarWhatsApp = async (telefonoDestino, mensaje) => {
  */
 export const verificarConfiguracion = async () => {
   try {
-    if (!process.env.TWILIO_ACCOUNT_SID || !process.env.TWILIO_AUTH_TOKEN) {
-      console.log('⚠️  Twilio no configurado. Los mensajes de WhatsApp no se enviarán.');
+    if (!cliente) {
       return false;
     }
+
+    if (!process.env.TWILIO_ACCOUNT_SID || !process.env.TWILIO_AUTH_TOKEN) {
+      return false;
+    }
+
     // Intenta "buscar" la cuenta para validar las credenciales
     await cliente.api.accounts(process.env.TWILIO_ACCOUNT_SID).fetch();
     console.log('✅ Servicio de WhatsApp (Twilio) listo para enviar mensajes');
     return true;
   } catch (error) {
-    console.error('❌ Error al verificar configuración de Twilio:', error.message);
+    console.warn('⚠️  Error al verificar configuración de Twilio:', error.message);
+    console.warn('⚠️  Los mensajes de WhatsApp no se enviarán.');
     return false;
   }
 };
@@ -217,9 +245,9 @@ export const enviarRecordatorioPagoPendiente = async (turno, clienteData, barber
     timeZone: 'UTC',
   });
 
-  // 3. Crear link de cancelación (endpoint público del backend)
+  // 3. Crear link de cancelación con token de seguridad (endpoint público del backend)
   const backendUrl = process.env.BACKEND_URL || 'http://localhost:3000';
-  const urlCancelar = `${backendUrl}/api/turnos/cancelar-publico/${turno._id}`;
+  const urlCancelar = `${backendUrl}/api/turnos/cancelar-publico/${turno._id}/${turno.tokenCancelacion}`;
 
   // 4. Construir el mensaje
   const mensaje = `⚠️ *¡Pago pendiente!*\n\n` +
