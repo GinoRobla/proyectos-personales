@@ -8,10 +8,7 @@
 
 Bienvenido a mi portafolio de proyectos. Este espacio representa mi trabajo como **desarrollador Full Stack freelance**, donde cada proyecto resuelve problemas reales para clientes y negocios.
 
-Aquí encontrarás soluciones desarrolladas con el **stack MERN** (MongoDB, Express, React, Node.js), sistemas de gestión empresarial y aplicaciones de escritorio, todas siguiendo las mejores prácticas de la industria.
-
-> **Nota:** Por acuerdos de confidencialidad con clientes, algunos repositorios contienen versiones simplificadas que demuestran la arquitectura y tecnologías utilizadas, omitiendo datos sensibles y lógica de negocio específica.
-
+Aquí encontrarás soluciones desarrolladas con el **stack MERN** (MongoDB, Express, React, Node.js), sistemas de gestión empresarial y aplicaciones de escritorio
 ---
 
 ## 🎯 Filosofía de Desarrollo
