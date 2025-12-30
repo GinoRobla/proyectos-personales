@@ -59,20 +59,20 @@ Aquí encontrarás soluciones desarrolladas con el **stack MERN** (MongoDB, Expr
   </tr>
   <tr>
     <td><strong>💈 Sistema de Gestión de Barbería</strong></td>
-    <td>Plataforma integral que digitalizó completamente la gestión de turnos, clientes y barberos. Incluye dashboard con métricas de negocio, sistema de roles (Admin/Barbero/Cliente), recordatorios automáticos y panel de administración completo.</td>
-    <td><strong>MERN Stack</strong><br>MongoDB, Express, React, Node.js, JWT, Multer</td>
+    <td>Plataforma web que moderniza la gestión de barberías, permitiendo a los clientes reservar turnos online y a los barberos administrarlos desde su agenda. El sistema incluye roles, gestión de servicios, precios, pagos y señas, recordatorios automáticos y un dashboard con métricas clave para el administrador.</td>
+    <td><strong>MERN Stack</strong><br>MongoDB, Express, React, Node.js</td>
     <td>Peluquería Local</td>
   </tr>
   <tr>
     <td><strong>🛒 Sistema POS (Punto de Venta)</strong></td>
-    <td>Aplicación de escritorio completa para gestión de ventas con escáner de códigos de barras (físico y móvil), control de inventario en tiempo real, dashboard con 10+ KPIs y funcionalidad 100% offline.</td>
+    <td>Sistema de escritorio diseñado para comercios, que permite registrar ventas mediante escáner de códigos de barras, gestionar el stock en tiempo real y analizar el rendimiento del negocio a través de un dashboard con indicadores clave. Funciona completamente offline, sin depender de conexión a internet.</td>
     <td><strong>React + Electron</strong><br>Node.js, Express, PostgreSQL/SQLite</td>
     <td>Panadería Familiar</td>
   </tr>
   <tr>
     <td><strong>🌐 Red Social Full Stack</strong></td>
-    <td>Plataforma social completa con sistema de autenticación JWT, follow/unfollow en tiempo real, feed personalizado, upload de imágenes de perfil y 30+ endpoints REST documentados.</td>
-    <td><strong>MERN Stack</strong><br>MongoDB, Express, React, Node.js, JWT</td>
+    <td>Red social web que permite a los usuarios conectarse entre sí mediante un sistema de follow/unfollow, compartir contenido y visualizar un feed personalizado. La plataforma cuenta con autenticación segura mediante JWT y soporte para subida de archivos.</td>
+    <td><strong>MERN Stack</strong><br>MongoDB, Express, React, Node.js</td>
     <td>Proyecto Personal</td>
   </tr>
 </table>
@@ -88,8 +88,8 @@ Aquí encontrarás soluciones desarrolladas con el **stack MERN** (MongoDB, Expr
   </tr>
   <tr>
     <td><strong>🛍️ E-commerce Chains Carhue</strong></td>
-    <td>Tienda online completa para emprendimiento de accesorios y cadenas. Incluye catálogo de productos, carrito de compras, integración con Instagram (@chains.carhue), panel de administración para gestión de inventario y pedidos.</td>
-    <td><strong>MERN Stack</strong><br>React, Node.js, MongoDB, Express, Pasarela de pagos</td>
+    <td>Tienda online completa para emprendimiento de accesorios y cadenas. Incluye catálogo de productos, carrito de compras, panel de administración para gestión de inventario y pedidos.</td>
+    <td><strong>MERN Stack</strong><br>React, Node.js, MongoDB, Express</td>
     <td><a href="https://instagram.com/chains.carhue" target="_blank">@chains.carhue</a></td>
   </tr>
 </table>
