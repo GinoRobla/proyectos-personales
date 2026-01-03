@@ -37,15 +37,47 @@ async function buscarProductos(textoBusqueda) {
 
 // 4. CREAR UN NUEVO PRODUCTO
 async function crearProducto(datosProducto) {
-    if (datosProducto.barcode) {
-        const existe = await Product.findOne({ where: { barcode: datosProducto.barcode } });
+    // Limpiar datos: convertir strings vacíos en null para campos opcionales
+    const datosLimpios = { ...datosProducto };
+    if (datosLimpios.barcode === '') datosLimpios.barcode = null;
+    if (datosLimpios.image === '') datosLimpios.image = null;
+
+    // Verificar si el código de barras ya existe (solo si no es null/vacío)
+    if (datosLimpios.barcode) {
+        const existe = await Product.findOne({ where: { barcode: datosLimpios.barcode } });
         if (existe) throw new Error('Ya existe un producto con ese código de barras');
     }
-    const producto = await Product.create(datosProducto);
+    const producto = await Product.create(datosLimpios);
     return producto;
 }
 
-// 5. ACTUALIZAR EL STOCK DE UN PRODUCTO
+// 5. ACTUALIZAR UN PRODUCTO COMPLETO
+async function actualizarProducto(idProducto, datosActualizados) {
+    const producto = await Product.findByPk(idProducto);
+    if (!producto) throw new Error('Producto no encontrado');
+
+    // Limpiar datos: convertir strings vacíos en null para campos opcionales
+    const datosLimpios = { ...datosActualizados };
+    if (datosLimpios.barcode === '') datosLimpios.barcode = null;
+    if (datosLimpios.image === '') datosLimpios.image = null;
+
+    // Verificar si el código de barras ya existe en otro producto (solo si no es null/vacío)
+    if (datosLimpios.barcode && datosLimpios.barcode !== producto.barcode) {
+        const existe = await Product.findOne({
+            where: {
+                barcode: datosLimpios.barcode,
+                id: { [Op.ne]: idProducto }
+            }
+        });
+        if (existe) throw new Error('Ya existe un producto con ese código de barras');
+    }
+
+    // Actualizar todos los campos proporcionados
+    await producto.update(datosLimpios);
+    return producto;
+}
+
+// 6. ACTUALIZAR SOLO EL STOCK DE UN PRODUCTO
 async function actualizarStock(idProducto, nuevoStock) {
     const producto = await Product.findByPk(idProducto);
     if (!producto) throw new Error('Producto no encontrado');
@@ -54,7 +86,7 @@ async function actualizarStock(idProducto, nuevoStock) {
     return producto;
 }
 
-// 6. OBTENER PRODUCTOS CON POCO STOCK
+// 7. OBTENER PRODUCTOS CON POCO STOCK
 async function obtenerProductosPocoStock(limite = 5) {
     return await Product.findAll({
         where: { stock: { [Op.lte]: limite } },
@@ -62,7 +94,7 @@ async function obtenerProductosPocoStock(limite = 5) {
     });
 }
 
-// 7. ELIMINAR UN PRODUCTO
+// 8. ELIMINAR UN PRODUCTO
 async function eliminarProducto(idProducto) {
     const producto = await Product.findByPk(idProducto);
     if (!producto) throw new Error('Producto no encontrado');
@@ -70,12 +102,13 @@ async function eliminarProducto(idProducto) {
     return { message: 'Producto eliminado correctamente' };
 }
 
-// 8. EXPORTAR TODAS LAS FUNCIONES PARA USAR EN OTROS ARCHIVOS
+// 9. EXPORTAR TODAS LAS FUNCIONES PARA USAR EN OTROS ARCHIVOS
 module.exports = {
     obtenerTodosLosProductos,
     buscarProductoPorCodigo,
     buscarProductos,
     crearProducto,
+    actualizarProducto,
     actualizarStock,
     obtenerProductosPocoStock,
     eliminarProducto

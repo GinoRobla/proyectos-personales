@@ -1,9 +1,20 @@
-# 🛒 Sistema POS - Punto de Venta Web
+# 🛒 Sistema POS - Punto de Venta Web y Escritorio
 
 > **Sistema completo de punto de venta con escaneo de códigos de barras, gestión de inventario y estadísticas en tiempo real**
 
 ![Sistema POS - Escaneo de Códigos](./screenshots/ventas.gif)
 *Demostración en vivo: escaneando códigos de barras y agregando productos al carrito automáticamente*
+
+## 💻 Versión de Escritorio (NUEVO)
+
+**¡Ahora disponible como aplicación de escritorio!**
+
+- ✅ **Instalador de Windows** - Un solo archivo .exe
+- ✅ **100% Offline** - No requiere internet para funcionar
+- ✅ **Datos locales** - Base de datos SQLite incluida
+- ✅ **Fácil distribución** - Instala en cualquier PC sin dependencias
+
+**Ver:** [Manual de Electron](./MANUAL.md) para instrucciones de instalación y distribución.
 
 ## ✨ Características Principales
 

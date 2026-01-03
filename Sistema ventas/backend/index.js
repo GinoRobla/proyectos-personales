@@ -17,12 +17,17 @@ const app = express();
 
 // Configurar CORS para producción
 const corsOptions = {
-    origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+    origin: process.env.FRONTEND_URL || ['http://localhost:5173', 'http://localhost:3001'],
     credentials: true,
     optionsSuccessStatus: 200
 };
 
-app.use(cors(corsOptions));
+// En modo Electron, permitir todas las conexiones locales
+if (process.env.NODE_ENV === 'production') {
+    app.use(cors());
+} else {
+    app.use(cors(corsOptions));
+}
 app.use(express.json());
 
 // Importar y usar rutas

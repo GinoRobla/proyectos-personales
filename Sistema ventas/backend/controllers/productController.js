@@ -68,10 +68,13 @@ const productController = {
         try {
             const { id } = req.params;
             const updateData = req.body;
-            const updatedProduct = await productService.actualizarStock(id, updateData.stock);
+            console.log('📝 Actualizando producto ID:', id);
+            console.log('📝 Datos recibidos:', updateData);
+            const updatedProduct = await productService.actualizarProducto(id, updateData);
             res.json(updatedProduct);
         } catch (error) {
-            console.error('Error en updateProduct:', error);
+            console.error('❌ Error en updateProduct:', error.message);
+            console.error('Stack:', error.stack);
             res.status(400).json({ message: error.message });
         }
     },

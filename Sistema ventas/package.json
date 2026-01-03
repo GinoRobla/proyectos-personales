@@ -1,0 +1,63 @@
+{
+  "name": "sistema-ventas",
+  "version": "1.0.0",
+  "description": "Sistema completo de punto de venta con escaneo de códigos de barras, gestión de inventario y estadísticas en tiempo real",
+  "main": "electron-main.js",
+  "scripts": {
+    "electron:dev": "cross-env NODE_ENV=development electron .",
+    "electron:build": "npm run build:all && electron-builder",
+    "build:all": "npm run build:frontend && npm run prepare:backend",
+    "build:frontend": "cd frontend && npm run build && cd ..",
+    "prepare:backend": "node scripts/prepare-backend.js",
+    "dist": "npm run build:all && electron-builder --win --x64"
+  },
+  "keywords": [
+    "pos",
+    "punto-de-venta",
+    "inventario",
+    "ventas"
+  ],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "cross-env": "^10.1.0",
+    "electron": "^39.2.7",
+    "electron-builder": "^26.0.12"
+  },
+  "build": {
+    "appId": "com.sistemaventas.app",
+    "productName": "Sistema de Ventas",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "electron-main.js",
+      "dist/**/*",
+      "!backend/node_modules",
+      "!backend/.env",
+      "!backend/.env.*"
+    ],
+    "extraResources": [
+      {
+        "from": "backend",
+        "to": "app/backend"
+      },
+      {
+        "from": "backend/node_modules",
+        "to": "app/backend/node_modules"
+      }
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "icon.ico",
+      "signAndEditExecutable": false
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Sistema de Ventas"
+    }
+  }
+}

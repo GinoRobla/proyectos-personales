@@ -3,9 +3,20 @@ node_modules/
 
 # Env files
 .env
+.env.*.local
 
 # database local
 data
 
 # IA
 .claude
+
+# Electron build
+dist/
+release/
+*.log
+build
+
+# Archivos temporales de Windows
+Thumbs.db
+*.exe
