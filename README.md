@@ -36,7 +36,6 @@ Aquí encontrarás soluciones desarrolladas con el **stack MERN** (MongoDB, Expr
 
 ### Databases
 ![MongoDB](https://img.shields.io/badge/MongoDB-47A248?style=for-the-badge&logo=mongodb&logoColor=white)
-![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white)
 ![SQLite](https://img.shields.io/badge/SQLite-07405E?style=for-the-badge&logo=sqlite&logoColor=white)
 
 ### Tools & Other
@@ -66,7 +65,7 @@ Aquí encontrarás soluciones desarrolladas con el **stack MERN** (MongoDB, Expr
   <tr>
     <td><strong>🛒 Sistema POS (Punto de Venta)</strong></td>
     <td>Sistema de escritorio diseñado para comercios, que permite registrar ventas mediante escáner de códigos de barras, gestionar el stock en tiempo real y analizar el rendimiento del negocio a través de un dashboard con indicadores clave. Funciona completamente offline, sin depender de conexión a internet.</td>
-    <td><strong>React + Electron</strong><br>Node.js, Express, PostgreSQL/SQLite</td>
+    <td><strong>React + Electron</strong><br>Node.js, Express, SQLite</td>
     <td>Panadería Familiar</td>
   </tr>
   <tr>
@@ -124,7 +123,6 @@ Todos los proyectos implementan:
 ![](https://img.shields.io/badge/React-80%25-61DAFB?style=flat&logo=react&logoColor=white)
 ![](https://img.shields.io/badge/Node.js-80%25-339933?style=flat&logo=node.js&logoColor=white)
 ![](https://img.shields.io/badge/MongoDB-60%25-47A248?style=flat&logo=mongodb&logoColor=white)
-![](https://img.shields.io/badge/PostgreSQL-40%25-316192?style=flat&logo=postgresql&logoColor=white)
 
 </div>
 
