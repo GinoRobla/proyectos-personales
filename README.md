@@ -188,9 +188,6 @@ Tu apoyo motiva a seguir creando y compartiendo soluciones con la comunidad.
 
 ---
 
-<div align="center">
-  <img src="https://github-readme-stats.vercel.app/api?username=GinoRobla&show_icons=true&theme=tokyonight&hide_border=true&bg_color=1a1b27&title_color=6AD3F7&icon_color=FF6B6B&text_color=ffffff" alt="GitHub Stats" />
-</div>
 
 <div align="center">
   
