@@ -78,7 +78,7 @@ function crearVentana() {
             contextIsolation: true,
             webSecurity: true
         },
-        icon: path.join(__dirname, 'icon.png'), // Puedes agregar un icono
+        icon: path.join(__dirname, 'icon.ico'),
         autoHideMenuBar: true, // Oculta el menú por defecto
         title: 'Sistema de Ventas'
     });
