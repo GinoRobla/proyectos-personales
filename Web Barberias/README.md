@@ -6,8 +6,6 @@
 
 Plataforma integral para gestión de barberías con reservas online, pagos digitales y notificaciones automáticas vía WhatsApp.
 
-[Características](#-características) • [Demo](#-demo) • [Instalación](#-instalación) • [Documentación API](API_DOC.md) • [Reportar Bug](https://github.com/GinoRobla/proyectos-personales/issues)
-
 </div>
 
 ---
