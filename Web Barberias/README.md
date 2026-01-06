@@ -2,8 +2,6 @@
 
 <div align="center">
 
-![Status](https://img.shields.io/badge/status-production--ready-brightgreen)
-![Version](https://img.shields.io/badge/version-1.0.0-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
 Plataforma integral para gestión de barberías con reservas online, pagos digitales y notificaciones automáticas vía WhatsApp.
@@ -18,6 +16,7 @@ Plataforma integral para gestión de barberías con reservas online, pagos digit
 
 - [Sobre el Proyecto](#-sobre-el-proyecto)
 - [Características](#-características)
+- [Capturas de Pantalla](#-capturas-de-pantalla)
 - [Stack Tecnológico](#️-stack-tecnológico)
 - [Instalación](#-instalación)
 - [Configuración](#️-configuración)
@@ -157,6 +156,126 @@ Plataforma web moderna que permite:
 - **Reportes automáticos**
   - WhatsApp diario con resumen del día
   - Exportación de datos
+
+---
+
+## 📸 Capturas de Pantalla
+
+### 🔐 Autenticación
+
+<div align="center">
+
+| Login | Registro |
+|-------|----------|
+| ![Login](screenshots/cliente/login.png) | ![Registro](screenshots/cliente/register.png) |
+
+</div>
+
+### 👤 Panel de Cliente
+
+<div align="center">
+
+**Inicio**
+
+![Inicio Cliente](screenshots/cliente/inicio.png)
+![Inicio Cliente 2](screenshots/cliente/inicio-2.png)
+
+**Proceso de Reserva de Turnos (4 Pasos)**
+
+| Paso 1: Selección de Servicio | Paso 2: Elección de Barbero |
+|-------------------------------|------------------------------|
+| ![Paso 1](screenshots/cliente/paso-1.png) | ![Paso 2](screenshots/cliente/paso-2.png) |
+
+| Paso 3: Selección de Fecha y Hora | Paso 4: Confirmación y Pago |
+|-----------------------------------|----------------------------|
+| ![Paso 3](screenshots/cliente/paso-3.png) | ![Paso 4](screenshots/cliente/paso-4.png) |
+
+**Gestión de Perfil e Historial**
+
+| Perfil | Historial de Turnos |
+|--------|---------------------|
+| ![Perfil Cliente](screenshots/cliente/perfil.png) | ![Historial](screenshots/cliente/historial.png) |
+
+**Integración con MercadoPago**
+
+![Redirección a MercadoPago](screenshots/cliente/redireccionAmp.png)
+
+</div>
+
+### 💼 Panel de Barbero
+
+<div align="center">
+
+**Dashboard Principal**
+
+![Inicio Barbero](screenshots/barbero/inicio.png)
+![Inicio Barbero 2](screenshots/barbero/inicio-2.png)
+
+**Gestión de Agenda y Estadísticas**
+
+| Agenda del Día | Estadísticas de Performance |
+|----------------|----------------------------|
+| ![Agenda Barbero](screenshots/barbero/agenda-barbero.png) | ![Estadísticas Barbero](screenshots/barbero/estadistica-barbero.png) |
+
+**Perfil**
+
+![Perfil Barbero](screenshots/barbero/perfil.png)
+
+</div>
+
+### 🔧 Panel de Administrador
+
+<div align="center">
+
+**Dashboard Ejecutivo**
+
+![Dashboard Admin](screenshots/admin/inicio.png)
+
+**Gestión de Barberos y Servicios**
+
+| Barberos | Servicios |
+|----------|-----------|
+| ![Barberos](screenshots/admin/barberos.png) | ![Servicios](screenshots/admin/servicios.png) |
+
+**Disponibilidad y Horarios**
+
+| Horarios Generales | Horarios por Barbero |
+|-------------------|---------------------|
+| ![Horarios Generales](screenshots/admin/disponibilidad-horariosGenerales.png) | ![Horarios por Barbero](screenshots/admin/disponibilidad-horariosPorBarbero.png) |
+
+**Bloqueos y Excepciones**
+
+![Bloqueos](screenshots/admin/disponibilidad-bloqueosYexepciones.png)
+
+**Configuración del Negocio**
+
+| Información del Negocio | Redes y Duración de Turnos |
+|------------------------|---------------------------|
+| ![Info Negocio](screenshots/admin/configuracion-infoDeNegocio.png) | ![Redes y Duración](screenshots/admin/configuracion-redesYdurecionTurnos.png) |
+
+**Días de Atención**
+
+![Días de Atención](screenshots/admin/configuracion-diasDeAtencion.png)
+
+**Sistema de Señas y Pagos**
+
+| Configuración de Señas | Credenciales MercadoPago |
+|----------------------|-------------------------|
+| ![Config Señas](screenshots/admin/señasYpagos-configDeSeñas.png) | ![Credenciales MP](screenshots/admin/señasYpagos-credencialesMP.png) |
+
+**Gestión de Pagos**
+
+![Gestión de Pagos](screenshots/admin/gestionDePagos.png)
+
+**Estadísticas Generales**
+
+![Estadísticas](screenshots/admin/estadisticas.png)
+
+**Perfil de Administrador**
+
+![Perfil Admin](screenshots/admin/perfil.png)
+
+</div>
 
 ---
 

@@ -4,6 +4,7 @@
  */
 
 import mongoose from 'mongoose';
+import crypto from 'crypto';
 
 const turnoSchema = new mongoose.Schema(
   {
@@ -62,7 +63,7 @@ const turnoSchema = new mongoose.Schema(
     tokenCancelacion: {
       type: String,
       default: function() {
-        return require('crypto').randomBytes(32).toString('hex');
+        return crypto.randomBytes(32).toString('hex');
       },
       description: 'Token único para permitir cancelación sin autenticación',
     },

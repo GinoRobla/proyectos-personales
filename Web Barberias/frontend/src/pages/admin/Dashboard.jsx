@@ -20,7 +20,7 @@ const AdminDashboard = () => {
                 <h3>Servicios</h3>
               </div>
               <p className="gestion-descripcion">
-                Administrar servicios, precios y duraciones
+                Administrar servicios y precios
               </p>
               <div className="gestion-footer">
                 <span className="gestion-link">Gestionar →</span>
@@ -32,7 +32,7 @@ const AdminDashboard = () => {
                 <h3>Barberos</h3>
               </div>
               <p className="gestion-descripcion">
-                Gestionar equipo de barberos y horarios
+                Gestionar equipo de barberos
               </p>
               <div className="gestion-footer">
                 <span className="gestion-link">Gestionar →</span>
