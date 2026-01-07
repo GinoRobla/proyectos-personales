@@ -189,8 +189,6 @@ Tu apoyo motiva a seguir creando y compartiendo soluciones con la comunidad.
 
 <div align="center">
   
-  ---
-  
   **💡 Transformando problemas reales en soluciones digitales**
   
   <sub>Hecho con ❤️ y mucho ☕ por Gino Robla</sub>
