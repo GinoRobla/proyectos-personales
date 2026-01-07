@@ -3,6 +3,30 @@ echo ====================================
 echo Sistema de Ventas - Modo Desarrollo
 echo ====================================
 echo.
+
+:: Verificar e instalar dependencias si no existen
+if not exist "node_modules" (
+    echo Instalando dependencias principales...
+    call npm install
+    echo.
+)
+
+if not exist "backend\node_modules" (
+    echo Instalando dependencias del backend...
+    cd backend
+    call npm install
+    cd ..
+    echo.
+)
+
+if not exist "frontend\node_modules" (
+    echo Instalando dependencias del frontend...
+    cd frontend
+    call npm install
+    cd ..
+    echo.
+)
+
 echo Iniciando servicios...
 echo.
 
