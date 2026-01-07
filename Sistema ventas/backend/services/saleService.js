@@ -35,12 +35,25 @@ async function crearVenta(datosVenta) {
     return { id: venta.id, total, items, createdAt: now };
 }
 
-// 2. OBTENER TODAS LAS VENTAS (más recientes primero)
-async function obtenerTodasLasVentas() {
+// 2. OBTENER TODAS LAS VENTAS (más recientes primero) con paginación
+async function obtenerTodasLasVentas(limit = 100, offset = 0) {
+    // Limitar a máximo 1000 registros por solicitud para evitar sobrecargar el sistema
+    const limiteSanitizado = Math.min(limit, 1000);
+
     const ventas = await Sale.findAll({
-        order: [['createdAt', 'DESC']]
+        order: [['createdAt', 'DESC']],
+        limit: limiteSanitizado,
+        offset: offset
     });
-    return ventas.map(v => ({ ...v.toJSON(), items: JSON.parse(v.items) }));
+
+    const total = await Sale.count();
+
+    return {
+        ventas: ventas.map(v => ({ ...v.toJSON(), items: JSON.parse(v.items) })),
+        total,
+        limit: limiteSanitizado,
+        offset
+    };
 }
 
 // 3. OBTENER ESTADÍSTICAS COMPLETAS DE VENTAS
@@ -88,9 +101,15 @@ async function obtenerEstadisticas() {
     };
 }
 
-// 4. OBTENER TOP PRODUCTOS MÁS VENDIDOS
-async function obtenerTopProductos() {
-    const ventas = await Sale.findAll();
+// 4. OBTENER TOP PRODUCTOS MÁS VENDIDOS (optimizado)
+async function obtenerTopProductos(limitVentas = 10000) {
+    // Limitar análisis a las últimas X ventas para mejor rendimiento
+    // En vez de cargar TODAS las ventas, solo analizamos las más recientes
+    const ventas = await Sale.findAll({
+        order: [['createdAt', 'DESC']],
+        limit: limitVentas
+    });
+
     const conteoProductos = {};
 
     ventas.forEach(venta => {
@@ -119,7 +138,14 @@ async function obtenerTopProductos() {
     return productosConInfo.sort((a, b) => b.cantidadVendida - a.cantidadVendida).slice(0, 5);
 }
 
-// 5. OBTENER ESTADÍSTICAS POR RANGO DE FECHAS
+// 5. OBTENER UNA VENTA POR ID (optimizado)
+async function obtenerVentaPorId(id) {
+    const venta = await Sale.findByPk(id);
+    if (!venta) throw new Error('Venta no encontrada');
+    return { ...venta.toJSON(), items: JSON.parse(venta.items) };
+}
+
+// 6. OBTENER ESTADÍSTICAS POR RANGO DE FECHAS
 async function obtenerEstadisticasPorFecha(fechaInicio, fechaFin) {
     const where = {};
     if (fechaInicio && fechaFin) where.createdAt = { [Op.between]: [fechaInicio, fechaFin] };
@@ -141,6 +167,7 @@ async function obtenerEstadisticasPorFecha(fechaInicio, fechaFin) {
 module.exports = {
     crearVenta,
     obtenerTodasLasVentas,
+    obtenerVentaPorId,
     obtenerEstadisticas,
     obtenerTopProductos,
     obtenerEstadisticasPorFecha

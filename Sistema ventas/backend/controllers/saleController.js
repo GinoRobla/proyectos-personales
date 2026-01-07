@@ -13,10 +13,12 @@ const saleController = {
         }
     },
 
-    // Obtener todas las ventas
+    // Obtener todas las ventas con paginación
     async getAllSales(req, res) {
         try {
-            const sales = await saleService.obtenerTodasLasVentas();
+            const limit = parseInt(req.query.limit) || 100;
+            const offset = parseInt(req.query.offset) || 0;
+            const sales = await saleService.obtenerTodasLasVentas(limit, offset);
             res.json(sales);
         } catch (error) {
             console.error('Error en getAllSales:', error);
@@ -24,15 +26,11 @@ const saleController = {
         }
     },
 
-    // Obtener venta por ID - Simplificado
+    // Obtener venta por ID - Optimizado
     async getSaleById(req, res) {
         try {
             const { id } = req.params;
-            const sales = await saleService.obtenerTodasLasVentas();
-            const sale = sales.find(s => s.id == id);
-            if (!sale) {
-                return res.status(404).json({ message: 'Venta no encontrada' });
-            }
+            const sale = await saleService.obtenerVentaPorId(id);
             res.json(sale);
         } catch (error) {
             console.error('Error en getSaleById:', error);

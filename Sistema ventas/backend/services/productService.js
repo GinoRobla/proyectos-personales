@@ -3,9 +3,25 @@
 const { Product } = require('../models/Product');
 const { Op } = require('sequelize');
 
-// 1. OBTENER TODOS LOS PRODUCTOS (ordenados por nombre)
-async function obtenerTodosLosProductos() {
-    return await Product.findAll({ order: [['name', 'ASC']] });
+// 1. OBTENER TODOS LOS PRODUCTOS (ordenados por nombre) con paginación
+async function obtenerTodosLosProductos(limit = 100, offset = 0) {
+    // Limitar a máximo 1000 registros por solicitud para evitar sobrecargar el sistema
+    const limiteSanitizado = Math.min(limit, 1000);
+
+    const productos = await Product.findAll({
+        order: [['name', 'ASC']],
+        limit: limiteSanitizado,
+        offset: offset
+    });
+
+    const total = await Product.count();
+
+    return {
+        productos,
+        total,
+        limit: limiteSanitizado,
+        offset
+    };
 }
 
 // 2. BUSCAR UN PRODUCTO POR SU CÓDIGO DE BARRAS O ID

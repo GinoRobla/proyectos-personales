@@ -33,8 +33,10 @@ const hacerPeticion = async (url, opciones = {}) => {
 }
 
 // 3. FUNCIONES PARA PRODUCTOS
-export const obtenerProductos = async () => {
-    return hacerPeticion(`${URL_BASE}/api/products`)
+export const obtenerProductos = async (limit = 1000, offset = 0) => {
+    const respuesta = await hacerPeticion(`${URL_BASE}/api/products?limit=${limit}&offset=${offset}`)
+    // Si la respuesta tiene estructura paginada, extraer el array de productos
+    return respuesta.productos || respuesta
 }
 
 export const buscarProductoPorCodigo = async (codigo) => {
@@ -62,8 +64,10 @@ export const eliminarProducto = async (id) => {
 }
 
 // 4. FUNCIONES PARA VENTAS
-export const obtenerVentas = async () => {
-    return hacerPeticion(`${URL_BASE}/api/sales`)
+export const obtenerVentas = async (limit = 1000, offset = 0) => {
+    const respuesta = await hacerPeticion(`${URL_BASE}/api/sales?limit=${limit}&offset=${offset}`)
+    // Si la respuesta tiene estructura paginada, extraer el array de ventas
+    return respuesta.ventas || respuesta
 }
 
 export const crearVenta = async (datosVenta) => {

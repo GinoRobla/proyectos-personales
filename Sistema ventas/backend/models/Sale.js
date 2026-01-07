@@ -8,7 +8,12 @@ const Sale = sequelize.define('Sale', {
     createdAt: { type: DataTypes.DATE, allowNull: false, defaultValue: DataTypes.NOW }    // Fecha y hora de la venta
 }, {
     timestamps: false,           // No agrega columnas createdAt/updatedAt automáticamente
-    freezeTableName: true        // Usa el nombre 'Sale' tal cual, sin pluralizar
+    freezeTableName: true,       // Usa el nombre 'Sale' tal cual, sin pluralizar
+    indexes: [
+        {
+            fields: ['createdAt']  // Índice para optimizar consultas por fecha
+        }
+    ]
 });
 
 module.exports = { Sale };

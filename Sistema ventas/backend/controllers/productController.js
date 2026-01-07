@@ -1,10 +1,12 @@
 const productService = require('../services/productService');
 
 const productController = {
-    // Obtener todos los productos
+    // Obtener todos los productos con paginación
     async getAllProducts(req, res) {
         try {
-            const products = await productService.obtenerTodosLosProductos();
+            const limit = parseInt(req.query.limit) || 100;
+            const offset = parseInt(req.query.offset) || 0;
+            const products = await productService.obtenerTodosLosProductos(limit, offset);
             res.json(products);
         } catch (error) {
             console.error('Error en getAllProducts:', error);
