@@ -76,25 +76,6 @@ Aquí encontrarás soluciones desarrolladas con el **stack MERN** (MongoDB, Expr
   </tr>
 </table>
 
-### 🔨 En Desarrollo (1)
-
-<table>
-  <tr>
-    <th width="25%">Proyecto</th>
-    <th width="40%">Descripción</th>
-    <th width="20%">Stack</th>
-    <th width="15%">Cliente</th>
-  </tr>
-  <tr>
-    <td><strong>🛍️ E-commerce Chains Carhue</strong></td>
-    <td>Tienda online completa para emprendimiento de accesorios y cadenas. Incluye catálogo de productos, carrito de compras, panel de administración para gestión de inventario y pedidos.</td>
-    <td><strong>MERN Stack</strong><br>React, Node.js, MongoDB, Express</td>
-    <td><a href="https://instagram.com/chains.carhue" target="_blank">@chains.carhue</a></td>
-  </tr>
-</table>
-
----
-
 ## 🏗️ Arquitectura y Buenas Prácticas
 
 Todos los proyectos implementan:
