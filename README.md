@@ -47,7 +47,7 @@ Aquí encontrarás soluciones desarrolladas con el **stack MERN** (MongoDB, Expr
 
 ## 📁 Proyectos
 
-### 🌟 Proyectos Completados (3)
+### 🌟 Proyectos Completados (2)
 
 <table>
   <tr>
@@ -55,12 +55,6 @@ Aquí encontrarás soluciones desarrolladas con el **stack MERN** (MongoDB, Expr
     <th width="40%">Descripción</th>
     <th width="20%">Stack</th>
     <th width="15%">Cliente</th>
-  </tr>
-  <tr>
-    <td><strong>💈 Sistema de Gestión de Barbería</strong></td>
-    <td>Plataforma web que moderniza la gestión de barberías, permitiendo a los clientes reservar turnos online y a los barberos administrarlos desde su agenda. El sistema incluye roles, gestión de servicios, precios, pagos y señas, recordatorios automáticos y un dashboard con métricas clave para el administrador.</td>
-    <td><strong>MERN Stack</strong><br>MongoDB, Express, React, Node.js</td>
-    <td>Peluquería Local</td>
   </tr>
   <tr>
     <td><strong>🛒 Sistema POS (Punto de Venta)</strong></td>
@@ -95,7 +89,7 @@ Todos los proyectos implementan:
 
 **Progreso Actual:**
 
-✅ **3 proyectos completados** | 🔨 **1 en desarrollo**
+✅ **2 proyectos completados** | 🔨 **1 en desarrollo**
 
 ---
 
