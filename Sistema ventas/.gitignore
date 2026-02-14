@@ -20,3 +20,6 @@ build
 # Archivos temporales de Windows
 Thumbs.db
 *.exe
+
+*.mp4
+screenshots/
