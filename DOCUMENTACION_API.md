@@ -524,12 +524,13 @@ Valida una clave de activación y, si es correcta, la guarda en disco.
 **Body (JSON):**
 ```json
 {
-  "key": "AAAAA-BBBBB-CCCCC-DDDDD|2026-12-31"
+  "key": "Cf4D0ch4ETBDQ0mrb8BOJoWnGdZKdMhAJkwSHTtKA9VLG6h86etotNAkm8S4UWz1_onX17BHvnnv9NzSlRlJrg|2026-12-31"
 }
 ```
 
-**Formato de clave:** `[HMAC-20chars]|[YYYY-MM-DD]`
-- La parte HMAC se genera con `HMAC-SHA256(SECRET, "${machineId}|${expiryDate}")`
+**Formato de clave:** `[firma-ECDSA-P256-base64url]|[YYYY-MM-DD]`
+- La firma se genera con la clave **privada** ECDSA P-256 sobre `"${machineId}|${expiryDate}"` (ver `keygen.html`)
+- Se verifica en el backend con la clave **pública** (segura de exponer, no permite forjar claves nuevas)
 - La clave es válida únicamente para la máquina que tiene ese Machine ID
 - La fecha de vencimiento está embebida en la clave
 
@@ -552,7 +553,7 @@ Posibles valores de `reason`:
 - `"Formato de clave inválido"` — no tiene el separador `|` o faltan partes
 - `"Fecha de vencimiento inválida"` — la fecha no es parseable
 - `"La clave ha vencido"` — la fecha ya pasó
-- `"Clave incorrecta para esta máquina"` — el HMAC no coincide
+- `"Clave incorrecta para esta máquina"` — la firma no coincide (máquina distinta o clave alterada)
 - `"Error al validar la clave"` — error inesperado
 
 ---

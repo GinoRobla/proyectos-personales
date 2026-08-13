@@ -138,7 +138,7 @@ El sistema usa licencias por máquina con vencimiento configurable. Cada PC tien
 | Término | Descripción |
 |---------|-------------|
 | **Machine ID** | Identificador único de la PC del cliente (ej: `A1B2-C3D4-E5F6`) |
-| **Clave de activación** | `AAAAA-BBBBB-CCCCC-DDDDD\|YYYY-MM-DD` — firmada con HMAC y con fecha de vencimiento |
+| **Clave de activación** | `[firma-ECDSA-P256]\|YYYY-MM-DD` — firmada con la clave privada (par de claves asimétrico) y con fecha de vencimiento |
 | **keygen.html** | Herramienta local (solo tuya) para generar claves. **No se distribuye con el .exe** |
 
 ---

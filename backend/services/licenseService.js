@@ -1,13 +1,25 @@
 // ===== SERVICIO DE LICENCIAS =====
 // Gestiona machine ID, validación y almacenamiento de licencias
+//
+// Firma asimétrica (ECDSA P-256): keygen.html firma con la clave PRIVADA
+// (nunca sale de la PC de Gino, no se sube al repo). Este archivo solo
+// necesita la clave PÚBLICA para verificar — es segura de exponer/subir
+// al repo, con ella no se puede forjar una licencia nueva.
 
 const crypto = require('crypto');
 const os = require('os');
 const path = require('path');
 const fs = require('fs');
 
-// Debe coincidir con el SECRET de keygen.html
-const SECRET = 'GinoVentas2025#MasterKey!Pos';
+// Clave pública — coincide con la clave privada de keygen.html. Segura de exponer.
+const PUBLIC_KEY_JWK = {
+    kty: 'EC',
+    x: 'IOb7bTmx3m1FHBMKanvEigFYyK7NybM-yTzT7dU4aLI',
+    y: 'zOgcF598jzCpYamxDkZfwBNBNUgqPH1v8ahIphfPRnE',
+    crv: 'P-256'
+};
+const publicKey = crypto.createPublicKey({ key: PUBLIC_KEY_JWK, format: 'jwk' });
+
 const licenseFile = path.join(__dirname, '..', 'data', 'license.json');
 
 // Genera un ID único y estable para esta máquina basado en hostname + primera MAC
@@ -31,27 +43,38 @@ function getMachineId() {
     return `${hash.slice(0, 4)}-${hash.slice(4, 8)}-${hash.slice(8, 12)}`;
 }
 
-// Valida una clave completa (AAAAA-BBBBB-CCCCC-DDDDD|YYYY-MM-DD) contra esta máquina
+// Valida una clave completa (firma-en-base64url|YYYY-MM-DD) contra esta máquina
 function validateKey(fullKey) {
     try {
-        const parts = fullKey.split('|');
+        const parts = fullKey.trim().split('|');
         if (parts.length !== 2) return { valid: false, reason: 'Formato de clave inválido' };
 
-        const [keyPart, expiryDate] = parts;
+        const [sigPart, expiryDate] = parts;
 
         // Verificar que la fecha no haya vencido
         const expiry = new Date(expiryDate + 'T23:59:59');
         if (isNaN(expiry.getTime())) return { valid: false, reason: 'Fecha de vencimiento inválida' };
         if (expiry < new Date()) return { valid: false, reason: 'La clave ha vencido' };
 
-        // Recalcular el HMAC esperado para esta máquina
+        // Verificar la firma ECDSA contra esta máquina (no requiere secreto compartido)
         const machineId = getMachineId();
         const payload = `${machineId}|${expiryDate}`;
-        const hmac = crypto.createHmac('sha256', SECRET).update(payload).digest('base64');
-        const clean = hmac.replace(/[^A-Z0-9]/gi, '').toUpperCase().substring(0, 20);
-        const expectedKey = `${clean.slice(0, 5)}-${clean.slice(5, 10)}-${clean.slice(10, 15)}-${clean.slice(15, 20)}`;
 
-        if (keyPart !== expectedKey) return { valid: false, reason: 'Clave incorrecta para esta máquina' };
+        let signature;
+        try {
+            signature = Buffer.from(sigPart.replace(/\s+/g, ''), 'base64url');
+        } catch {
+            return { valid: false, reason: 'Formato de clave inválido' };
+        }
+
+        const isValid = crypto.verify(
+            'sha256',
+            Buffer.from(payload),
+            { key: publicKey, dsaEncoding: 'ieee-p1363' },
+            signature
+        );
+
+        if (!isValid) return { valid: false, reason: 'Clave incorrecta para esta máquina' };
 
         return { valid: true, expiryDate };
     } catch {

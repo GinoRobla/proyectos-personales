@@ -188,7 +188,7 @@ Conecta cualquier lector USB/Bluetooth y funciona automáticamente.
 ✅ **Base de datos local** - Sin dependencias externas  
 ✅ **Responsive design** - Optimizado para escritorio  
 ✅ **Escaneo automático** - Integración perfecta con códigos de barras  
-✅ **Sistema de licencias** - Activación por máquina con claves HMAC firmadas  
+✅ **Sistema de licencias** - Activación por máquina con claves firmadas (ECDSA, par de claves pública/privada)  
 ✅ **Multi-kiosko** - Una clave única por PC, distribuible a múltiples clientes  
 
 ---
