@@ -2,7 +2,7 @@
 // Gestiona machine ID, validación y almacenamiento de licencias
 //
 // Firma asimétrica (ECDSA P-256): keygen.html firma con la clave PRIVADA
-// (nunca sale de la PC de Gino, no se sube al repo). Este archivo solo
+// (nunca sale de tu PC, no se sube al repo). Este archivo solo
 // necesita la clave PÚBLICA para verificar — es segura de exponer/subir
 // al repo, con ella no se puede forjar una licencia nueva.
 

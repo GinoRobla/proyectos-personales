@@ -3,6 +3,12 @@ import './ActivationScreen.css'
 
 const API = 'http://localhost:3001/api/license'
 
+// Datos de soporte que ve el cliente en la pantalla de activación.
+// Si este sistema es tuyo (te lo regalaron para vender como tu propio SaaS),
+// cambiá estas dos líneas por tus propios datos antes de distribuirlo.
+const SUPPORT_NAME = 'Gino'
+const SUPPORT_WHATSAPP = '+54 9 291 464-3232'
+
 export function ActivationScreen({ onActivated }) {
     const [machineId, setMachineId] = useState('')
     const [key, setKey] = useState('')
@@ -70,7 +76,7 @@ export function ActivationScreen({ onActivated }) {
                         </button>
                     </div>
                     <p className="activation-hint">
-                        Enviá este código a Gino por WhatsApp para recibir tu clave.
+                        Enviá este código a {SUPPORT_NAME} por WhatsApp para recibir tu clave.
                     </p>
                 </div>
 
@@ -96,7 +102,7 @@ export function ActivationScreen({ onActivated }) {
                 </button>
 
                 <p className="activation-contact">
-                    Soporte: <strong>Gino</strong> · WhatsApp <strong>+54 9 291 464-3232</strong>
+                    Soporte: <strong>{SUPPORT_NAME}</strong> · WhatsApp <strong>{SUPPORT_WHATSAPP}</strong>
                 </p>
             </div>
         </div>
