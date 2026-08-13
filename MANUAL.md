@@ -133,6 +133,11 @@ Sistema de Ventas.exe (aplicación instalada)
 
 El sistema usa licencias por máquina con vencimiento configurable. Cada PC tiene un ID único y la clave solo funciona en esa PC.
 
+> **Primera vez con este código?** Antes de generar tu primera licencia, corré el paso de
+> configuración una sola vez: `generar-mis-claves.html` → pegar la clave pública en
+> `licenseService.js` → pegar la clave privada en tu copia de `keygen.html`. Ver el detalle
+> en el README. Sin esto, `keygen.template.html` no va a poder firmar nada.
+
 ### Conceptos clave
 
 | Término | Descripción |

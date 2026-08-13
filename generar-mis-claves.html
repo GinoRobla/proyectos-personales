@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generar mis claves — Sistema de Ventas</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #0f0f0f;
+            color: #e0e0e0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .card {
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            border-radius: 16px;
+            padding: 36px 40px;
+            width: 100%;
+            max-width: 640px;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .logo {
+            width: 38px;
+            height: 38px;
+            background: #2563eb;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+        }
+
+        h1 { font-size: 1.15rem; font-weight: 600; color: #fff; }
+        .badge { font-size: 0.7rem; color: #666; font-weight: 400; margin-top: 1px; }
+
+        .intro {
+            font-size: 0.85rem;
+            color: #999;
+            line-height: 1.6;
+            margin-bottom: 24px;
+        }
+
+        .btn-generate {
+            width: 100%;
+            padding: 13px;
+            background: #2563eb;
+            border: none;
+            border-radius: 10px;
+            color: #fff;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.15s, transform 0.1s;
+        }
+        .btn-generate:hover { background: #1d4ed8; }
+        .btn-generate:active { transform: scale(0.99); }
+
+        .step {
+            display: none;
+            margin-top: 24px;
+        }
+        .step.show { display: block; }
+
+        .step-label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin-bottom: 8px;
+        }
+        .step-label.public { color: #4ade80; }
+        .step-label.private { color: #fca5a5; }
+
+        .step-desc {
+            font-size: 0.8rem;
+            color: #999;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+        .step-desc code {
+            background: #111;
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: #ccc;
+        }
+
+        .code-block {
+            font-family: 'Courier New', monospace;
+            font-size: 0.8rem;
+            color: #a78bfa;
+            background: #0a0a0a;
+            padding: 14px;
+            border-radius: 8px;
+            border: 1px solid #1f1f1f;
+            word-break: break-all;
+            line-height: 1.6;
+            margin-bottom: 10px;
+            white-space: pre-wrap;
+        }
+        .code-block.private-block { border-color: rgba(248,113,113,0.4); color: #fca5a5; }
+
+        .btn-copy {
+            padding: 8px 16px;
+            background: #1f1f1f;
+            border: 1px solid #2e2e2e;
+            border-radius: 8px;
+            color: #ccc;
+            font-size: 0.8rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .btn-copy:hover { background: #2a2a2a; color: #fff; }
+        .btn-copy.copied { background: #14532d; border-color: #16a34a; color: #4ade80; }
+
+        .warning {
+            margin-top: 24px;
+            padding: 14px 16px;
+            background: rgba(234, 179, 8, 0.07);
+            border: 1px solid rgba(234, 179, 8, 0.25);
+            border-radius: 10px;
+            font-size: 0.8rem;
+            color: #eab308;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <div class="header">
+        <div class="logo">🔐</div>
+        <div>
+            <h1>Generar mis claves</h1>
+            <div class="badge">Paso 1 de la configuración — se hace una sola vez</div>
+        </div>
+    </div>
+
+    <div class="intro">
+        Esto crea tu propio par de claves para el sistema de licencias. Nadie más las tiene —
+        ni siquiera quien te compartió este código. Con ellas vas a poder activar el sistema
+        en las PCs de tus futuros clientes.
+    </div>
+
+    <button class="btn-generate" onclick="generar()">Generar mi par de claves</button>
+
+    <div class="step" id="stepPublic">
+        <div class="step-label public">1. Clave pública — va en tu código</div>
+        <div class="step-desc">
+            Abrí <code>backend/services/licenseService.js</code> y reemplazá el valor de
+            <code>PUBLIC_KEY_JWK</code> por esto. Esta clave es segura de subir a un repositorio,
+            aunque sea público — con ella no se pueden generar licencias, solo verificarlas.
+        </div>
+        <div class="code-block" id="publicOutput"></div>
+        <button class="btn-copy" onclick="copiar('publicOutput', this)">Copiar</button>
+    </div>
+
+    <div class="step" id="stepPrivate">
+        <div class="step-label private">2. Clave privada — solo para vos</div>
+        <div class="step-desc">
+            Abrí <code>keygen.template.html</code>, guardalo como <code>keygen.html</code> en tu
+            PC, y reemplazá <code>const PRIVATE_KEY_JWK = null;</code> por esto. Ese archivo
+            (con tu clave ya adentro) es tuyo — <strong>nunca lo subas a un repositorio</strong>,
+            ni lo compartas con nadie.
+        </div>
+        <div class="code-block private-block" id="privateOutput"></div>
+        <button class="btn-copy" onclick="copiar('privateOutput', this)">Copiar</button>
+    </div>
+
+    <div class="warning" id="finalWarning" style="display:none;">
+        ⚠ Si perdés la clave privada no vas a poder generar ni renovar licencias de tus clientes.
+        Guardala en un lugar seguro (gestor de contraseñas, nota cifrada) además de en
+        <code>keygen.html</code>.
+    </div>
+</div>
+
+<script>
+    async function generar() {
+        const keyPair = await crypto.subtle.generateKey(
+            { name: 'ECDSA', namedCurve: 'P-256' },
+            true, ['sign', 'verify']
+        );
+
+        const publicJwk = await crypto.subtle.exportKey('jwk', keyPair.publicKey);
+        const privateJwk = await crypto.subtle.exportKey('jwk', keyPair.privateKey);
+
+        delete publicJwk.key_ops; delete publicJwk.ext;
+        delete privateJwk.key_ops; delete privateJwk.ext;
+
+        const publicLine = `const PUBLIC_KEY_JWK = ${JSON.stringify(publicJwk)};`;
+        const privateLine = `const PRIVATE_KEY_JWK = ${JSON.stringify(privateJwk)};`;
+
+        document.getElementById('publicOutput').textContent = publicLine;
+        document.getElementById('privateOutput').textContent = privateLine;
+        document.getElementById('stepPublic').classList.add('show');
+        document.getElementById('stepPrivate').classList.add('show');
+        document.getElementById('finalWarning').style.display = 'block';
+    }
+
+    async function copiar(id, btn) {
+        await navigator.clipboard.writeText(document.getElementById(id).textContent);
+        const original = btn.textContent;
+        btn.textContent = '✓ Copiado';
+        btn.classList.add('copied');
+        setTimeout(() => { btn.textContent = original; btn.classList.remove('copied'); }, 2000);
+    }
+</script>
+
+</body>
+</html>

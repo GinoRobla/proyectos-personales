@@ -17,6 +17,17 @@
 
 **Ver:** [Manual de Distribución](./MANUAL.md) para instrucciones de instalación, licencias y distribución.
 
+### 🆕 ¿Te regalaron este código para vender como tu propio sistema?
+
+Antes de distribuirlo a tu primer cliente, generá tu propio par de claves de licencia
+(son tuyas, nadie más las tiene):
+
+1. Abrí `generar-mis-claves.html` en el navegador y hacé clic en "Generar mi par de claves"
+2. Pegá la clave **pública** en `backend/services/licenseService.js` (reemplaza `PUBLIC_KEY_JWK`)
+3. Guardá `keygen.template.html` como `keygen.html` y pegá ahí tu clave **privada** — este
+   archivo es tuyo, no lo compartas ni lo subas a ningún repositorio
+4. Armá el instalador (`npm run dist`) y ya podés vender y activar licencias vos mismo
+
 ## ✨ Características Principales
 
 🛍️ **Sistema de Ventas** - Carrito interactivo con validación de stock  
